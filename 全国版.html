@@ -12,43 +12,18 @@
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
 
-        /* 解答エリア：ドラッグとリサイズを可能に */
         .ui-container { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 20px; /* 初期位置 */
-            z-index: 10; 
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px); 
-            padding: 0; /* ヘッダーを作るため0に */
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 300px; 
-            min-width: 200px;
-            min-height: 150px;
-            overflow: auto; /* リサイズに必要 */
-            resize: both;   /* 自由な拡大縮小を可能にする */
+            position: absolute; bottom: 20px; left: 20px; z-index: 10; 
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); 
+            padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            width: 300px; min-width: 200px; min-height: 150px; overflow: auto; resize: both;
         }
 
-        /* ドラッグ用のヘッダー */
-        .ui-header {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            cursor: move; /* 十字カーソル */
-            font-size: 12px;
-            text-align: center;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            user-select: none;
-        }
-
+        .ui-header { background: rgba(0, 0, 0, 0.1); padding: 8px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; }
         .ui-content { padding: 12px; }
 
         h2 { margin: 0 0 8px 0; font-size: 14px; color: #333; }
-        input { 
-            padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2);
-            border-radius: 8px; margin-bottom: 8px; box-sizing: border-box;
-        }
+        input { padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
 
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         button { padding: 8px 5px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; color: white; }
@@ -59,6 +34,9 @@
         .btn-next   { background: #34C759; grid-column: span 2; }
 
         #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
+        
+        /* リザルト画面用 */
+        .final-score { font-size: 24px; color: #E44; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -67,13 +45,13 @@
 
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header">ここを掴んで移動</div>
-        <div class="ui-content">
-            <h2>この駅はどこ？</h2>
+        <div class="ui-content" id="ui-content">
+            <h2 id="question-title">読み込み中...</h2>
             <input list="station-list" id="station-input" placeholder="駅名を入力...">
             <datalist id="station-list"></datalist>
             
-            <div class="button-group">
-                <button class="btn-answer" onclick="checkAnswer()">回答する</button>
+            <div class="button-group" id="normal-buttons">
+                <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                 <button class="btn-reset" onclick="resetView()">戻る</button>
                 <button class="btn-giveup" onclick="showAnswer()">答え</button>
                 <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
@@ -85,6 +63,17 @@
     <script>
         let currentStation = null;
         let map;
+        let score = 0;
+        let questionCount = 0;
+        let totalQuestions = 10;
+        let answered = false;
+
+        // URLから問題数を取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const numParam = urlParams.get('num');
+        if (numParam) {
+            totalQuestions = parseInt(numParam);
+        }
 
         function init() {
             map = L.map('map', { zoomControl: false });
@@ -108,65 +97,78 @@
             makeDraggable(document.getElementById("ui-panel"));
         }
 
+        function updateProgress() {
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
+        }
+
         function nextQuestion() {
+            if (questionCount >= totalQuestions) {
+                showFinalResult();
+                return;
+            }
+            
+            answered = false;
+            document.getElementById('answer-btn').disabled = false;
+            document.getElementById('answer-btn').style.opacity = "1";
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
-            currentStation = stations[Math.floor(Math.random() * stations.length)];
             
-            // ★ flyToではなくsetViewを使うことでアニメーションなしで瞬間移動
+            currentStation = stations[Math.floor(Math.random() * stations.length)];
             map.setView([currentStation.lat, currentStation.lng], 17);
+            updateProgress();
         }
 
         function resetView() {
             if (currentStation && map) {
-                // 戻るときだけはアニメーションがあったほうが分かりやすいのでflyToにしています
                 map.flyTo([currentStation.lat, currentStation.lng], 17);
             }
         }
 
         function checkAnswer() {
+            if (answered) return;
+            
             const userAnswer = document.getElementById('station-input').value;
             const resultDiv = document.getElementById('result');
+            
             if (userAnswer === currentStation.name) {
                 resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>";
+                score++;
             } else {
-                resultDiv.innerHTML = "<span style='color:#007AFF;'>残念。</span>";
+                resultDiv.innerHTML = "<span style='color:#007AFF;'>残念。正解は " + currentStation.name + "</span>";
             }
+            
+            answered = true;
+            document.getElementById('answer-btn').disabled = true;
+            document.getElementById('answer-btn').style.opacity = "0.5";
+            questionCount++;
         }
 
         function showAnswer() {
+            if (answered) return;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            answered = true;
+            document.getElementById('answer-btn').disabled = true;
+            document.getElementById('answer-btn').style.opacity = "0.5";
+            questionCount++;
         }
 
-        // ★解答エリアをドラッグ移動させるためのプログラム
+        function showFinalResult() {
+            const content = document.getElementById('ui-content');
+            content.innerHTML = `
+                <h2>結果発表</h2>
+                <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
+                <p>お疲れ様でした！</p>
+                <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
+            `;
+        }
+
         function makeDraggable(el) {
             const header = document.getElementById("ui-header");
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             header.onmousedown = dragMouseDown;
-
-            function dragMouseDown(e) {
-                e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-            }
-
-            function elementDrag(e) {
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                el.style.top = (el.offsetTop - pos2) + "px";
-                el.style.left = (el.offsetLeft - pos1) + "px";
-                el.style.bottom = "auto"; // bottom指定を解除
-            }
-
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
+            function dragMouseDown(e) { e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; }
+            function elementDrag(e) { e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; el.style.top = (el.offsetTop - pos2) + "px"; el.style.left = (el.offsetLeft - pos1) + "px"; el.style.bottom = "auto"; }
+            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
         }
 
         window.onload = init;
