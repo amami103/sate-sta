@@ -57,6 +57,16 @@
             <div id="result"></div>
         </div>
     </div>
+<div class="button-group" id="normal-buttons">
+    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+    <button class="btn-reset" onclick="resetView()">戻る</button>
+    
+    <!-- ★ここを追加！ 紫色のヒントボタン -->
+    <button style="background: #5856D6;" onclick="showHint()">ヒント</button>
+    
+    <button class="btn-giveup" onclick="showAnswer()">答え</button>
+    <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
+</div>
 
     <script>
         let gameStations = []; // 今回のゲームで使う駅リスト
@@ -179,6 +189,16 @@
         }
 
         window.onload = init;
+        // ★この関数を丸ごと追加してください
+function showHint() {
+    const resultDiv = document.getElementById('result');
+    if (!currentStation) return;
+    
+    // stations.jsにある pref と line を表示
+    resultDiv.innerHTML = `<div style="color:#5856D6; font-size:13px; background:rgba(255,255,255,0.8); padding:5px; border-radius:5px; margin-top:5px;">
+        💡 ヒント: ${currentStation.pref} / ${currentStation.line}
+    </div>`;
+}
     </script>
 </body>
 </html>
