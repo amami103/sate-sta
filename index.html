@@ -94,7 +94,7 @@
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>航空写真・駅当てクイズ</h1>
-        <p class="subtitle">日本全国、駅データからランダムに出題！</p>
+        <p class="subtitle">航空写真から駅名を当てるクイズ</p>
     </header>
 
     <main>
@@ -130,23 +130,19 @@
         </div>
 
         <div class="ad-space">広告スペース</div>
-
-        <div class="card description">
-            <h3>サテステとは？</h3>
-            <p>航空写真を見て駅名を当てる地理クイズゲームです。お好みの地域や路線に絞って挑戦できます。</p>
-        </div>
     </main>
 
     <footer>&copy; 2024 サテステ</footer>
 
+    <!-- 重要：先にstations.jsを読み込む -->
     <script src="stations.js"></script>
     <script>
-        // stations.js のデータから重複なくリストを作成してプルダウンに入れる
         window.onload = function() {
             if (typeof stations !== 'undefined') {
-                const prefs = [...new Set(stations.map(s => s.pref))].sort();
-                const companies = [...new Set(stations.map(s => s.company))].sort();
-                const lines = [...new Set(stations.map(s => s.line))].sort();
+                // stations.js から各項目を取得してプルダウンを埋める
+                const prefs = [...new Set(stations.map(s => s.pref))].filter(Boolean).sort();
+                const companies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
+                const lines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
 
                 fillSelect("pref-select", prefs);
                 fillSelect("company-select", companies);
@@ -157,12 +153,10 @@
         function fillSelect(id, items) {
             const select = document.getElementById(id);
             items.forEach(item => {
-                if(item) {
-                    const op = document.createElement("option");
-                    op.value = item;
-                    op.textContent = item;
-                    select.appendChild(op);
-                }
+                const op = document.createElement("option");
+                op.value = item;
+                op.textContent = item;
+                select.appendChild(op);
             });
         }
 
@@ -172,6 +166,7 @@
             const company = document.getElementById('company-select').value;
             const line = document.getElementById('line-select').value;
 
+            // all 以外のときにパラメータを付与
             let url = "全国版.html?num=" + num;
             if (pref !== "all") url += "&pref=" + encodeURIComponent(pref);
             if (company !== "all") url += "&company=" + encodeURIComponent(company);
