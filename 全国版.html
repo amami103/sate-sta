@@ -7,30 +7,48 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
-
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+        
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); 
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 300px; min-height: 150px; overflow: auto; resize: both;
+            width: 320px; max-height: 80vh; display: flex; flex-direction: column;
         }
-        .ui-header { background: rgba(0, 0, 0, 0.1); padding: 8px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; }
-        .ui-content { padding: 12px; }
-        h2 { margin: 0 0 8px 0; font-size: 14px; color: #333; }
-        input { padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        button { padding: 8px 5px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; color: white; }
-        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 13px; }
+        
+        .ui-header { background: rgba(0, 0, 0, 0.1); padding: 10px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; }
+        .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; }
+
+        h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
+        input { padding: 10px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 10px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; transition: opacity 0.2s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.4; cursor: default; }
+
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 14px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
-        .btn-next   { background: #34C759; grid-column: span 2; }
-        .btn-hint   { background: #5856D6; margin-top: 5px; }
-        #hint-area { margin-top: 8px; font-size: 12px; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 5px; display: none; }
-        #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
-        .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
+        .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; }
+        .btn-hint   { background: #5856D6; font-size: 10px; }
+        
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; }
+
+        /* リザルト用スタイル */
+        .result-list { list-style: none; padding: 0; margin: 10px 0; }
+        .result-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; 
+        }
+        .result-item:last-child { border-bottom: none; }
+        .res-name { flex-grow: 1; margin-left: 10px; font-weight: bold; }
+        .res-status { width: 25px; text-align: center; }
+        .btn-view { background: #5ac8fa; padding: 4px 8px; font-size: 10px; }
+        .final-score { font-size: 22px; color: #d33; font-weight: bold; text-align: center; margin: 15px 0; }
     </style>
 </head>
 <body onload="init()">
@@ -41,31 +59,32 @@
         <div class="ui-header" id="ui-header">ここを掴んで移動</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
-            <input list="station-list" id="station-input" placeholder="駅名を入力...">
-            <datalist id="station-list"></datalist>
-            
-            <div class="button-group">
-                <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
-                <button class="btn-reset" onclick="resetView()">戻る</button>
-                <button class="btn-giveup" onclick="showAnswer()">答え</button>
-                <button class="btn-hint" onclick="showHint('pref')">ヒント: 都道府県</button>
-                <button class="btn-hint" onclick="showHint('line')">ヒント: 路線名</button>
-                <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
+            <div id="game-ui">
+                <input list="station-list" id="station-input" placeholder="駅名を入力...">
+                <datalist id="station-list"></datalist>
+                
+                <div class="button-group">
+                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+                </div>
+                <div id="hint-area"></div>
+                <div id="result"></div>
             </div>
-            
-            <div id="hint-area"></div>
-            <div id="result"></div>
+            <div id="final-ui" style="display:none;">
+                <!-- 結果発表がここに挿入される -->
+            </div>
         </div>
     </div>
 
     <script>
         let gameStations = [];
         let currentStation = null;
-        let map;
-        let score = 0;
-        let questionCount = 0;
-        let totalQuestions = 10;
-        let answered = false;
+        let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
+        let playHistory = []; // 回答記録用
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -76,53 +95,41 @@
         }
 
         function init() {
-            // マップの初期化
             map = L.map('map', { zoomControl: false });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', {
                 attribution: '&copy; 国土地理院'
             }).addTo(map);
 
             if (typeof stations === 'undefined') {
-                alert("stations.jsが読み込めていません。");
+                alert("stations.jsが読み込めません");
                 return;
             }
 
             const urlParams = new URLSearchParams(window.location.search);
-            const numParam = urlParams.get('num');
-            if (numParam) totalQuestions = parseInt(numParam);
+            totalQuestions = parseInt(urlParams.get('num')) || 10;
+            const fPref = urlParams.get('pref');
+            const fComp = urlParams.get('company');
+            const fLine = urlParams.get('line');
 
-            const prefFilter = urlParams.get('pref');
-            const companyFilter = urlParams.get('company');
-            const lineFilter = urlParams.get('line');
-
-            // データの絞り込み (allでない場合のみフィルタリング)
             let filtered = [...stations];
-            if (prefFilter && prefFilter !== "all") {
-                filtered = filtered.filter(s => s.pref === prefFilter);
-            }
-            if (companyFilter && companyFilter !== "all") {
-                filtered = filtered.filter(s => s.company === companyFilter);
-            }
-            if (lineFilter && lineFilter !== "all") {
-                filtered = filtered.filter(s => s.line === lineFilter);
-            }
+            if (fPref && fPref !== "all") filtered = filtered.filter(s => s.pref === fPref);
+            if (fComp && fComp !== "all") filtered = filtered.filter(s => s.company === fComp);
+            if (fLine && fLine !== "all") filtered = filtered.filter(s => s.line === fLine);
 
             if (filtered.length === 0) {
-                alert("条件に合う駅が見つかりませんでした。全駅から出題します。");
+                alert("条件に合う駅がありません。全駅から出題します。");
                 filtered = [...stations];
             }
 
             shuffle(filtered);
             gameStations = filtered.slice(0, totalQuestions);
-            totalQuestions = gameStations.length; 
+            totalQuestions = gameStations.length;
 
-            // 入力補完リスト作成
             const list = document.getElementById('station-list');
-            const uniqueNames = [...new Set(stations.map(s => s.name))];
-            uniqueNames.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                list.appendChild(option);
+            [...new Set(stations.map(s => s.name))].forEach(name => {
+                const op = document.createElement('option');
+                op.value = name;
+                list.appendChild(op);
             });
 
             nextQuestion();
@@ -134,9 +141,10 @@
                 showFinalResult();
                 return;
             }
+            
             answered = false;
-            document.getElementById('answer-btn').disabled = false;
-            document.getElementById('answer-btn').style.opacity = "1";
+            document.getElementById('answer-btn').style.display = "block";
+            document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             document.getElementById('hint-area').style.display = "none";
@@ -148,10 +156,9 @@
 
         function showHint(type) {
             if (answered) return;
-            const hintArea = document.getElementById('hint-area');
-            hintArea.style.display = "block";
-            const val = currentStation[type] || "情報なし";
-            hintArea.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + val;
+            const area = document.getElementById('hint-area');
+            area.style.display = "block";
+            area.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + (currentStation[type] || "不明");
         }
 
         function resetView() {
@@ -160,50 +167,89 @@
 
         function checkAnswer() {
             if (answered) return;
-            const userAnswer = document.getElementById('station-input').value;
-            const resultDiv = document.getElementById('result');
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            const user = document.getElementById('station-input').value;
+            const res = document.getElementById('result');
+            const isCorrect = (user === currentStation.name);
 
-            if (userAnswer === currentStation.name) {
-                resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
+            if (isCorrect) {
+                res.innerHTML = "<span style='color:#D33;'>正解！</span>";
                 score++;
             } else {
-                resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
+                res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>";
             }
-            finishOneQuestion();
+            
+            // 記録を残す
+            playHistory.push({
+                name: currentStation.name,
+                lat: currentStation.lat,
+                lng: currentStation.lng,
+                isCorrect: isCorrect
+            });
+
+            finishOne();
         }
 
         function showAnswer() {
             if (answered) return;
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            finishOneQuestion();
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            
+            playHistory.push({
+                name: currentStation.name,
+                lat: currentStation.lat,
+                lng: currentStation.lng,
+                isCorrect: false
+            });
+            
+            finishOne();
         }
 
-        function finishOneQuestion() {
+        function finishOne() {
             answered = true;
-            document.getElementById('answer-btn').disabled = true;
-            document.getElementById('answer-btn').style.opacity = "0.5";
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
             questionCount++;
         }
 
+        function jumpToStation(lat, lng) {
+            map.flyTo([lat, lng], 17);
+        }
+
         function showFinalResult() {
-            document.getElementById('ui-content').innerHTML = `
-                <h2>結果発表</h2>
+            document.getElementById('game-ui').style.display = "none";
+            document.getElementById('question-title').innerText = "結果発表";
+            
+            const finalUi = document.getElementById('final-ui');
+            finalUi.style.display = "block";
+
+            let listHtml = '<ul class="result-list">';
+            playHistory.forEach((h, index) => {
+                const mark = h.isCorrect ? '<span style="color:red;">✅</span>' : '<span style="color:blue;">❌</span>';
+                listHtml += `
+                    <li class="result-item">
+                        <div class="res-status">${mark}</div>
+                        <div class="res-name">${h.name}</div>
+                        <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
+                    </li>`;
+            });
+            listHtml += '</ul>';
+
+            finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
+                <p style="font-size:11px; color:#666; text-align:center;">「確認」ボタンで地図を移動できます</p>
+                ${listHtml}
                 <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
 
         function makeDraggable(el) {
-            const header = document.getElementById("ui-header");
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            header.onmousedown = (e) => {
-                e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
+            const head = document.getElementById("ui-header");
+            let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+            head.onmousedown = (e) => {
+                p3 = e.clientX; p4 = e.clientY;
                 document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
                 document.onmousemove = (e) => {
-                    e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
-                    el.style.top = (el.offsetTop - pos2) + "px"; el.style.left = (el.offsetLeft - pos1) + "px"; el.style.bottom = "auto";
+                    p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY;
+                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto";
                 };
             }
         }
