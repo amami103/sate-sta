@@ -233,11 +233,32 @@
     </footer>
 
     <script>
-        function startGame() {
-            const num = document.getElementById('num-input').value;
-            const pref = document.getElementById('pref-select').value;
-            const company = document.getElementById('company-select').value;
-            const line = document.getElementById('line-select').value;
+    <script>
+    function startGame() {
+        // 各セレクトボックスと入力欄の値を取得
+        const num = document.getElementById('num-input').value || 10;
+        const pref = document.getElementById('pref-select').value;
+        const company = document.getElementById('company-select').value;
+        const line = document.getElementById('line-select').value;
+
+        // ベースとなるURL
+        let url = "全国版.html?num=" + num;
+
+        // 各項目が「all（すべて）」以外なら、URLに条件を追加する
+        if (pref !== "all") {
+            url += "&pref=" + encodeURIComponent(pref);
+        }
+        if (company !== "all") {
+            url += "&company=" + encodeURIComponent(company);
+        }
+        if (line !== "all") {
+            url += "&line=" + encodeURIComponent(line);
+        }
+
+        // 全国版.html にジャンプ
+        window.location.href = url;
+    }
+</script>
 
             // 各設定値をURLパラメータとして渡す
             let url = "全国版.html?num=" + (num < 1 ? 1 : num);
