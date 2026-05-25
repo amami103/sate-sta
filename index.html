@@ -5,170 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>サテステ | 航空写真・駅当てクイズ</title>
     <style>
-        body {
-            margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f4f7f9; color: #333;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
-
-        header {
-            width: 100%;
-            height: 140px;
-            background: linear-gradient(135deg, #007AFF, #00C6FF);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        .header-logo {
-            position: absolute;
-            top: 14px;
-            left: 20px;
-            height: 112px;
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 5px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            box-sizing: border-box;
-        }
-
+        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
+        .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         h1 { margin: 0; font-size: 28px; }
         p.subtitle { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-
         main { flex: 1; width: 90%; max-width: 600px; padding: 30px 0; text-align: center; }
-        
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
-        
         .setting-box { margin: 20px 0; text-align: left; }
         .setting-item { margin-bottom: 15px; }
         .setting-item label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
-
-        select, input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            background-color: #fff;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-        select:focus, input[type="number"]:focus {
-            outline: none;
-            border-color: #007AFF;
-        }
-        
+        select, input[type="number"] { width: 100%; padding: 12px; font-size: 16px; border-radius: 10px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
         #num-input { width: 100px; text-align: center; display: block; margin: 0 auto; font-size: 20px; border-color: #007AFF; }
+        
+        /* 地図固定オプションのスタイル */
+        .lock-option { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; padding: 12px; background: #f0f4ff; border-radius: 10px; margin-top: 15px; border: 1px solid #007AFF; }
+        .lock-option input { width: 22px; height: 22px; margin: 0; }
+        .lock-option span { font-size: 14px; font-weight: bold; color: #007AFF; }
 
-        .btn-start {
-            display: inline-block; background: #34C759; color: white;
-            text-decoration: none; font-size: 20px; font-weight: bold;
-            padding: 15px 40px; border-radius: 50px; border: none;
-            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4);
-            transition: transform 0.2s, background 0.2s; cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
-        }
-        .btn-start:hover { transform: scale(1.05); background: #2db14f; }
-
-        .ad-space { margin: 20px 0; padding: 20px; background: #e9e9e9; border: 2px dashed #ccc; color: #999; font-size: 12px; }
-
+        .btn-start { display: inline-block; background: #34C759; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4); cursor: pointer; margin-top: 15px; }
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
-
-        @media (max-width: 768px) {
-            header { height: 180px; padding-top: 50px; }
-            .header-logo { left: 50%; transform: translateX(-50%); height: 90px; top: 15px; }
-            h1 { font-size: 20px; margin-top: 10px; }
-        }
     </style>
 </head>
 <body>
-
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
-        <h1>サテステ</h1>
-        <p class="subtitle">衛星画像から駅を当てよう</p>
+        <h1>航空写真・駅当てクイズ</h1>
+        <p class="subtitle">全国の駅からランダムに出題！</p>
     </header>
-
     <main>
         <div class="card">
-            <p style="margin-bottom: 25px;">この駅、どこか分かりますか？<br>航空写真だけを頼りに駅名を当てるゲームです。</p>
-            
             <div class="setting-box">
                 <div class="setting-item">
-                    <label for="pref-select">都道府県から選ぶ</label>
+                    <label>都道府県から選ぶ</label>
                     <select id="pref-select"><option value="all">全国（指定なし）</option></select>
                 </div>
-
                 <div class="setting-item">
-                    <label for="company-select">鉄道会社から選ぶ</label>
+                    <label>鉄道会社から選ぶ</label>
                     <select id="company-select"><option value="all">すべての会社</option></select>
                 </div>
-
                 <div class="setting-item">
-                    <label for="line-select">路線から選ぶ</label>
+                    <label>路線から選ぶ</label>
                     <select id="line-select"><option value="all">すべての路線</option></select>
                 </div>
-
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                    <label for="num-input">何問挑戦しますか？</label>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <input type="number" id="num-input" value="10" min="1" max="100">
-                        <span style="font-weight: bold;">問</span>
-                    </div>
+                    <label>何問挑戦しますか？</label>
+                    <input type="number" id="num-input" value="10" min="1" max="100">
                 </div>
+                
+                <label class="lock-option">
+                    <input type="checkbox" id="map-lock">
+                    <span>地図の移動・拡大を禁止する</span>
+                </label>
             </div>
-
             <button onclick="startGame()" class="btn-start">ゲームを始める</button>
         </div>
-
-        <div class="ad-space">広告スペース</div>
     </main>
-
     <footer>&copy; 2024 サテステ</footer>
 
     <script src="stations.js"></script>
     <script>
-        // 都道府県の行政順リスト
-        const prefOrder = [
-            "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
-            "茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
-            "新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県",
-            "静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県",
-            "奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県",
-            "徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県",
-            "熊本県","大分県","宮崎県","鹿児島県","沖縄県"
-        ];
+        const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
 
         window.onload = function() {
             if (typeof stations !== 'undefined') {
-                // 1. 都道府県：指定順にソート
-                const availablePrefs = [...new Set(stations.map(s => s.pref))].filter(Boolean);
-                const sortedPrefs = availablePrefs.sort((a, b) => prefOrder.indexOf(a) - prefOrder.indexOf(b));
-                fillSelect("pref-select", sortedPrefs);
-
-                // 2. 鉄道会社：五十音順
-                const companies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
-                fillSelect("company-select", companies);
-
-                // 3. 路線：五十音順
-                const lines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
-                fillSelect("line-select", lines);
+                const prefSelect = document.getElementById("pref-select");
+                const existingPrefs = new Set(stations.map(s => s.pref));
+                prefOrder.forEach(p => {
+                    if (existingPrefs.has(p)) prefSelect.add(new Option(p, p));
+                });
+                fillSelect("company-select", [...new Set(stations.map(s => s.company))].filter(Boolean).sort());
+                fillSelect("line-select", [...new Set(stations.map(s => s.line))].filter(Boolean).sort());
             }
         };
 
         function fillSelect(id, items) {
             const select = document.getElementById(id);
-            items.forEach(item => {
-                const op = document.createElement("option");
-                op.value = item;
-                op.textContent = item;
-                select.appendChild(op);
-            });
+            items.forEach(item => select.add(new Option(item, item)));
         }
 
         function startGame() {
@@ -176,11 +89,13 @@
             const pref = document.getElementById('pref-select').value;
             const company = document.getElementById('company-select').value;
             const line = document.getElementById('line-select').value;
+            const lock = document.getElementById('map-lock').checked;
 
-            let url = "全国版.html?num=" + num;
+            let url = "game.html?num=" + num;
             if (pref !== "all") url += "&pref=" + encodeURIComponent(pref);
             if (company !== "all") url += "&company=" + encodeURIComponent(company);
             if (line !== "all") url += "&line=" + encodeURIComponent(line);
+            if (lock) url += "&lock=true";
 
             window.location.href = url;
         }
