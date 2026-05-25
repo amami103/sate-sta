@@ -91,7 +91,7 @@
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>航空写真・駅当てクイズ</h1>
-        <p class="subtitle">行政順の都道府県から選んで挑戦！</p>
+        <p class="subtitle">全国の駅からランダムに出題！</p>
     </header>
 
     <main>
@@ -101,17 +101,23 @@
             <div class="setting-box">
                 <div class="setting-item">
                     <label for="pref-select">都道府県から選ぶ</label>
-                    <select id="pref-select"><option value="all">全国（指定なし）</option></select>
+                    <select id="pref-select">
+                        <option value="all">全国（指定なし）</option>
+                    </select>
                 </div>
 
                 <div class="setting-item">
                     <label for="company-select">鉄道会社から選ぶ</label>
-                    <select id="company-select"><option value="all">すべての会社</option></select>
+                    <select id="company-select">
+                        <option value="all">すべての会社</option>
+                    </select>
                 </div>
 
                 <div class="setting-item">
                     <label for="line-select">路線から選ぶ</label>
-                    <select id="line-select"><option value="all">すべての路線</option></select>
+                    <select id="line-select">
+                        <option value="all">すべての路線</option>
+                    </select>
                 </div>
 
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
@@ -133,7 +139,7 @@
 
     <script src="stations.js"></script>
     <script>
-        // 都道府県の行政順リスト
+        // ご指定の並び順
         const prefOrder = [
             "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
             "茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
@@ -146,16 +152,24 @@
 
         window.onload = function() {
             if (typeof stations !== 'undefined') {
-                // 1. 都道府県：指定順にソート
-                const availablePrefs = [...new Set(stations.map(s => s.pref))].filter(Boolean);
-                const sortedPrefs = availablePrefs.sort((a, b) => prefOrder.indexOf(a) - prefOrder.indexOf(b));
-                fillSelect("pref-select", sortedPrefs);
+                // 1. 都道府県（ご指定の順序）
+                const prefSelect = document.getElementById("pref-select");
+                // station.jsに含まれている県だけを表示する場合
+                const existingPrefs = new Set(stations.map(s => s.pref));
+                prefOrder.forEach(p => {
+                    if (existingPrefs.has(p)) {
+                        const op = document.createElement("option");
+                        op.value = p;
+                        op.textContent = p;
+                        prefSelect.appendChild(op);
+                    }
+                });
 
-                // 2. 鉄道会社：五十音順
+                // 2. 鉄道会社（五十音順）
                 const companies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
                 fillSelect("company-select", companies);
 
-                // 3. 路線：五十音順
+                // 3. 路線（五十音順）
                 const lines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
                 fillSelect("line-select", lines);
             }
