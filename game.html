@@ -97,38 +97,33 @@
             totalQuestions = parseInt(params.get('num')) || 10;
             let filtered = [...stations];
 
-            // 都道府県・地方フィルタリング
+            // 1. 都道府県フィルタ
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
-            if (mPrefs) {
-                filtered = filtered.filter(s => mPrefs.includes(s.pref));
-            } else if (sPref && sPref !== "all") {
+            if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
+            else if (sPref && sPref !== "all") {
                 if (sPref.startsWith("reg:")) {
-                    const regName = sPref.replace("reg:", "");
-                    const allowed = REGION_PREFS[regName] || [];
-                    filtered = filtered.filter(s => allowed.includes(s.pref));
-                } else {
-                    filtered = filtered.filter(s => s.pref === sPref);
-                }
+                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    filtered = filtered.filter(s => reg.includes(s.pref));
+                } else filtered = filtered.filter(s => s.pref === sPref);
             }
 
-            // 会社フィルタリング
+            // 2. 会社フィルタ
             const mComps = params.get('comps') ? params.get('comps').split(',') : null;
             const sComp = params.get('company');
-            if (mComps) {
-                filtered = filtered.filter(s => mComps.includes(s.company));
-            } else if (sComp && sComp !== "all") {
+            if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
+            else if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) {
-                    const grpName = sComp.replace("grp:", "");
-                    const allowed = COMPANY_GROUPS[grpName] || [];
-                    filtered = filtered.filter(s => allowed.includes(s.company));
-                } else {
-                    filtered = filtered.filter(s => s.company === sComp);
-                }
+                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
+                    filtered = filtered.filter(s => grp.includes(s.company));
+                } else filtered = filtered.filter(s => s.company === sComp);
             }
 
-            const line = params.get('line');
-            if (line && line !== "all") filtered = filtered.filter(s => s.line === line);
+            // 3. 路線フィルタ
+            const mLines = params.get('lines') ? params.get('lines').split(',') : null;
+            const sLine = params.get('line');
+            if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
+            else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
             if (filtered.length === 0) filtered = [...stations];
             shuffle(filtered);
