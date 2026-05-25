@@ -13,7 +13,7 @@
         
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); 
+            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             width: 320px; max-height: 85vh; display: flex; flex-direction: column;
         }
@@ -35,24 +35,20 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
         
-        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f8f8f8; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
 
-        /* リザルト用スタイル */
+        /* リザルト用 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
-        .result-item { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 13px; 
-        }
-        .result-item:last-child { border-bottom: none; }
+        .result-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 13px; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
-        .res-name { font-weight: bold; color: #333; }
-        .res-sub { font-size: 10px; color: #777; margin-top: 2px; }
-        .res-time { font-size: 10px; color: #007AFF; margin-top: 2px; font-weight: bold; }
+        .res-name { font-weight: bold; color: #333; display: block; }
+        .res-sub { font-size: 10px; color: #777; }
+        .res-time-label { font-size: 10px; color: #007AFF; font-weight: bold; display: block; margin-top: 2px; }
         .res-status { width: 25px; text-align: center; font-size: 16px; }
         .btn-view { background: #5ac8fa; padding: 5px 8px; font-size: 10px; width: auto; flex-shrink: 0; }
-        .final-score { font-size: 20px; color: #d33; font-weight: bold; text-align: center; margin: 10px 0 5px 0; }
-        .total-time { font-size: 14px; color: #333; text-align: center; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .final-score { font-size: 20px; color: #d33; font-weight: bold; text-align: center; margin-top: 10px; }
+        .total-time-display { font-size: 15px; color: #333; text-align: center; margin-bottom: 15px; background: #fff; padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
     </style>
 </head>
 <body onload="init()">
@@ -87,7 +83,7 @@
         let currentStation = null;
         let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
         let playHistory = [];
-        let questionStartTime = 0; // 解答開始時間
+        let startTime = 0; // 現在の問題の開始時間
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -157,8 +153,8 @@
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
             
-            // タイム計測開始
-            questionStartTime = Date.now();
+            // 計測開始
+            startTime = Date.now();
         }
 
         function showHint(type) {
@@ -174,7 +170,7 @@
 
         function checkAnswer() {
             if (answered) return;
-            const timeTaken = (Date.now() - questionStartTime) / 1000; // 秒数計算
+            const timeElapsed = (Date.now() - startTime) / 1000; // 秒数
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
@@ -187,21 +183,6 @@
                 res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
             
-            saveHistory(isCorrect, timeTaken);
-            finishOne();
-        }
-
-        function showAnswer() {
-            if (answered) return;
-            const timeTaken = (Date.now() - questionStartTime) / 1000;
-            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            
-            saveHistory(false, timeTaken);
-            finishOne();
-        }
-
-        function saveHistory(isCorrect, time) {
             playHistory.push({
                 name: currentStation.name,
                 pref: currentStation.pref,
@@ -209,8 +190,29 @@
                 lat: currentStation.lat,
                 lng: currentStation.lng,
                 isCorrect: isCorrect,
-                time: time.toFixed(1) // 小数点1位まで保存
+                time: timeElapsed
             });
+
+            finishOne();
+        }
+
+        function showAnswer() {
+            if (answered) return;
+            const timeElapsed = (Date.now() - startTime) / 1000;
+            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
+            
+            playHistory.push({
+                name: currentStation.name,
+                pref: currentStation.pref,
+                line: currentStation.line,
+                lat: currentStation.lat,
+                lng: currentStation.lng,
+                isCorrect: false,
+                time: timeElapsed
+            });
+            
+            finishOne();
         }
 
         function finishOne() {
@@ -234,29 +236,28 @@
             let totalTime = 0;
             let listHtml = '<ul class="result-list">';
             playHistory.forEach((h) => {
-                totalTime += parseFloat(h.time);
+                totalTime += h.time;
                 const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
                 listHtml += `
                     <li class="result-item">
                         <div class="res-status">${mark}</div>
                         <div class="res-info">
-                            <div class="res-name">${h.name}</div>
-                            <div class="res-sub">${h.pref} / ${h.line}</div>
-                            <div class="res-time">解答時間: ${h.time}秒</div>
+                            <span class="res-name">${h.name}</span>
+                            <span class="res-sub">${h.pref} / ${h.line}</span>
+                            <span class="res-time-label">${h.time.toFixed(1)}秒</span>
                         </div>
                         <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
                     </li>`;
             });
             listHtml += '</ul>';
 
-            // 総解答時間のフォーマット（分秒）
             const m = Math.floor(totalTime / 60);
             const s = (totalTime % 60).toFixed(1);
-            const totalTimeText = m > 0 ? `${m}分${s}秒` : `${s}秒`;
+            const timeStr = m > 0 ? `${m}分${s}秒` : `${s}秒`;
 
             finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <div class="total-time">総解答時間: ${totalTimeText}</div>
+                <div class="total-time-display">総解答時間: ${timeStr}</div>
                 <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listHtml}
                 <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
