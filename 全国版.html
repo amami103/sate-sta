@@ -36,6 +36,10 @@
         .btn-view { background: #5ac8fa; padding: 5px 8px; font-size: 10px; width: auto; flex-shrink: 0; }
         .final-score { font-size: 20px; color: #d33; font-weight: bold; text-align: center; margin-top: 10px; }
         .total-time-display { font-size: 15px; color: #333; text-align: center; margin-bottom: 15px; background: #fff; padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
+        
+        /* リザルト下部のボタンレイアウト用 */
+        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .result-footer-buttons button { flex: 1; padding: 12px 5px; }
     </style>
 </head>
 <body onload="init()">
@@ -64,7 +68,6 @@
     <script>
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
         
-        // 会社グループ定義 (stations.jsのcompany文字列と完全一致させる)
         const COMPANY_GROUPS = {
             "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"],
             "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"],
@@ -83,10 +86,7 @@
             totalQuestions = parseInt(params.get('num')) || 10;
             const fP = params.get('pref'), fC = params.get('company'), fL = params.get('line');
             let filtered = [...stations];
-            
             if (fP && fP !== "all") filtered = filtered.filter(s => s.pref === fP);
-            
-            // 会社フィルタリング (グループ判定含む)
             if (fC && fC !== "all") {
                 if (fC.startsWith("grp:")) {
                     const groupKey = fC.replace("grp:", "");
@@ -96,7 +96,6 @@
                     filtered = filtered.filter(s => s.company === fC);
                 }
             }
-            
             if (fL && fL !== "all") filtered = filtered.filter(s => s.line === fL);
             if (filtered.length === 0) filtered = [...stations];
             shuffle(filtered);
@@ -144,6 +143,7 @@
         }
         function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
         function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
+        
         function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
             document.getElementById('question-title').innerText = "結果発表";
@@ -156,8 +156,20 @@
                 listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
-            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listH + '</ul>'}<button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>`;
+            
+            // 下部のボタン群を作成
+            finalUi.innerHTML = `
+                <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
+                <div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div>
+                <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
+                ${listH + '</ul>'}
+                <div class="result-footer-buttons">
+                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度プレイ</button>
+                    <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
+                </div>
+            `;
         }
+
         function makeDraggable(el) {
             const h = document.getElementById("ui-header");
             let p1=0, p2=0, p3=0, p4=0;
