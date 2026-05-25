@@ -36,8 +36,6 @@
         .btn-view { background: #5ac8fa; padding: 5px 8px; font-size: 10px; width: auto; flex-shrink: 0; }
         .final-score { font-size: 20px; color: #d33; font-weight: bold; text-align: center; margin-top: 10px; }
         .total-time-display { font-size: 15px; color: #333; text-align: center; margin-bottom: 15px; background: #fff; padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
-        
-        /* リザルト下部のボタンレイアウト用 */
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
     </style>
@@ -68,6 +66,17 @@
     <script>
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
         
+        const REGION_PREFS = {
+            "北海道地方": ["北海道"],
+            "東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+            "関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
+            "中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
+            "近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
+            "中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],
+            "四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],
+            "九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]
+        };
+
         const COMPANY_GROUPS = {
             "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"],
             "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"],
@@ -77,35 +86,61 @@
         };
 
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+        
         function init() {
             const params = new URLSearchParams(window.location.search);
             isLocked = params.get('lock') === 'true';
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
             if (typeof stations === 'undefined') return;
+
             totalQuestions = parseInt(params.get('num')) || 10;
-            const fP = params.get('pref'), fC = params.get('company'), fL = params.get('line');
             let filtered = [...stations];
-            if (fP && fP !== "all") filtered = filtered.filter(s => s.pref === fP);
-            if (fC && fC !== "all") {
-                if (fC.startsWith("grp:")) {
-                    const groupKey = fC.replace("grp:", "");
-                    const allowedCompanies = COMPANY_GROUPS[groupKey] || [];
-                    filtered = filtered.filter(s => allowedCompanies.includes(s.company));
+
+            // 都道府県・地方フィルタリング
+            const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
+            const sPref = params.get('pref');
+            if (mPrefs) {
+                filtered = filtered.filter(s => mPrefs.includes(s.pref));
+            } else if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) {
+                    const regName = sPref.replace("reg:", "");
+                    const allowed = REGION_PREFS[regName] || [];
+                    filtered = filtered.filter(s => allowed.includes(s.pref));
                 } else {
-                    filtered = filtered.filter(s => s.company === fC);
+                    filtered = filtered.filter(s => s.pref === sPref);
                 }
             }
-            if (fL && fL !== "all") filtered = filtered.filter(s => s.line === fL);
+
+            // 会社フィルタリング
+            const mComps = params.get('comps') ? params.get('comps').split(',') : null;
+            const sComp = params.get('company');
+            if (mComps) {
+                filtered = filtered.filter(s => mComps.includes(s.company));
+            } else if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const grpName = sComp.replace("grp:", "");
+                    const allowed = COMPANY_GROUPS[grpName] || [];
+                    filtered = filtered.filter(s => allowed.includes(s.company));
+                } else {
+                    filtered = filtered.filter(s => s.company === sComp);
+                }
+            }
+
+            const line = params.get('line');
+            if (line && line !== "all") filtered = filtered.filter(s => s.line === line);
+
             if (filtered.length === 0) filtered = [...stations];
             shuffle(filtered);
             gameStations = filtered.slice(0, totalQuestions);
             totalQuestions = gameStations.length;
+
             const dl = document.getElementById('station-list');
             [...new Set(stations.map(s => s.name))].forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
+
         function nextQuestion() {
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
@@ -119,8 +154,10 @@
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
             startTime = Date.now();
         }
+
         function showHint(t) { if(!answered){ const a = document.getElementById('hint-area'); a.style.display = "block"; a.innerText = (t==='pref'?"都道府県: ":"路線名: ")+(currentStation[t]||"不明"); } }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+        
         function checkAnswer() {
             if (answered) return;
             const time = (Date.now() - startTime) / 1000;
@@ -133,6 +170,7 @@
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time });
             finishOne();
         }
+
         function showAnswer() {
             if (answered) return;
             const time = (Date.now() - startTime) / 1000;
@@ -141,9 +179,19 @@
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time: time });
             finishOne();
         }
-        function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
-        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
-        
+
+        function finishOne() {
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function jumpToStation(la, ln) {
+            map.dragging.enable(); map.scrollWheelZoom.enable();
+            map.flyTo([la, ln], 17);
+        }
+
         function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
             document.getElementById('question-title').innerText = "結果発表";
@@ -156,18 +204,7 @@
                 listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
-            
-            // 下部のボタン群を作成
-            finalUi.innerHTML = `
-                <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div>
-                <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
-                ${listH + '</ul>'}
-                <div class="result-footer-buttons">
-                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度プレイ</button>
-                    <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
-                </div>
-            `;
+            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listH + '</ul>'}<div class="result-footer-buttons"><button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度プレイ</button><button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button></div>`;
         }
 
         function makeDraggable(el) {
