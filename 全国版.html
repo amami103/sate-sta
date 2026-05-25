@@ -11,29 +11,23 @@
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
-
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
             background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             width: 300px; min-height: 150px; overflow: auto; resize: both;
         }
-
         .ui-header { background: rgba(0, 0, 0, 0.1); padding: 8px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; }
         .ui-content { padding: 12px; }
-
         h2 { margin: 0 0 8px 0; font-size: 14px; color: #333; }
         input { padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
-
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         button { padding: 8px 5px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; color: white; }
-
         .btn-answer { background: #007AFF; grid-column: span 2; font-size: 13px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; }
         .btn-hint   { background: #5856D6; margin-top: 5px; }
-        
         #hint-area { margin-top: 8px; font-size: 12px; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 5px; display: none; }
         #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
         .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
@@ -82,36 +76,52 @@
         }
 
         function init() {
+            // マップの初期化
             map = L.map('map', { zoomControl: false });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', {
                 attribution: '&copy; 国土地理院'
             }).addTo(map);
 
+            if (typeof stations === 'undefined') {
+                alert("stations.jsが読み込めていません。");
+                return;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
-            totalQuestions = parseInt(urlParams.get('num')) || 10;
+            const numParam = urlParams.get('num');
+            if (numParam) totalQuestions = parseInt(numParam);
+
             const prefFilter = urlParams.get('pref');
             const companyFilter = urlParams.get('company');
             const lineFilter = urlParams.get('line');
 
-            // データの絞り込み
+            // データの絞り込み (allでない場合のみフィルタリング)
             let filtered = [...stations];
-            if (prefFilter) filtered = filtered.filter(s => s.pref === prefFilter);
-            if (companyFilter) filtered = filtered.filter(s => s.company === companyFilter);
-            if (lineFilter) filtered = filtered.filter(s => s.line === lineFilter);
+            if (prefFilter && prefFilter !== "all") {
+                filtered = filtered.filter(s => s.pref === prefFilter);
+            }
+            if (companyFilter && companyFilter !== "all") {
+                filtered = filtered.filter(s => s.company === companyFilter);
+            }
+            if (lineFilter && lineFilter !== "all") {
+                filtered = filtered.filter(s => s.line === lineFilter);
+            }
 
             if (filtered.length === 0) {
-                alert("条件に合う駅が見つかりませんでした。全データから出題します。");
+                alert("条件に合う駅が見つかりませんでした。全駅から出題します。");
                 filtered = [...stations];
             }
 
             shuffle(filtered);
             gameStations = filtered.slice(0, totalQuestions);
-            totalQuestions = gameStations.length; // 実際の駅数が少ない場合への対応
+            totalQuestions = gameStations.length; 
 
+            // 入力補完リスト作成
             const list = document.getElementById('station-list');
-            stations.forEach(s => {
+            const uniqueNames = [...new Set(stations.map(s => s.name))];
+            uniqueNames.forEach(name => {
                 const option = document.createElement('option');
-                option.value = s.name;
+                option.value = name;
                 list.appendChild(option);
             });
 
@@ -140,7 +150,8 @@
             if (answered) return;
             const hintArea = document.getElementById('hint-area');
             hintArea.style.display = "block";
-            hintArea.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + (currentStation[type] || "情報なし");
+            const val = currentStation[type] || "情報なし";
+            hintArea.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + val;
         }
 
         function resetView() {
