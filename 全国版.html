@@ -14,9 +14,9 @@
 
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); 
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 300px; min-width: 200px; min-height: 150px; overflow: auto; resize: both;
+            width: 300px; min-height: 150px; overflow: auto; resize: both;
         }
 
         .ui-header { background: rgba(0, 0, 0, 0.1); padding: 8px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; }
@@ -32,12 +32,16 @@
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; }
+        
+        /* ヒントボタン用のスタイル */
+        .btn-hint   { background: #5856D6; margin-top: 5px; }
+        #hint-area { margin-top: 8px; font-size: 12px; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 5px; display: none; }
 
         #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
         .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
     </style>
 </head>
-<body>
+<body onload="init()"> <!-- initを呼ぶように追加 -->
 
     <div id="map"></div>
 
@@ -52,24 +56,23 @@
                 <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                 <button class="btn-reset" onclick="resetView()">戻る</button>
                 <button class="btn-giveup" onclick="showAnswer()">答え</button>
+                
+                <!-- ヒントボタンを追加 -->
+                <button class="btn-hint" onclick="showHint('pref')">ヒント: 都道府県</button>
+                <button class="btn-hint" onclick="showHint('line')">ヒント: 路線名</button>
+
                 <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
             </div>
+            
+            <!-- ヒント表示エリア -->
+            <div id="hint-area"></div>
             <div id="result"></div>
         </div>
     </div>
-<div class="button-group" id="normal-buttons">
-    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
-    <button class="btn-reset" onclick="resetView()">戻る</button>
-    
-    <!-- ★ここを追加！ 紫色のヒントボタン -->
-    <button style="background: #5856D6;" onclick="showHint()">ヒント</button>
-    
-    <button class="btn-giveup" onclick="showAnswer()">答え</button>
-    <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
-</div>
+
 
     <script>
-        let gameStations = []; // 今回のゲームで使う駅リスト
+        let gameStations = [];
         let currentStation = null;
         let map;
         let score = 0;
@@ -77,12 +80,10 @@
         let totalQuestions = 10;
         let answered = false;
 
-        // 1. URLから問題数を取得
         const urlParams = new URLSearchParams(window.location.search);
         const numParam = urlParams.get('num');
         if (numParam) totalQuestions = parseInt(numParam);
 
-        // 2. 配列をバラバラにする関数（シャッフル）
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -102,12 +103,10 @@
                 return;
             }
 
-            // 3. 全駅データをシャッフルして、必要な数だけ抜き出す（これで被らなくなる）
             const allStationsCopy = [...stations]; 
             shuffle(allStationsCopy);
             gameStations = allStationsCopy.slice(0, totalQuestions);
 
-            // datalist作成（これは全駅対象でOK）
             const list = document.getElementById('station-list');
             stations.forEach(s => {
                 const option = document.createElement('option');
@@ -131,11 +130,32 @@
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             
-            // 4. シャッフル済みリストから順番に取り出す
+            // ヒント表示をリセット
+            const hintArea = document.getElementById('hint-area');
+            hintArea.style.display = "none";
+            hintArea.innerText = "";
+            
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
+        }
+
+        // ヒント表示関数
+        function showHint(type) {
+            if (answered) return;
+            const hintArea = document.getElementById('hint-area');
+            hintArea.style.display = "block";
+
+            if (type === 'pref') {
+                // stations.jsに pref がない場合は「情報なし」と出す
+                const pref = currentStation.pref || "情報がありません";
+                hintArea.innerText = "都道府県: " + pref;
+            } else if (type === 'line') {
+                // stations.jsに line がない場合は「情報なし」と出す
+                const line = currentStation.line || "情報がありません";
+                hintArea.innerText = "路線名: " + line;
+            }
         }
 
         function resetView() {
@@ -175,7 +195,7 @@
             content.innerHTML = `
                 <h2>結果発表</h2>
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
+                <button class="btn-next" style="grid-column: span 2;" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
 
@@ -187,18 +207,6 @@
             function elementDrag(e) { e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; el.style.top = (el.offsetTop - pos2) + "px"; el.style.left = (el.offsetLeft - pos1) + "px"; el.style.bottom = "auto"; }
             function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
         }
-
-        window.onload = init;
-        // ★この関数を丸ごと追加してください
-function showHint() {
-    const resultDiv = document.getElementById('result');
-    if (!currentStation) return;
-    
-    // stations.jsにある pref と line を表示
-    resultDiv.innerHTML = `<div style="color:#5856D6; font-size:13px; background:rgba(255,255,255,0.8); padding:5px; border-radius:5px; margin-top:5px;">
-        💡 ヒント: ${currentStation.pref} / ${currentStation.line}
-    </div>`;
-}
     </script>
 </body>
 </html>
