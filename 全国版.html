@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航空写真・駅当てクイズ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="stations.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+
+        /* 解答エリア：ドラッグとリサイズを可能に */
+        .ui-container { 
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px; /* 初期位置 */
+            z-index: 10; 
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px); 
+            padding: 0; /* ヘッダーを作るため0に */
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            width: 300px; 
+            min-width: 200px;
+            min-height: 150px;
+            overflow: auto; /* リサイズに必要 */
+            resize: both;   /* 自由な拡大縮小を可能にする */
+        }
+
+        /* ドラッグ用のヘッダー */
+        .ui-header {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            cursor: move; /* 十字カーソル */
+            font-size: 12px;
+            text-align: center;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            user-select: none;
+        }
+
+        .ui-content { padding: 12px; }
+
+        h2 { margin: 0 0 8px 0; font-size: 14px; color: #333; }
+        input { 
+            padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 8px; margin-bottom: 8px; box-sizing: border-box;
+        }
+
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        button { padding: 8px 5px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; color: white; }
+
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 13px; }
+        .btn-reset  { background: #8E8E93; }
+        .btn-giveup { background: #FF9500; }
+        .btn-next   { background: #34C759; grid-column: span 2; }
+
+        #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div class="ui-container" id="ui-panel">
+        <div class="ui-header" id="ui-header">ここを掴んで移動</div>
+        <div class="ui-content">
+            <h2>この駅はどこ？</h2>
+            <input list="station-list" id="station-input" placeholder="駅名を入力...">
+            <datalist id="station-list"></datalist>
+            
+            <div class="button-group">
+                <button class="btn-answer" onclick="checkAnswer()">回答する</button>
+                <button class="btn-reset" onclick="resetView()">戻る</button>
+                <button class="btn-giveup" onclick="showAnswer()">答え</button>
+                <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
+            </div>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentStation = null;
+        let map;
+
+        function init() {
+            map = L.map('map', { zoomControl: false });
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', {
+                attribution: '&copy; 国土地理院'
+            }).addTo(map);
+
+            if (typeof stations === 'undefined') {
+                alert("stations.jsが読み込めていません。");
+                return;
+            }
+
+            const list = document.getElementById('station-list');
+            stations.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.name;
+                list.appendChild(option);
+            });
+
+            nextQuestion();
+            makeDraggable(document.getElementById("ui-panel"));
+        }
+
+        function nextQuestion() {
+            document.getElementById('result').innerText = "";
+            document.getElementById('station-input').value = "";
+            currentStation = stations[Math.floor(Math.random() * stations.length)];
+            
+            // ★ flyToではなくsetViewを使うことでアニメーションなしで瞬間移動
+            map.setView([currentStation.lat, currentStation.lng], 17);
+        }
+
+        function resetView() {
+            if (currentStation && map) {
+                // 戻るときだけはアニメーションがあったほうが分かりやすいのでflyToにしています
+                map.flyTo([currentStation.lat, currentStation.lng], 17);
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('station-input').value;
+            const resultDiv = document.getElementById('result');
+            if (userAnswer === currentStation.name) {
+                resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>";
+            } else {
+                resultDiv.innerHTML = "<span style='color:#007AFF;'>残念。</span>";
+            }
+        }
+
+        function showAnswer() {
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+        }
+
+        // ★解答エリアをドラッグ移動させるためのプログラム
+        function makeDraggable(el) {
+            const header = document.getElementById("ui-header");
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+                el.style.bottom = "auto"; // bottom指定を解除
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
