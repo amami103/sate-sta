@@ -10,34 +10,22 @@
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
-        
-        .ui-container { 
-            position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); 
-            padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 320px; max-height: 85vh; display: flex; flex-direction: column;
-        }
-        
+        .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 320px; max-height: 85vh; display: flex; flex-direction: column; }
         .ui-header { background: rgba(0, 0, 0, 0.1); padding: 10px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; }
-
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 10px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         button { padding: 10px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; transition: opacity 0.2s; }
         button:hover { opacity: 0.8; }
         button:disabled { opacity: 0.4; cursor: default; }
-
         .btn-answer { background: #007AFF; grid-column: span 2; font-size: 14px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
-        
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f8f8f8; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
-
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 13px; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
@@ -51,9 +39,7 @@
     </style>
 </head>
 <body onload="init()">
-
     <div id="map"></div>
-
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header">ここを掴んで移動</div>
         <div class="ui-content" id="ui-content">
@@ -75,74 +61,52 @@
             <div id="final-ui" style="display:none;"></div>
         </div>
     </div>
-
     <script>
-        let gameStations = [];
-        let currentStation = null;
-        let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
-        let playHistory = [];
-        let startTime = 0;
-        let isLocked = false;
+        let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
+        
+        // 会社グループ定義 (stations.jsのcompany文字列と完全一致させる)
+        const COMPANY_GROUPS = {
+            "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"],
+            "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"],
+            "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"],
+            "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"],
+            "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]
+        };
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
+        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
         function init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            isLocked = urlParams.get('lock') === 'true';
-
-            // マップ初期化
-            map = L.map('map', { 
-                zoomControl: false,
-                dragging: !isLocked,
-                touchZoom: !isLocked,
-                doubleClickZoom: !isLocked,
-                scrollWheelZoom: !isLocked,
-                boxZoom: !isLocked,
-                keyboard: !isLocked
-            });
-
+            const params = new URLSearchParams(window.location.search);
+            isLocked = params.get('lock') === 'true';
+            map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
-
-            if (typeof stations === 'undefined') { alert("stations.js読み込み失敗"); return; }
-
-            // 絞り込み
-            totalQuestions = parseInt(urlParams.get('num')) || 10;
-            const fPref = urlParams.get('pref');
-            const fComp = urlParams.get('company');
-            const fLine = urlParams.get('line');
-
+            if (typeof stations === 'undefined') return;
+            totalQuestions = parseInt(params.get('num')) || 10;
+            const fP = params.get('pref'), fC = params.get('company'), fL = params.get('line');
             let filtered = [...stations];
-            if (fPref && fPref !== "all") filtered = filtered.filter(s => s.pref === fPref);
-            if (fComp && fComp !== "all") filtered = filtered.filter(s => s.company === fComp);
-            if (fLine && fLine !== "all") filtered = filtered.filter(s => s.line === fLine);
-
-            if (filtered.length === 0) {
-                alert("該当駅なし。全駅から出題。");
-                filtered = [...stations];
+            
+            if (fP && fP !== "all") filtered = filtered.filter(s => s.pref === fP);
+            
+            // 会社フィルタリング (グループ判定含む)
+            if (fC && fC !== "all") {
+                if (fC.startsWith("grp:")) {
+                    const groupKey = fC.replace("grp:", "");
+                    const allowedCompanies = COMPANY_GROUPS[groupKey] || [];
+                    filtered = filtered.filter(s => allowedCompanies.includes(s.company));
+                } else {
+                    filtered = filtered.filter(s => s.company === fC);
+                }
             }
-
+            
+            if (fL && fL !== "all") filtered = filtered.filter(s => s.line === fL);
+            if (filtered.length === 0) filtered = [...stations];
             shuffle(filtered);
             gameStations = filtered.slice(0, totalQuestions);
             totalQuestions = gameStations.length;
-
-            // 入力補完
-            const list = document.getElementById('station-list');
-            [...new Set(stations.map(s => s.name))].forEach(name => {
-                const op = document.createElement('option');
-                op.value = name;
-                list.appendChild(op);
-            });
-
+            const dl = document.getElementById('station-list');
+            [...new Set(stations.map(s => s.name))].forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
-
         function nextQuestion() {
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
@@ -151,92 +115,53 @@
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             document.getElementById('hint-area').style.display = "none";
-            
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
             startTime = Date.now();
         }
-
-        function showHint(type) {
-            if (answered) return;
-            const area = document.getElementById('hint-area');
-            area.style.display = "block";
-            area.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + (currentStation[type] || "不明");
-        }
-
-        function resetView() { if (currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
-
+        function showHint(t) { if(!answered){ const a = document.getElementById('hint-area'); a.style.display = "block"; a.innerText = (t==='pref'?"都道府県: ":"路線名: ")+(currentStation[t]||"不明"); } }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
         function checkAnswer() {
             if (answered) return;
-            const timeElapsed = (Date.now() - startTime) / 1000;
+            const time = (Date.now() - startTime) / 1000;
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
-            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-
-            if (isCorrect) {
-                res.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
-                score++;
-            } else {
-                res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
-            }
-            saveHistory(isCorrect, timeElapsed);
+            const info = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            if (isCorrect) { res.innerHTML = "<span style='color:#D33;'>正解！</span>" + info; score++; }
+            else { res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + info; }
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time });
             finishOne();
         }
-
         function showAnswer() {
             if (answered) return;
-            const timeElapsed = (Date.now() - startTime) / 1000;
-            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            saveHistory(false, timeElapsed);
+            const time = (Date.now() - startTime) / 1000;
+            const info = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + info;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time: time });
             finishOne();
         }
-
-        function saveHistory(isCorrect, time) {
-            playHistory.push({
-                name: currentStation.name, pref: currentStation.pref, line: currentStation.line,
-                lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time
-            });
-        }
-
-        function finishOne() {
-            answered = true;
-            document.getElementById('answer-btn').style.display = "none";
-            document.getElementById('next-btn').style.display = "block";
-            questionCount++;
-        }
-
-        function jumpToStation(lat, lng) {
-            // リザルト確認時はロックを無視して移動させる
-            map.dragging.enable();
-            map.scrollWheelZoom.enable();
-            map.flyTo([lat, lng], 17);
-        }
-
+        function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
+        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
         function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
             document.getElementById('question-title').innerText = "結果発表";
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
-            let totalTime = 0;
-            let listHtml = '<ul class="result-list">';
+            let totalT = 0, listH = '<ul class="result-list">';
             playHistory.forEach((h) => {
-                totalTime += h.time;
-                const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listHtml += `<li class="result-item"><div class="res-status">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                totalT += h.time;
+                const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
+                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
-            listHtml += '</ul>';
-            const m = Math.floor(totalTime / 60);
-            const s = (totalTime % 60).toFixed(1);
-            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${m > 0 ? m + '分' : ''}${s}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listHtml}<button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>`;
+            const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
+            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listH + '</ul>'}<button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>`;
         }
-
         function makeDraggable(el) {
-            const header = document.getElementById("ui-header");
-            let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
-            header.onmousedown = (e) => {
+            const h = document.getElementById("ui-header");
+            let p1=0, p2=0, p3=0, p4=0;
+            h.onmousedown = (e) => {
                 p3 = e.clientX; p4 = e.clientY;
                 document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
                 document.onmousemove = (e) => {
