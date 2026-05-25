@@ -162,16 +162,23 @@
             if (currentStation && map) map.flyTo([currentStation.lat, currentStation.lng], 17);
         }
 
-        function checkAnswer() {
+       function checkAnswer() {
             if (answered) return;
             const userAnswer = document.getElementById('station-input').value;
             const resultDiv = document.getElementById('result');
             
+            // 表示用の情報を整理（データがない場合のフォールバック付き）
+            const pref = currentStation.pref || "不明";
+            const line = currentStation.line || "不明";
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${pref} / ${line}）</span>`;
+
             if (userAnswer === currentStation.name) {
-                resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>";
+                // 正解のとき
+                resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
                 score++;
             } else {
-                resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>";
+                // 不正解のとき
+                resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
             
             finishOneQuestion();
@@ -179,7 +186,11 @@
 
         function showAnswer() {
             if (answered) return;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            const pref = currentStation.pref || "不明";
+            const line = currentStation.line || "不明";
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${pref} / ${line}）</span>`;
+
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
             finishOneQuestion();
         }
 
