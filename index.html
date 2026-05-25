@@ -39,8 +39,8 @@
 <body>
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
-        <h1>航空写真・駅当てクイズ</h1>
-        <p class="subtitle">お好みの範囲を検索して挑戦！</p>
+        <h1>サテステ</h1>
+        <p class="subtitle">衛星画像から駅を当てよう！</p>
     </header>
     <main>
         <div class="card">
@@ -53,17 +53,17 @@
                     </div>
                     <div class="setting-item">
                         <label>鉄道会社</label>
-                        <input type="text" class="search-input" placeholder="会社名を絞り込む..." oninput="filterSelect('company-select', this.value)">
+                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select', this.value)">
                         <select id="company-select"><option value="all">すべての会社</option></select>
                     </div>
                     <div class="setting-item">
                         <label>路線名</label>
-                        <input type="text" class="search-input" placeholder="路線名を絞り込む..." oninput="filterSelect('line-select', this.value)">
+                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select', this.value)">
                         <select id="line-select"><option value="all">すべての路線</option></select>
                     </div>
                 </div>
 
-                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム複数選択モードを切り替え</button>
+                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム選択モード</button>
 
                 <!-- カスタムエリア -->
                 <div id="custom-area">
@@ -84,7 +84,7 @@
                 </div>
 
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                    <label>何問挑戦しますか？</label>
+                    <label>出題数は？</label>
                     <input type="number" id="num-input" value="10" min="1" max="100">
                 </div>
                 <label class="lock-option">
