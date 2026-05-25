@@ -11,35 +11,30 @@
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        /* ★ヘッダーの高さを固定してロゴの基準を作る */
         header {
             width: 100%;
-            height: 140px; /* ヘッダーの高さ */
+            padding: 40px 0;
             background: linear-gradient(135deg, #007AFF, #00C6FF);
             color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* 中の文字を中央に */
-            align-items: center;
+            text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
+            position: relative; /* ロゴ配置の基準 */
         }
 
-        /* ★ロゴの大きさをヘッダーの8割(112px)に設定 */
+        /* ★ロゴ画像の設定（logo.jpg） */
         .header-logo {
             position: absolute;
-            top: 14px; /* (140px - 112px) / 2 = 14px で上下中央 */
+            top: 15px;
             left: 20px;
-            height: 112px; /* 140pxの80% */
+            height: 110px; /* PCでのサイズ */
             background-color: rgba(255, 255, 255, 0.95);
             padding: 5px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            box-sizing: border-box; /* パディングを含めたサイズにする */
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
-        h1 { margin: 0; font-size: 28px; }
-        p.subtitle { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+        h1 { margin: 10px 0 0 0; font-size: 28px; }
+        p.subtitle { margin: 10px 0 0; opacity: 0.9; }
 
         main { flex: 1; width: 90%; max-width: 600px; padding: 30px 0; text-align: center; }
         
@@ -64,23 +59,23 @@
 
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
 
-        /* スマホ対応 */
-        @media (max-width: 768px) {
-            header { height: 180px; padding-top: 50px; } /* スマホではヘッダーを高くして重なり防止 */
+        /* スマホ対応（レスポンシブ） */
+        @media (max-width: 600px) {
+            header { padding-top: 90px; } /* ロゴの場所を確保 */
             .header-logo {
                 left: 50%;
-                transform: translateX(-50%);
-                height: 90px; /* スマホでは少し控えめに */
-                top: 15px;
+                transform: translateX(-50%); /* 中央寄せ */
+                height: 60px;
+                top: 10px;
             }
-            h1 { font-size: 20px; margin-top: 10px; }
+            h1 { font-size: 22px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <!-- ロゴ画像（logo.jpg） -->
+        <!-- ロゴ画像（ファイル名はlogo.jpg） -->
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         
         <h1>航空写真・駅当てクイズ</h1>
@@ -99,10 +94,12 @@
             <button onclick="startGame()" class="btn-start">ゲームを始める</button>
         </div>
 
+        <!-- 広告用スペース（保持） -->
         <div class="ad-space">
             ここに広告が表示される予定です（審査用スペース）
         </div>
 
+        <!-- 遊び方・詳細カード（保持） -->
         <div class="card description">
             <h3>サテステとは？</h3>
             <p>サテステ（From Satellite to Station）は、人工衛星から撮影された航空写真を見て、その場所にある駅名を当てる地理クイズゲームです。</p>
@@ -130,6 +127,7 @@
         function startGame() {
             let num = document.getElementById('num-input').value;
             if (num < 1) num = 1;
+            // 全国版.html への遷移
             window.location.href = "全国版.html?num=" + num;
         }
     </script>
