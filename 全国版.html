@@ -34,9 +34,7 @@
         .btn-next   { background: #34C759; grid-column: span 2; }
 
         #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
-        
-        /* リザルト画面用 */
-        .final-score { font-size: 24px; color: #E44; margin: 10px 0; }
+        .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -46,7 +44,7 @@
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header">ここを掴んで移動</div>
         <div class="ui-content" id="ui-content">
-            <h2 id="question-title">読み込み中...</h2>
+            <h2 id="question-title">準備中...</h2>
             <input list="station-list" id="station-input" placeholder="駅名を入力...">
             <datalist id="station-list"></datalist>
             
@@ -61,6 +59,7 @@
     </div>
 
     <script>
+        let gameStations = []; // 今回のゲームで使う駅リスト
         let currentStation = null;
         let map;
         let score = 0;
@@ -68,11 +67,18 @@
         let totalQuestions = 10;
         let answered = false;
 
-        // URLから問題数を取得
+        // 1. URLから問題数を取得
         const urlParams = new URLSearchParams(window.location.search);
         const numParam = urlParams.get('num');
-        if (numParam) {
-            totalQuestions = parseInt(numParam);
+        if (numParam) totalQuestions = parseInt(numParam);
+
+        // 2. 配列をバラバラにする関数（シャッフル）
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         function init() {
@@ -86,6 +92,12 @@
                 return;
             }
 
+            // 3. 全駅データをシャッフルして、必要な数だけ抜き出す（これで被らなくなる）
+            const allStationsCopy = [...stations]; 
+            shuffle(allStationsCopy);
+            gameStations = allStationsCopy.slice(0, totalQuestions);
+
+            // datalist作成（これは全駅対象でOK）
             const list = document.getElementById('station-list');
             stations.forEach(s => {
                 const option = document.createElement('option');
@@ -97,12 +109,8 @@
             makeDraggable(document.getElementById("ui-panel"));
         }
 
-        function updateProgress() {
-            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
-        }
-
         function nextQuestion() {
-            if (questionCount >= totalQuestions) {
+            if (questionCount >= gameStations.length) {
                 showFinalResult();
                 return;
             }
@@ -113,20 +121,19 @@
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             
-            currentStation = stations[Math.floor(Math.random() * stations.length)];
+            // 4. シャッフル済みリストから順番に取り出す
+            currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
-            updateProgress();
+            
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
         }
 
         function resetView() {
-            if (currentStation && map) {
-                map.flyTo([currentStation.lat, currentStation.lng], 17);
-            }
+            if (currentStation && map) map.flyTo([currentStation.lat, currentStation.lng], 17);
         }
 
         function checkAnswer() {
             if (answered) return;
-            
             const userAnswer = document.getElementById('station-input').value;
             const resultDiv = document.getElementById('result');
             
@@ -134,18 +141,19 @@
                 resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>";
                 score++;
             } else {
-                resultDiv.innerHTML = "<span style='color:#007AFF;'>残念。正解は " + currentStation.name + "</span>";
+                resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>";
             }
             
-            answered = true;
-            document.getElementById('answer-btn').disabled = true;
-            document.getElementById('answer-btn').style.opacity = "0.5";
-            questionCount++;
+            finishOneQuestion();
         }
 
         function showAnswer() {
             if (answered) return;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            finishOneQuestion();
+        }
+
+        function finishOneQuestion() {
             answered = true;
             document.getElementById('answer-btn').disabled = true;
             document.getElementById('answer-btn').style.opacity = "0.5";
@@ -157,7 +165,6 @@
             content.innerHTML = `
                 <h2>結果発表</h2>
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <p>お疲れ様でした！</p>
                 <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
