@@ -48,9 +48,11 @@
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
         .res-name { font-weight: bold; color: #333; }
         .res-sub { font-size: 10px; color: #777; margin-top: 2px; }
+        .res-time { font-size: 10px; color: #007AFF; margin-top: 2px; font-weight: bold; }
         .res-status { width: 25px; text-align: center; font-size: 16px; }
         .btn-view { background: #5ac8fa; padding: 5px 8px; font-size: 10px; width: auto; flex-shrink: 0; }
-        .final-score { font-size: 22px; color: #d33; font-weight: bold; text-align: center; margin: 15px 0; }
+        .final-score { font-size: 20px; color: #d33; font-weight: bold; text-align: center; margin: 10px 0 5px 0; }
+        .total-time { font-size: 14px; color: #333; text-align: center; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     </style>
 </head>
 <body onload="init()">
@@ -85,6 +87,7 @@
         let currentStation = null;
         let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
         let playHistory = [];
+        let questionStartTime = 0; // 解答開始時間
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -153,6 +156,9 @@
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
+            
+            // タイム計測開始
+            questionStartTime = Date.now();
         }
 
         function showHint(type) {
@@ -168,6 +174,7 @@
 
         function checkAnswer() {
             if (answered) return;
+            const timeTaken = (Date.now() - questionStartTime) / 1000; // 秒数計算
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
@@ -180,27 +187,29 @@
                 res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
             
-            saveHistory(isCorrect);
+            saveHistory(isCorrect, timeTaken);
             finishOne();
         }
 
         function showAnswer() {
             if (answered) return;
+            const timeTaken = (Date.now() - questionStartTime) / 1000;
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
             
-            saveHistory(false);
+            saveHistory(false, timeTaken);
             finishOne();
         }
 
-        function saveHistory(isCorrect) {
+        function saveHistory(isCorrect, time) {
             playHistory.push({
                 name: currentStation.name,
                 pref: currentStation.pref,
                 line: currentStation.line,
                 lat: currentStation.lat,
                 lng: currentStation.lng,
-                isCorrect: isCorrect
+                isCorrect: isCorrect,
+                time: time.toFixed(1) // 小数点1位まで保存
             });
         }
 
@@ -222,8 +231,10 @@
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
 
+            let totalTime = 0;
             let listHtml = '<ul class="result-list">';
             playHistory.forEach((h) => {
+                totalTime += parseFloat(h.time);
                 const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
                 listHtml += `
                     <li class="result-item">
@@ -231,14 +242,21 @@
                         <div class="res-info">
                             <div class="res-name">${h.name}</div>
                             <div class="res-sub">${h.pref} / ${h.line}</div>
+                            <div class="res-time">解答時間: ${h.time}秒</div>
                         </div>
                         <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
                     </li>`;
             });
             listHtml += '</ul>';
 
+            // 総解答時間のフォーマット（分秒）
+            const m = Math.floor(totalTime / 60);
+            const s = (totalTime % 60).toFixed(1);
+            const totalTimeText = m > 0 ? `${m}分${s}秒` : `${s}秒`;
+
             finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
+                <div class="total-time">総解答時間: ${totalTimeText}</div>
                 <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listHtml}
                 <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
