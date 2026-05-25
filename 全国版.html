@@ -32,16 +32,14 @@
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; }
-        
-        /* ヒントボタン用のスタイル */
         .btn-hint   { background: #5856D6; margin-top: 5px; }
+        
         #hint-area { margin-top: 8px; font-size: 12px; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 5px; display: none; }
-
         #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
         .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
     </style>
 </head>
-<body onload="init()"> <!-- initを呼ぶように追加 -->
+<body onload="init()">
 
     <div id="map"></div>
 
@@ -52,24 +50,19 @@
             <input list="station-list" id="station-input" placeholder="駅名を入力...">
             <datalist id="station-list"></datalist>
             
-            <div class="button-group" id="normal-buttons">
+            <div class="button-group">
                 <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                 <button class="btn-reset" onclick="resetView()">戻る</button>
                 <button class="btn-giveup" onclick="showAnswer()">答え</button>
-                
-                <!-- ヒントボタンを追加 -->
                 <button class="btn-hint" onclick="showHint('pref')">ヒント: 都道府県</button>
                 <button class="btn-hint" onclick="showHint('line')">ヒント: 路線名</button>
-
                 <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
             </div>
             
-            <!-- ヒント表示エリア -->
             <div id="hint-area"></div>
             <div id="result"></div>
         </div>
     </div>
-
 
     <script>
         let gameStations = [];
@@ -79,10 +72,6 @@
         let questionCount = 0;
         let totalQuestions = 10;
         let answered = false;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const numParam = urlParams.get('num');
-        if (numParam) totalQuestions = parseInt(numParam);
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -98,14 +87,26 @@
                 attribution: '&copy; 国土地理院'
             }).addTo(map);
 
-            if (typeof stations === 'undefined') {
-                alert("stations.jsが読み込めていません。");
-                return;
+            const urlParams = new URLSearchParams(window.location.search);
+            totalQuestions = parseInt(urlParams.get('num')) || 10;
+            const prefFilter = urlParams.get('pref');
+            const companyFilter = urlParams.get('company');
+            const lineFilter = urlParams.get('line');
+
+            // データの絞り込み
+            let filtered = [...stations];
+            if (prefFilter) filtered = filtered.filter(s => s.pref === prefFilter);
+            if (companyFilter) filtered = filtered.filter(s => s.company === companyFilter);
+            if (lineFilter) filtered = filtered.filter(s => s.line === lineFilter);
+
+            if (filtered.length === 0) {
+                alert("条件に合う駅が見つかりませんでした。全データから出題します。");
+                filtered = [...stations];
             }
 
-            const allStationsCopy = [...stations]; 
-            shuffle(allStationsCopy);
-            gameStations = allStationsCopy.slice(0, totalQuestions);
+            shuffle(filtered);
+            gameStations = filtered.slice(0, totalQuestions);
+            totalQuestions = gameStations.length; // 実際の駅数が少ない場合への対応
 
             const list = document.getElementById('station-list');
             stations.forEach(s => {
@@ -123,73 +124,47 @@
                 showFinalResult();
                 return;
             }
-            
             answered = false;
             document.getElementById('answer-btn').disabled = false;
             document.getElementById('answer-btn').style.opacity = "1";
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
-            
-            // ヒント表示をリセット
-            const hintArea = document.getElementById('hint-area');
-            hintArea.style.display = "none";
-            hintArea.innerText = "";
+            document.getElementById('hint-area').style.display = "none";
             
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
-            
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
         }
 
-        // ヒント表示関数
         function showHint(type) {
             if (answered) return;
             const hintArea = document.getElementById('hint-area');
             hintArea.style.display = "block";
-
-            if (type === 'pref') {
-                // stations.jsに pref がない場合は「情報なし」と出す
-                const pref = currentStation.pref || "情報がありません";
-                hintArea.innerText = "都道府県: " + pref;
-            } else if (type === 'line') {
-                // stations.jsに line がない場合は「情報なし」と出す
-                const line = currentStation.line || "情報がありません";
-                hintArea.innerText = "路線名: " + line;
-            }
+            hintArea.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + (currentStation[type] || "情報なし");
         }
 
         function resetView() {
-            if (currentStation && map) map.flyTo([currentStation.lat, currentStation.lng], 17);
+            if (currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17);
         }
 
-       function checkAnswer() {
+        function checkAnswer() {
             if (answered) return;
             const userAnswer = document.getElementById('station-input').value;
             const resultDiv = document.getElementById('result');
-            
-            // 表示用の情報を整理（データがない場合のフォールバック付き）
-            const pref = currentStation.pref || "不明";
-            const line = currentStation.line || "不明";
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${pref} / ${line}）</span>`;
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
 
             if (userAnswer === currentStation.name) {
-                // 正解のとき
                 resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
                 score++;
             } else {
-                // 不正解のとき
                 resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
-            
             finishOneQuestion();
         }
 
         function showAnswer() {
             if (answered) return;
-            const pref = currentStation.pref || "不明";
-            const line = currentStation.line || "不明";
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${pref} / ${line}）</span>`;
-
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
             finishOneQuestion();
         }
@@ -202,21 +177,24 @@
         }
 
         function showFinalResult() {
-            const content = document.getElementById('ui-content');
-            content.innerHTML = `
+            document.getElementById('ui-content').innerHTML = `
                 <h2>結果発表</h2>
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <button class="btn-next" style="grid-column: span 2;" onclick="location.href='index.html'">タイトルに戻る</button>
+                <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
 
         function makeDraggable(el) {
             const header = document.getElementById("ui-header");
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            header.onmousedown = dragMouseDown;
-            function dragMouseDown(e) { e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; }
-            function elementDrag(e) { e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; el.style.top = (el.offsetTop - pos2) + "px"; el.style.left = (el.offsetLeft - pos1) + "px"; el.style.bottom = "auto"; }
-            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
+            header.onmousedown = (e) => {
+                e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
+                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+                document.onmousemove = (e) => {
+                    e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
+                    el.style.top = (el.offsetTop - pos2) + "px"; el.style.left = (el.offsetLeft - pos1) + "px"; el.style.bottom = "auto";
+                };
+            }
         }
     </script>
 </body>
