@@ -22,8 +22,8 @@
         #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px; }
         .custom-group { margin-bottom: 15px; }
         .custom-group h4 { margin: 0 0 8px 0; font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
-        .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 200px; overflow-y: auto; padding: 5px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 3px; cursor: pointer; }
+        .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
+        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn-start { display: inline-block; background: #34C759; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4); cursor: pointer; margin-top: 15px; }
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
     </style>
@@ -32,7 +32,7 @@
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>航空写真・駅当てクイズ</h1>
-        <p class="subtitle">地方別や複数選択も可能！</p>
+        <p class="subtitle">全国の駅からランダムに出題！</p>
     </header>
     <main>
         <div class="card">
@@ -65,30 +65,34 @@
                             <option disabled>----------</option>
                         </select>
                     </div>
+                    <div class="setting-item">
+                        <label>路線名から選ぶ</label>
+                        <select id="line-select"><option value="all">すべての路線</option></select>
+                    </div>
                 </div>
 
-                <button class="btn-toggle-custom" onclick="toggleCustom()">自由に出題範囲を設定する（カスタム）</button>
+                <button class="btn-toggle-custom" onclick="toggleCustom()">自由に出題範囲を設定する（カスタム複数選択）</button>
 
                 <div id="custom-area">
                     <div class="custom-group">
-                        <h4>都道府県を選択（複数可）</h4>
+                        <h4>都道府県を選択</h4>
                         <div class="check-grid" id="pref-checks"></div>
                     </div>
                     <div class="custom-group">
-                        <h4>鉄道会社を選択（複数可）</h4>
+                        <h4>鉄道会社を選択</h4>
                         <div class="check-grid" id="company-checks"></div>
                     </div>
+                    <div class="custom-group">
+                        <h4>路線を選択</h4>
+                        <div class="check-grid" id="line-checks"></div>
+                    </div>
+                    <p style="font-size:10px; color:#E44;">※カスタム項目にチェックがある場合は、そちらが優先されます</p>
                 </div>
 
-                <div class="setting-item">
-                    <label>路線から選ぶ</label>
-                    <select id="line-select"><option value="all">すべての路線</option></select>
-                </div>
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
                     <label>何問挑戦しますか？</label>
                     <input type="number" id="num-input" value="10" min="1" max="100">
                 </div>
-                
                 <label class="lock-option">
                     <input type="checkbox" id="map-lock">
                     <span>地図の移動・拡大を禁止する</span>
@@ -107,9 +111,12 @@
             if (typeof stations !== 'undefined') {
                 const prefSelect = document.getElementById("pref-select");
                 const prefChecks = document.getElementById("pref-checks");
-                const companyChecks = document.getElementById("company-checks");
+                const compSelect = document.getElementById("company-select");
+                const compChecks = document.getElementById("company-checks");
+                const lineSelect = document.getElementById("line-select");
+                const lineChecks = document.getElementById("line-checks");
+
                 const existingPrefs = new Set(stations.map(s => s.pref));
-                
                 prefOrder.forEach(p => {
                     if (existingPrefs.has(p)) {
                         prefSelect.add(new Option(p, p));
@@ -118,49 +125,45 @@
                 });
 
                 const companies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
-                const compSelect = document.getElementById("company-select");
                 companies.forEach(c => {
                     compSelect.add(new Option(c, c));
-                    companyChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`;
+                    compChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`;
                 });
 
-                fillSelect("line-select", [...new Set(stations.map(s => s.line))].filter(Boolean).sort());
+                const lines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
+                lines.forEach(l => {
+                    lineSelect.add(new Option(l, l));
+                    lineChecks.innerHTML += `<label class="check-item" title="${l}"><input type="checkbox" name="c-line" value="${l}">${l}</label>`;
+                });
             }
         };
-
-        function fillSelect(id, items) {
-            const select = document.getElementById(id);
-            items.forEach(item => select.add(new Option(item, item)));
-        }
 
         function toggleCustom() {
             const area = document.getElementById("custom-area");
             const normal = document.getElementById("normal-settings");
             area.style.display = (area.style.display === "block") ? "none" : "block";
-            normal.style.opacity = (area.style.display === "block") ? "0.5" : "1";
+            normal.style.opacity = (area.style.display === "block") ? "0.3" : "1";
         }
 
         function startGame() {
             const num = document.getElementById('num-input').value || 10;
-            const line = document.getElementById('line-select').value;
             const lock = document.getElementById('map-lock').checked;
-            const selectedPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
-            const selectedComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
+            
+            const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
+            const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
+            const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
 
             let url = "game.html?num=" + num;
-            if (selectedPrefs.length > 0) {
-                url += "&prefs=" + encodeURIComponent(selectedPrefs.join(','));
-            } else {
-                const pref = document.getElementById('pref-select').value;
-                if (pref !== "all") url += "&pref=" + encodeURIComponent(pref);
-            }
-            if (selectedComps.length > 0) {
-                url += "&comps=" + encodeURIComponent(selectedComps.join(','));
-            } else {
-                const company = document.getElementById('company-select').value;
-                if (company !== "all") url += "&company=" + encodeURIComponent(company);
-            }
-            if (line !== "all") url += "&line=" + encodeURIComponent(line);
+
+            if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
+            else if (document.getElementById('pref-select').value !== "all") url += "&pref=" + encodeURIComponent(document.getElementById('pref-select').value);
+
+            if (selComps.length > 0) url += "&comps=" + encodeURIComponent(selComps.join(','));
+            else if (document.getElementById('company-select').value !== "all") url += "&company=" + encodeURIComponent(document.getElementById('company-select').value);
+
+            if (selLines.length > 0) url += "&lines=" + encodeURIComponent(selLines.join(','));
+            else if (document.getElementById('line-select').value !== "all") url += "&line=" + encodeURIComponent(document.getElementById('line-select').value);
+
             if (lock) url += "&lock=true";
             window.location.href = url;
         }
