@@ -15,7 +15,7 @@
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 320px; max-height: 80vh; display: flex; flex-direction: column;
+            width: 320px; max-height: 85vh; display: flex; flex-direction: column;
         }
         
         .ui-header { background: rgba(0, 0, 0, 0.1); padding: 10px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; }
@@ -36,18 +36,20 @@
         .btn-hint   { background: #5856D6; font-size: 10px; }
         
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
-        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
 
         /* リザルト用スタイル */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; 
+            padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 13px; 
         }
         .result-item:last-child { border-bottom: none; }
-        .res-name { flex-grow: 1; margin-left: 10px; font-weight: bold; }
-        .res-status { width: 25px; text-align: center; }
-        .btn-view { background: #5ac8fa; padding: 4px 8px; font-size: 10px; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
+        .res-name { font-weight: bold; color: #333; }
+        .res-sub { font-size: 10px; color: #777; margin-top: 2px; }
+        .res-status { width: 25px; text-align: center; font-size: 16px; }
+        .btn-view { background: #5ac8fa; padding: 5px 8px; font-size: 10px; width: auto; flex-shrink: 0; }
         .final-score { font-size: 22px; color: #d33; font-weight: bold; text-align: center; margin: 15px 0; }
     </style>
 </head>
@@ -74,9 +76,7 @@
                 <div id="hint-area"></div>
                 <div id="result"></div>
             </div>
-            <div id="final-ui" style="display:none;">
-                <!-- 結果発表がここに挿入される -->
-            </div>
+            <div id="final-ui" style="display:none;"></div>
         </div>
     </div>
 
@@ -84,7 +84,7 @@
         let gameStations = [];
         let currentStation = null;
         let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
-        let playHistory = []; // 回答記録用
+        let playHistory = [];
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -126,7 +126,8 @@
             totalQuestions = gameStations.length;
 
             const list = document.getElementById('station-list');
-            [...new Set(stations.map(s => s.name))].forEach(name => {
+            const uniqueNames = [...new Set(stations.map(s => s.name))];
+            uniqueNames.forEach(name => {
                 const op = document.createElement('option');
                 op.value = name;
                 list.appendChild(op);
@@ -170,37 +171,37 @@
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
+            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
 
             if (isCorrect) {
-                res.innerHTML = "<span style='color:#D33;'>正解！</span>";
+                res.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
                 score++;
             } else {
-                res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>";
+                res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
             
-            // 記録を残す
-            playHistory.push({
-                name: currentStation.name,
-                lat: currentStation.lat,
-                lng: currentStation.lng,
-                isCorrect: isCorrect
-            });
-
+            saveHistory(isCorrect);
             finishOne();
         }
 
         function showAnswer() {
             if (answered) return;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
             
+            saveHistory(false);
+            finishOne();
+        }
+
+        function saveHistory(isCorrect) {
             playHistory.push({
                 name: currentStation.name,
+                pref: currentStation.pref,
+                line: currentStation.line,
                 lat: currentStation.lat,
                 lng: currentStation.lng,
-                isCorrect: false
+                isCorrect: isCorrect
             });
-            
-            finishOne();
         }
 
         function finishOne() {
@@ -222,12 +223,15 @@
             finalUi.style.display = "block";
 
             let listHtml = '<ul class="result-list">';
-            playHistory.forEach((h, index) => {
-                const mark = h.isCorrect ? '<span style="color:red;">✅</span>' : '<span style="color:blue;">❌</span>';
+            playHistory.forEach((h) => {
+                const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
                 listHtml += `
                     <li class="result-item">
                         <div class="res-status">${mark}</div>
-                        <div class="res-name">${h.name}</div>
+                        <div class="res-info">
+                            <div class="res-name">${h.name}</div>
+                            <div class="res-sub">${h.pref} / ${h.line}</div>
+                        </div>
                         <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
                     </li>`;
             });
@@ -235,16 +239,16 @@
 
             finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <p style="font-size:11px; color:#666; text-align:center;">「確認」ボタンで地図を移動できます</p>
+                <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listHtml}
                 <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
 
         function makeDraggable(el) {
-            const head = document.getElementById("ui-header");
+            const header = document.getElementById("ui-header");
             let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
-            head.onmousedown = (e) => {
+            header.onmousedown = (e) => {
                 p3 = e.clientX; p4 = e.clientY;
                 document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
                 document.onmousemove = (e) => {
