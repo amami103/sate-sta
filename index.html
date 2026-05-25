@@ -15,15 +15,23 @@
         .setting-box { margin: 20px 0; text-align: left; }
         .setting-item { margin-bottom: 15px; }
         .setting-item label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
-        select, input[type="number"] { width: 100%; padding: 12px; font-size: 16px; border-radius: 10px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
+        
+        /* 入力欄・セレクトボックス */
+        select, input[type="number"], .search-input { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
+        select:focus, input:focus { outline: none; border-color: #007AFF; }
+        .search-input { margin-bottom: 5px; border-style: dashed; font-size: 13px; }
+        
         #num-input { width: 100px; text-align: center; display: block; margin: 0 auto; font-size: 20px; border-color: #007AFF; }
         .lock-option { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; padding: 12px; background: #f0f4ff; border-radius: 10px; margin-top: 15px; border: 1px solid #007AFF; }
-        .btn-toggle-custom { background: #5856D6; color: white; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin-bottom: 10px; width: 100%; }
-        #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px; }
+        .btn-toggle-custom { background: #5856D6; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin: 10px 0; width: 100%; font-weight: bold; }
+        
+        /* カスタム設定エリア */
+        #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
         .custom-group { margin-bottom: 15px; }
-        .custom-group h4 { margin: 0 0 8px 0; font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+        .custom-group h4 { margin: 0 0 8px 0; font-size: 14px; color: #5856D6; }
         .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; overflow: hidden; }
+
         .btn-start { display: inline-block; background: #34C759; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4); cursor: pointer; margin-top: 15px; }
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
     </style>
@@ -32,47 +40,32 @@
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>航空写真・駅当てクイズ</h1>
-        <p class="subtitle">全国の駅からランダムに出題！</p>
+        <p class="subtitle">お好みの範囲を検索して挑戦！</p>
     </header>
     <main>
         <div class="card">
             <div class="setting-box">
+                <!-- 通常設定 -->
                 <div id="normal-settings">
                     <div class="setting-item">
-                        <label>都道府県・地方から選ぶ</label>
-                        <select id="pref-select">
-                            <option value="all">全国（指定なし）</option>
-                            <option value="reg:北海道地方">・北海道地方</option>
-                            <option value="reg:東北地方">・東北地方</option>
-                            <option value="reg:関東地方">・関東地方</option>
-                            <option value="reg:中部地方">・中部地方</option>
-                            <option value="reg:近畿地方">・近畿地方</option>
-                            <option value="reg:中国地方">・中国地方</option>
-                            <option value="reg:四国地方">・四国地方</option>
-                            <option value="reg:九州地方">・九州地方</option>
-                            <option disabled>----------</option>
-                        </select>
+                        <label>都道府県・地方</label>
+                        <select id="pref-select"><option value="all">全国（指定なし）</option></select>
                     </div>
                     <div class="setting-item">
-                        <label>鉄道会社から選ぶ</label>
-                        <select id="company-select">
-                            <option value="all">すべての会社</option>
-                            <option value="grp:大手私鉄">・大手私鉄</option>
-                            <option value="grp:関東大手私鉄">・関東大手私鉄</option>
-                            <option value="grp:関西大手私鉄">・関西大手私鉄</option>
-                            <option value="grp:地下鉄">・地下鉄</option>
-                            <option value="grp:JR">・JR</option>
-                            <option disabled>----------</option>
-                        </select>
+                        <label>鉄道会社</label>
+                        <input type="text" class="search-input" placeholder="会社名を絞り込む..." oninput="filterSelect('company-select', this.value)">
+                        <select id="company-select"><option value="all">すべての会社</option></select>
                     </div>
                     <div class="setting-item">
-                        <label>路線名から選ぶ</label>
+                        <label>路線名</label>
+                        <input type="text" class="search-input" placeholder="路線名を絞り込む..." oninput="filterSelect('line-select', this.value)">
                         <select id="line-select"><option value="all">すべての路線</option></select>
                     </div>
                 </div>
 
-                <button class="btn-toggle-custom" onclick="toggleCustom()">自由に出題範囲を設定する（カスタム複数選択）</button>
+                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム複数選択モードを切り替え</button>
 
+                <!-- カスタムエリア -->
                 <div id="custom-area">
                     <div class="custom-group">
                         <h4>都道府県を選択</h4>
@@ -80,13 +73,14 @@
                     </div>
                     <div class="custom-group">
                         <h4>鉄道会社を選択</h4>
+                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterCheckboxes('company-checks', this.value)">
                         <div class="check-grid" id="company-checks"></div>
                     </div>
                     <div class="custom-group">
                         <h4>路線を選択</h4>
+                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterCheckboxes('line-checks', this.value)">
                         <div class="check-grid" id="line-checks"></div>
                     </div>
-                    <p style="font-size:10px; color:#E44;">※カスタム項目にチェックがある場合は、そちらが優先されます</p>
                 </div>
 
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
@@ -106,37 +100,66 @@
     <script src="stations.js"></script>
     <script>
         const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+        
+        let masterCompanies = [];
+        let masterLines = [];
 
         window.onload = function() {
-            if (typeof stations !== 'undefined') {
-                const prefSelect = document.getElementById("pref-select");
-                const prefChecks = document.getElementById("pref-checks");
-                const compSelect = document.getElementById("company-select");
-                const compChecks = document.getElementById("company-checks");
-                const lineSelect = document.getElementById("line-select");
-                const lineChecks = document.getElementById("line-checks");
+            if (typeof stations === 'undefined') return;
 
-                const existingPrefs = new Set(stations.map(s => s.pref));
-                prefOrder.forEach(p => {
-                    if (existingPrefs.has(p)) {
-                        prefSelect.add(new Option(p, p));
-                        prefChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-pref" value="${p}">${p}</label>`;
-                    }
-                });
+            // 都道府県
+            const prefSelect = document.getElementById("pref-select");
+            const prefChecks = document.getElementById("pref-checks");
+            const existingPrefs = new Set(stations.map(s => s.pref));
+            prefOrder.forEach(p => {
+                if (existingPrefs.has(p)) {
+                    prefSelect.add(new Option(p, p));
+                    prefChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-pref" value="${p}">${p}</label>`;
+                }
+            });
 
-                const companies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
-                companies.forEach(c => {
-                    compSelect.add(new Option(c, c));
-                    compChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`;
-                });
+            // 会社・路線のマスタ作成
+            masterCompanies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
+            masterLines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
 
-                const lines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
-                lines.forEach(l => {
-                    lineSelect.add(new Option(l, l));
-                    lineChecks.innerHTML += `<label class="check-item" title="${l}"><input type="checkbox" name="c-line" value="${l}">${l}</label>`;
-                });
-            }
+            // 初期リストアップ
+            fillSelect("company-select", masterCompanies, "すべての会社", "grp");
+            fillSelect("line-select", masterLines, "すべての路線");
+            
+            const cGroup = document.getElementById("company-checks");
+            masterCompanies.forEach(c => cGroup.innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`);
+            
+            const lGroup = document.getElementById("line-checks");
+            masterLines.forEach(l => lGroup.innerHTML += `<label class="check-item"><input type="checkbox" name="c-line" value="${l}">${l}</label>`);
         };
+
+        function fillSelect(id, items, defaultText, type="") {
+            const select = document.getElementById(id);
+            select.innerHTML = `<option value="all">${defaultText}</option>`;
+            if(type === "grp") {
+                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手私鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
+            }
+            items.forEach(item => select.add(new Option(item, item)));
+        }
+
+        // プルダウン用のフィルタ
+        function filterSelect(id, query) {
+            const items = (id === "company-select") ? masterCompanies : masterLines;
+            const defaultText = (id === "company-select") ? "すべての会社" : "すべての路線";
+            const type = (id === "company-select") ? "grp" : "";
+            const filtered = items.filter(item => item.includes(query));
+            fillSelect(id, filtered, defaultText, type);
+        }
+
+        // チェックボックス用のフィルタ
+        function filterCheckboxes(containerId, query) {
+            const container = document.getElementById(containerId);
+            const labels = container.querySelectorAll('.check-item');
+            labels.forEach(label => {
+                const text = label.textContent || label.innerText;
+                label.style.display = text.includes(query) ? "flex" : "none";
+            });
+        }
 
         function toggleCustom() {
             const area = document.getElementById("custom-area");
@@ -148,13 +171,11 @@
         function startGame() {
             const num = document.getElementById('num-input').value || 10;
             const lock = document.getElementById('map-lock').checked;
-            
             const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
             const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
             const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
 
             let url = "game.html?num=" + num;
-
             if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
             else if (document.getElementById('pref-select').value !== "all") url += "&pref=" + encodeURIComponent(document.getElementById('pref-select').value);
 
