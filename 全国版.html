@@ -38,7 +38,6 @@
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f8f8f8; border-radius: 6px; padding: 8px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
 
-        /* リザルト用 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 13px; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
@@ -62,7 +61,6 @@
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力...">
                 <datalist id="station-list"></datalist>
-                
                 <div class="button-group">
                     <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                     <button class="btn-reset" onclick="resetView()">場所を戻す</button>
@@ -83,7 +81,8 @@
         let currentStation = null;
         let map, score = 0, questionCount = 0, totalQuestions = 10, answered = false;
         let playHistory = [];
-        let startTime = 0; // 現在の問題の開始時間
+        let startTime = 0;
+        let isLocked = false;
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -94,17 +93,25 @@
         }
 
         function init() {
-            map = L.map('map', { zoomControl: false });
-            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', {
-                attribution: '&copy; 国土地理院'
-            }).addTo(map);
-
-            if (typeof stations === 'undefined') {
-                alert("stations.jsが読み込めません");
-                return;
-            }
-
             const urlParams = new URLSearchParams(window.location.search);
+            isLocked = urlParams.get('lock') === 'true';
+
+            // マップ初期化
+            map = L.map('map', { 
+                zoomControl: false,
+                dragging: !isLocked,
+                touchZoom: !isLocked,
+                doubleClickZoom: !isLocked,
+                scrollWheelZoom: !isLocked,
+                boxZoom: !isLocked,
+                keyboard: !isLocked
+            });
+
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+
+            if (typeof stations === 'undefined') { alert("stations.js読み込み失敗"); return; }
+
+            // 絞り込み
             totalQuestions = parseInt(urlParams.get('num')) || 10;
             const fPref = urlParams.get('pref');
             const fComp = urlParams.get('company');
@@ -116,7 +123,7 @@
             if (fLine && fLine !== "all") filtered = filtered.filter(s => s.line === fLine);
 
             if (filtered.length === 0) {
-                alert("条件に合う駅がありません。全駅から出題します。");
+                alert("該当駅なし。全駅から出題。");
                 filtered = [...stations];
             }
 
@@ -124,9 +131,9 @@
             gameStations = filtered.slice(0, totalQuestions);
             totalQuestions = gameStations.length;
 
+            // 入力補完
             const list = document.getElementById('station-list');
-            const uniqueNames = [...new Set(stations.map(s => s.name))];
-            uniqueNames.forEach(name => {
+            [...new Set(stations.map(s => s.name))].forEach(name => {
                 const op = document.createElement('option');
                 op.value = name;
                 list.appendChild(op);
@@ -137,11 +144,7 @@
         }
 
         function nextQuestion() {
-            if (questionCount >= gameStations.length) {
-                showFinalResult();
-                return;
-            }
-            
+            if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
             document.getElementById('answer-btn').style.display = "block";
             document.getElementById('next-btn').style.display = "none";
@@ -152,8 +155,6 @@
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
-            
-            // 計測開始
             startTime = Date.now();
         }
 
@@ -164,13 +165,11 @@
             area.innerText = (type === 'pref' ? "都道府県: " : "路線名: ") + (currentStation[type] || "不明");
         }
 
-        function resetView() {
-            if (currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17);
-        }
+        function resetView() { if (currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
         function checkAnswer() {
             if (answered) return;
-            const timeElapsed = (Date.now() - startTime) / 1000; // 秒数
+            const timeElapsed = (Date.now() - startTime) / 1000;
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
@@ -182,17 +181,7 @@
             } else {
                 res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
             }
-            
-            playHistory.push({
-                name: currentStation.name,
-                pref: currentStation.pref,
-                line: currentStation.line,
-                lat: currentStation.lat,
-                lng: currentStation.lng,
-                isCorrect: isCorrect,
-                time: timeElapsed
-            });
-
+            saveHistory(isCorrect, timeElapsed);
             finishOne();
         }
 
@@ -201,18 +190,15 @@
             const timeElapsed = (Date.now() - startTime) / 1000;
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            
-            playHistory.push({
-                name: currentStation.name,
-                pref: currentStation.pref,
-                line: currentStation.line,
-                lat: currentStation.lat,
-                lng: currentStation.lng,
-                isCorrect: false,
-                time: timeElapsed
-            });
-            
+            saveHistory(false, timeElapsed);
             finishOne();
+        }
+
+        function saveHistory(isCorrect, time) {
+            playHistory.push({
+                name: currentStation.name, pref: currentStation.pref, line: currentStation.line,
+                lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time
+            });
         }
 
         function finishOne() {
@@ -223,45 +209,28 @@
         }
 
         function jumpToStation(lat, lng) {
+            // リザルト確認時はロックを無視して移動させる
+            map.dragging.enable();
+            map.scrollWheelZoom.enable();
             map.flyTo([lat, lng], 17);
         }
 
         function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
             document.getElementById('question-title').innerText = "結果発表";
-            
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
-
             let totalTime = 0;
             let listHtml = '<ul class="result-list">';
             playHistory.forEach((h) => {
                 totalTime += h.time;
                 const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listHtml += `
-                    <li class="result-item">
-                        <div class="res-status">${mark}</div>
-                        <div class="res-info">
-                            <span class="res-name">${h.name}</span>
-                            <span class="res-sub">${h.pref} / ${h.line}</span>
-                            <span class="res-time-label">${h.time.toFixed(1)}秒</span>
-                        </div>
-                        <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
-                    </li>`;
+                listHtml += `<li class="result-item"><div class="res-status">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
             listHtml += '</ul>';
-
             const m = Math.floor(totalTime / 60);
             const s = (totalTime % 60).toFixed(1);
-            const timeStr = m > 0 ? `${m}分${s}秒` : `${s}秒`;
-
-            finalUi.innerHTML = `
-                <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <div class="total-time-display">総解答時間: ${timeStr}</div>
-                <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
-                ${listHtml}
-                <button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>
-            `;
+            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${m > 0 ? m + '分' : ''}${s}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listHtml}<button class="btn-next" onclick="location.href='index.html'">タイトルに戻る</button>`;
         }
 
         function makeDraggable(el) {
