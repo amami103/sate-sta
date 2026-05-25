@@ -3,69 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>航空写真・駅当てクイズ</title>
+    <title>航空写真・駅当てクイズ (ヒント機能付き)</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
 
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
 
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 300px; min-height: 150px; overflow: auto; resize: both;
+            width: 320px; min-height: 150px; overflow: hidden; resize: both;
         }
 
-        .ui-header { background: rgba(0, 0, 0, 0.1); padding: 8px; cursor: move; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; }
-        .ui-content { padding: 12px; }
+        .ui-header { background: rgba(0, 0, 0, 0.05); padding: 8px; cursor: move; font-size: 11px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; color: #666; }
+        .ui-content { padding: 15px; }
 
-        h2 { margin: 0 0 8px 0; font-size: 14px; color: #333; }
-        input { padding: 8px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
+        h2 { margin: 0 0 10px 0; font-size: 14px; color: #333; text-align: center; }
+        input { padding: 10px; font-size: 16px; width: 100%; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
 
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        button { padding: 8px 5px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; color: white; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        button { padding: 10px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; transition: opacity 0.2s; }
+        button:active { opacity: 0.7; }
 
-        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 13px; }
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 14px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
-        .btn-next   { background: #34C759; grid-column: span 2; }
         
-        /* ヒントボタン用のスタイル */
-        .btn-hint   { background: #5856D6; margin-top: 5px; }
-        #hint-area { margin-top: 8px; font-size: 12px; color: #555; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 5px; display: none; }
+        /* ヒントボタンのスタイル */
+        .btn-hint   { background: #5856D6; font-size: 11px; } 
+        
+        .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; }
 
-        #result { margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 1.2em; text-align: center; }
+        /* ヒント表示エリア */
+        #hint-area { 
+            margin: 10px 0 0 0; padding: 8px; border-radius: 6px; 
+            background: rgba(88, 86, 214, 0.1); color: #444; 
+            font-size: 12px; display: none; border-left: 4px solid #5856D6;
+        }
+
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; line-height: 1.4; min-height: 3em; }
+        .info-sub { font-size: 11px; color: #666; font-weight: normal; display: block; margin-top: 2px; }
+        
         .final-score { font-size: 24px; color: #E44; margin: 10px 0; text-align: center; }
     </style>
 </head>
-<body onload="init()"> <!-- initを呼ぶように追加 -->
+<body onload="init()">
 
     <div id="map"></div>
 
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header">ここを掴んで移動</div>
         <div class="ui-content" id="ui-content">
-            <h2 id="question-title">準備中...</h2>
+            <h2 id="question-title">読み込み中...</h2>
+            
             <input list="station-list" id="station-input" placeholder="駅名を入力...">
             <datalist id="station-list"></datalist>
             
             <div class="button-group" id="normal-buttons">
                 <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
-                <button class="btn-reset" onclick="resetView()">戻る</button>
-                <button class="btn-giveup" onclick="showAnswer()">答え</button>
+                <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                <button class="btn-giveup" id="giveup-btn" onclick="showAnswer()">答えを見る</button>
                 
-                <!-- ヒントボタンを追加 -->
-                <button class="btn-hint" onclick="showHint('pref')">ヒント: 都道府県</button>
-                <button class="btn-hint" onclick="showHint('line')">ヒント: 路線名</button>
+                <!-- ヒントボタン -->
+                <button class="btn-hint" id="hint-pref-btn" onclick="showHint('pref')">都道府県ヒント</button>
+                <button class="btn-hint" id="hint-line-btn" onclick="showHint('line')">路線名ヒント</button>
 
-                <button class="btn-next" onclick="nextQuestion()">次の駅へ</button>
+                <button class="btn-next" id="next-btn" onclick="nextQuestion()">次の駅へ</button>
             </div>
-            
-            <!-- ヒント表示エリア -->
+
+            <!-- ヒント表示 -->
             <div id="hint-area"></div>
+            
+            <!-- 結果表示（ここに駅名＋都道府県＋路線が出る） -->
             <div id="result"></div>
         </div>
     </div>
@@ -125,15 +138,15 @@
             }
             
             answered = false;
+            // UIリセット
             document.getElementById('answer-btn').disabled = false;
             document.getElementById('answer-btn').style.opacity = "1";
-            document.getElementById('result').innerText = "";
+            document.getElementById('giveup-btn').disabled = false;
+            document.getElementById('giveup-btn').style.opacity = "1";
+            document.getElementById('result').innerHTML = "";
             document.getElementById('station-input').value = "";
-            
-            // ヒント表示をリセット
-            const hintArea = document.getElementById('hint-area');
-            hintArea.style.display = "none";
-            hintArea.innerText = "";
+            document.getElementById('hint-area').style.display = "none";
+            document.getElementById('hint-area').innerText = "";
             
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
@@ -141,20 +154,18 @@
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
         }
 
-        // ヒント表示関数
+        // ヒント表示ロジック
         function showHint(type) {
             if (answered) return;
             const hintArea = document.getElementById('hint-area');
             hintArea.style.display = "block";
 
             if (type === 'pref') {
-                // stations.jsに pref がない場合は「情報なし」と出す
-                const pref = currentStation.pref || "情報がありません";
-                hintArea.innerText = "都道府県: " + pref;
+                const pref = currentStation.pref || "情報なし";
+                hintArea.innerText = "【ヒント】都道府県: " + pref;
             } else if (type === 'line') {
-                // stations.jsに line がない場合は「情報なし」と出す
-                const line = currentStation.line || "情報がありません";
-                hintArea.innerText = "路線名: " + line;
+                const line = currentStation.line || "情報なし";
+                hintArea.innerText = "【ヒント】路線名: " + line;
             }
         }
 
@@ -167,11 +178,16 @@
             const userAnswer = document.getElementById('station-input').value;
             const resultDiv = document.getElementById('result');
             
+            // 追加情報の組み立て
+            const pref = currentStation.pref || "不明";
+            const line = currentStation.line || "不明";
+            const infoHtml = `<span class="info-sub">（${pref} / ${line}）</span>`;
+
             if (userAnswer === currentStation.name) {
-                resultDiv.innerHTML = "<span style='color:#D33;'>正解！</span>";
+                resultDiv.innerHTML = `<span style='color:#D33;'>正解！</span><br>${currentStation.name}${infoHtml}`;
                 score++;
             } else {
-                resultDiv.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>";
+                resultDiv.innerHTML = `<span style='color:#007AFF;'>残念！ 正解は「${currentStation.name}」</span><br>${infoHtml}`;
             }
             
             finishOneQuestion();
@@ -179,7 +195,12 @@
 
         function showAnswer() {
             if (answered) return;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            const resultDiv = document.getElementById('result');
+            const pref = currentStation.pref || "不明";
+            const line = currentStation.line || "不明";
+            const infoHtml = `<span class="info-sub">（${pref} / ${line}）</span>`;
+
+            resultDiv.innerHTML = `正解: <span style='color:#E60;'>${currentStation.name}</span><br>${infoHtml}`;
             finishOneQuestion();
         }
 
@@ -187,6 +208,8 @@
             answered = true;
             document.getElementById('answer-btn').disabled = true;
             document.getElementById('answer-btn').style.opacity = "0.5";
+            document.getElementById('giveup-btn').disabled = true;
+            document.getElementById('giveup-btn').style.opacity = "0.5";
             questionCount++;
         }
 
@@ -195,7 +218,8 @@
             content.innerHTML = `
                 <h2>結果発表</h2>
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <button class="btn-next" style="grid-column: span 2;" onclick="location.href='index.html'">タイトルに戻る</button>
+                <button class="btn-next" onclick="location.reload()">もう一度遊ぶ</button>
+                <button class="btn-reset" style="width:100%; margin-top:5px;" onclick="location.href='index.html'">タイトルに戻る</button>
             `;
         }
 
