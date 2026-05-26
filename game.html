@@ -233,24 +233,54 @@
             map.flyTo([la, ln], 17);
         }
 
-        function showFinalResult() {
-            expandPanel();
-            document.getElementById('game-ui').style.display = "none";
-            document.getElementById('question-title').innerText = "結果発表";
-            const finalUi = document.getElementById('final-ui');
-            finalUi.style.display = "block";
-            let totalT = 0, listH = '<ul class="result-list">';
-            playHistory.forEach((h) => {
-                totalT += h.time;
-                const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
-            });
-            const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
-            finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listH + '</ul>'}<div class="result-footer-buttons"><button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button><button class="btn-reset" onclick="location.href='index.html'">タイトル</button></div>`;
-            function shareOnX() {
-    const text = `航空写真・駅当てクイズ「サテステ」で、${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${document.querySelector('.total-time-display').innerText}\n\n#サテステ #鉄道クイズ #地理クイズ\n`;
-    const url = window.location.origin; // 自分のサイトのURL
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+       // game.html の showFinalResult 関数内、ボタン部分を修正
+function showFinalResult() {
+    expandPanel();
+    document.getElementById('game-ui').style.display = "none";
+    document.getElementById('question-title').innerText = "結果発表";
+    const finalUi = document.getElementById('final-ui');
+    finalUi.style.display = "block";
+    
+    let totalT = 0, listH = '<ul class="result-list">';
+    playHistory.forEach((h) => {
+        totalT += h.time;
+        const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
+        listH += `<li class="result-item">
+            <div class="res-status">${m}</div>
+            <div class="res-info">
+                <span class="res-name">${h.name}</span>
+                <span class="res-sub">${h.pref} / ${h.line}</span>
+                <span class="res-time-label">${h.time.toFixed(1)}秒</span>
+            </div>
+            <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
+        </li>`;
+    });
+    
+    const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
+    const timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
+
+    // Xシェア用のテキスト作成
+    const shareText = encodeURIComponent(`航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n\n#サテステ #鉄道クイズ #地理クイズ\n`);
+    const shareUrl = encodeURIComponent(window.location.origin);
+
+    finalUi.innerHTML = `
+        <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
+        <div class="total-time-display">総解答時間: ${timeStr}</div>
+        
+        <!-- Xシェアボタン -->
+        <button onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}')" 
+                style="background:#000; width:100%; padding:12px; margin-bottom:15px; font-size:14px;">
+            𝕏 で結果をシェアする
+        </button>
+
+        <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
+        ${listH + '</ul>'}
+        <div class="result-footer-buttons">
+            <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
+            <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
+        </div>
+    `;
+}
 }
         }
 
