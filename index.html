@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サテステ | 航空写真・駅当てクイズ</title>
-    <!--将来：ここにGoogle AdSenseの審査コードを貼り付けます -->
+    <title>サテステ | 航空写真・駅当てクイズで全国の鉄道を旅しよう</title>
+    <!-- X(Twitter)での見栄えを良くする設定 -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="サテステ | 航空写真・駅当てクイズ">
+<meta property="og:description" content="この駅、どこか分かりますか？全国約9,000駅からランダム出題！">
+<meta property="og:image" content="https://sate-sta.com/logo.jpg"> <!-- ロゴ画像の絶対パス -->
+    <meta name="description" content="人工衛星から撮影された航空写真を見て駅名を当てるクイズゲームです。JR、大手私鉄、地下鉄など日本全国の駅から出題！鉄道ファンから地理好きまで楽しめます。">
+    <!-- 将来：ここにGoogle AdSenseの自動広告コードを貼り付けます -->
     <style>
         body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         header { width: 100%; height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
         .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         h1 { margin: 0; font-size: 28px; }
         p.subtitle { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-        main { flex: 1; width: 90%; max-width: 600px; padding: 30px 0; text-align: center; }
+        main { flex: 1; width: 90%; max-width: 650px; padding: 20px 0; text-align: center; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .setting-box { margin: 20px 0; text-align: left; }
         .setting-item { margin-bottom: 15px; }
         .setting-item label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
         select, input[type="number"], .search-input { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
@@ -22,17 +27,19 @@
         .lock-option { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; padding: 12px; background: #f0f4ff; border-radius: 10px; margin-top: 15px; border: 1px solid #007AFF; }
         .btn-toggle-custom { background: #5856D6; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin: 10px 0; width: 100%; font-weight: bold; }
         #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
-        .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
+        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; }
         .btn-start { display: inline-block; background: #34C759; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4); cursor: pointer; margin-top: 15px; }
         
-        /* 広告用プレースホルダー */
+        /* 記事セクション・ポリシー用 */
+        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 30px; }
+        .article-section h3 { font-size: 17px; color: #333; margin-top: 20px; }
+        .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
+        .policy-box { font-size: 12px; color: #777; border-top: 1px solid #ddd; margin-top: 40px; padding-top: 20px; }
         .ad-slot { background: #ebf0f5; color: #999; padding: 20px; text-align: center; font-size: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px dashed #cbd5e0; }
-
-        /* ポリシー用 */
-        .policy-text { font-size: 12px; line-height: 1.6; color: #666; }
-        .policy-text h3 { font-size: 15px; color: #333; border-left: 4px solid #007AFF; padding-left: 10px; margin-top: 20px; }
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
+        
+        @media (max-width: 480px) { .check-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -40,18 +47,18 @@
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>サテステ</h1>
-        <p class="subtitle">航空写真・駅名当てクイズ</p>
+        <p class="subtitle">航空写真から駅名を当てるクイズゲーム</p>
     </header>
 
     <main>
-        <!-- 広告枠：上部 -->
-        <div class="ad-slot">スポンサーリンク<br>(AdSense審査後に表示されます)</div>
+        <div class="ad-slot">スポンサーリンク</div>
 
+        <!-- ゲーム設定カード -->
         <div class="card">
             <div class="setting-box">
                 <div id="normal-settings">
                     <div class="setting-item">
-                        <label>都道府県・地方から選ぶ</label>
+                        <label>都道府県・地方</label>
                         <select id="pref-select">
                             <option value="all">全国（指定なし）</option>
                             <option value="reg:北海道地方">・北海道地方</option>
@@ -66,74 +73,89 @@
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label>鉄道会社（検索可）</label>
+                        <label>鉄道会社（検索可能）</label>
                         <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select', this.value)">
                         <select id="company-select"><option value="all">すべての会社</option></select>
                     </div>
                     <div class="setting-item">
-                        <label>路線名（検索可）</label>
+                        <label>路線名（検索可能）</label>
                         <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select', this.value)">
                         <select id="line-select"><option value="all">すべての路線</option></select>
                     </div>
                 </div>
 
-                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム複数選択モードを開く</button>
+                <button class="btn-toggle-custom" onclick="toggleCustom()">複数の都道府県・会社を選ぶ（カスタム）</button>
 
                 <div id="custom-area">
                     <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0; font-size:14px;">都道府県を選択</h4>
+                        <h4>都道府県を選択</h4>
                         <div class="check-grid" id="pref-checks"></div>
                     </div>
                     <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0; font-size:14px;">鉄道会社を選択</h4>
-                        <input type="text" class="search-input" placeholder="会社名を絞り込む..." oninput="filterCheckboxes('company-checks', this.value)">
+                        <h4>鉄道会社を選択</h4>
+                        <input type="text" class="search-input" placeholder="会社を検索..." oninput="filterCheckboxes('company-checks', this.value)">
                         <div class="check-grid" id="company-checks"></div>
                     </div>
                     <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0; font-size:14px;">路線を選択</h4>
-                        <input type="text" class="search-input" placeholder="路線名を絞り込む..." oninput="filterCheckboxes('line-checks', this.value)">
+                        <h4>路線を選択</h4>
+                        <input type="text" class="search-input" placeholder="路線を検索..." oninput="filterCheckboxes('line-checks', this.value)">
                         <div class="check-grid" id="line-checks"></div>
                     </div>
                 </div>
 
                 <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                    <label>何問挑戦しますか？</label>
+                    <label>出題数</label>
                     <input type="number" id="num-input" value="10" min="1" max="100">
                 </div>
                 <label class="lock-option">
                     <input type="checkbox" id="map-lock">
-                    <span>地図の移動・拡大を禁止する（ハード）</span>
+                    <span>地図の移動・拡大を禁止（ハードモード）</span>
                 </label>
             </div>
-            <button onclick="startGame()" class="btn-start">ゲームを始める</button>
+            <button onclick="startGame()" class="btn-start">クイズを開始する</button>
         </div>
 
-        <!-- 審査対策：サイト説明とポリシー -->
-        <div class="card policy-text">
-            <h3>サテステについて</h3>
-            <p>サテステ（From Satellite to Station）は、国土地理院が公開しているシームレス航空写真を用いて、ランダムに表示される駅の場所を当てる地理クイズゲームです。日本全国の駅から、もしくは地域や鉄道会社を絞り込んで挑戦することができます。</p>
+        <!-- 読み物セクション（審査対策） -->
+        <div class="card article-section">
+            <h2>サテステとは？</h2>
+            <p>「サテステ」は、国土地理院が公開している高精細なシームレス空中写真（衛星写真）を見て、その場所にある駅名を当てるクイズゲームです。日本全国約9,000駅の中から、北は北海道の稚内駅から南は沖縄のゆいレールまで、あらゆる駅が対象となります。</p>
+            
+            <h3>航空写真で駅を特定するコツ</h3>
+            <p>真上からの写真だけで駅を特定するのは、最初は難しく感じるかもしれません。しかし、いくつかの「手がかり」を見つけることで、正解率を劇的に上げることができます。</p>
+            <ul>
+                <li><strong>線路の数と形状:</strong> 複線なのか単線なのか、あるいは複数の路線が交差する「接続駅」なのかを確認しましょう。</li>
+                <li><strong>ホームの長さ:</strong> 新幹線の停車駅や都市部の幹線駅はホームが非常に長く、逆に地方のローカル線は車両1〜2台分しかありません。</li>
+                <li><strong>周辺の街並み:</strong> 周囲に高いビルや大規模な店舗があれば都市部の中心駅、田畑に囲まれていれば無人駅の可能性が高まります。</li>
+                <li><strong>屋根の有無:</strong> 全面が屋根で覆われている場合は、比較的大きな駅や雪国の駅であるケースが多いです。</li>
+            </ul>
 
-            <h3>プライバシーポリシー</h3>
-            <p><b>広告の配信について</b><br>
-            当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、当サイトや他サイトへのアクセスに関する情報「Cookie」(氏名、住所、メールアドレス、電話番号は含まれません) を使用することがあります。<br><br>
-            <b>アクセス解析ツールについて</b><br>
-            当サイトでは、アクセス解析のためにCookieを使用しています。このデータは匿名で収集されており、個人を特定するものではありません。Cookieを無効にすることで収集を拒否することが出来ますので、お使いのブラウザの設定をご確認ください。</p>
+            <h2>収録データと機能について</h2>
+            <p>当サイトでは最新の駅データを利用し、地方別や鉄道会社別（JR、地下鉄、大手私鉄など）での絞り込み機能を搭載しています。「自分の住んでいる県だけ挑戦したい」「特定の大手私鉄の全駅を制覇したい」といったマニアックな遊び方にも対応しています。</p>
+            <p>また、計測機能により1問ごとの解答時間を記録しているため、自分の直感力を試したり、友人同士でスピードを競ったりして楽しむことができます。</p>
+        </div>
 
-        
+        <!-- プライバシーポリシー・お問い合わせ（審査対策） -->
+        <div class="card policy-box">
+            <h3>プライバシーポリシー・免責事項</h3>
+            <p><b>広告の配信について:</b><br>
+            当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、Cookie（クッキー）を使用することがあります。これにより、当サイトはお客様のブラウザを識別できるようになりますが、個人を特定するものではありません。</p>
+            
+            <p><b>アクセス解析について:</b><br>
+            当サイトではサイトの利用状況を把握するためにCookieを利用したアクセス解析ツールを使用しています。データは匿名で収集されており、個人を特定する情報は含まれません。</p>
 
-            <!-- index.html の免責事項部分を書き換え -->
-<h3>免責事項・出典</h3>
-<p>当サイトで掲載している画像の著作権等は各権利所有者に帰属致します。<br>
-・地図データ：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a><br>
-・駅データ：<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a><br>
-・本サイトの利用により生じた損害について、制作者は一切の責任を負いません。</p>
+            <p><b>免責事項・出典:</b><br>
+            当サイトに掲載されている情報の正確性については万全を期しておりますが、利用者が当サイトの情報を用いて行う一切の行為について、制作者は何ら責任を負うものではありません。<br>
+            ・地図データ：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（空中写真）</a><br>
+            ・駅データ：<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a></p>
+
+            <p><b>お問い合わせ:</b><br>
+            本サイトに関する不具合報告やご意見は、現在準備中のフォームより承ります。</p>
         </div>
 
         <div class="ad-slot">スポンサーリンク</div>
-
     </main>
 
-    <footer>&copy; 2024 サテステ</footer>
+    <footer>&copy; 2024 サテステ | From Satellite to Station</footer>
 
     <script src="stations.js"></script>
     <script>
@@ -160,7 +182,7 @@
             fillSelect("company-select", masterCompanies, "すべての会社", "grp");
             fillSelect("line-select", masterLines, "すべての路線");
             masterCompanies.forEach(c => document.getElementById("company-checks").innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`);
-            masterLines.forEach(l => document.getElementById("line-checks").innerHTML += `<label class="check-item"><input type="checkbox" name="c-line" value="${l}">${l}</label>`);
+            masterLines.forEach(l => document.getElementById("line-checks").innerHTML += `<label class="check-item" title="${l}"><input type="checkbox" name="c-line" value="${l}">${l}</label>`);
         };
 
         function fillSelect(id, items, defaultText, type="") {
