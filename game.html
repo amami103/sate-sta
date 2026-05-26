@@ -11,7 +11,6 @@
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
 
-        /* 操作パネルの基本デザイン */
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); 
@@ -45,7 +44,6 @@
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
 
-        /* リザルト表示用 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
@@ -61,10 +59,10 @@
 
         /* 広告用スペース */
         .ad-res-box { background: #fff; border: 1px dashed #ccc; padding: 10px; margin-bottom: 15px; text-align: center; font-size: 10px; color: #999; }
+        .ad-interstitial-box { background: #fdfdfd; border: 1px solid #eee; min-height: 250px; display: flex; align-items: center; justify-content: center; margin: 20px 0; color: #aaa; font-size: 12px; }
 
-        /* スマホ向けレスポンシブ */
         @media (max-width: 600px) {
-            .ui-container { width: 100%; left: 0; bottom: 0; border-radius: 20px 20px 0 0; max-height: 70vh; }
+            .ui-container { width: 100%; left: 0; bottom: 0; border-radius: 20px 20px 0 0; max-height: 75vh; }
             .ui-container.minimized { transform: translateY(calc(100% - 45px)); }
             .ui-header { padding: 14px; font-size: 13px; }
             .ui-header::after { content: ' (タップで開閉)'; font-weight: normal; font-size: 10px; opacity: 0.8; }
@@ -97,8 +95,18 @@
                 <div id="result"></div>
             </div>
 
-            <!-- リザルトUI（初期非表示） -->
+            <!-- リザルトUI -->
             <div id="final-ui" style="display:none;"></div>
+
+            <!-- 広告用遷移UI（インタースティシャル） -->
+            <div id="interstitial-ui" style="display:none; text-align:center;">
+                <h3 id="inter-title">読み込み中...</h3>
+                <div class="ad-interstitial-box">
+                    <!-- ここにAdSenseの大きな広告（スクエア/レクタングル）を貼る -->
+                    スポンサーリンク
+                </div>
+                <button id="inter-btn" class="btn-answer" style="width:100%;">続ける</button>
+            </div>
         </div>
     </div>
 
@@ -122,7 +130,7 @@
             totalQuestions = parseInt(params.get('num')) || 10;
             let filtered = [...stations];
 
-            // フィルタリング
+            // フィルタ
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
             if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
@@ -211,8 +219,8 @@
             let totalT = 0, listH = '<ul class="result-list">';
             playHistory.forEach((h) => {
                 totalT += h.time;
-                const mark = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listH += `<li class="result-item"><div class="res-status">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
+                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
             const timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
@@ -228,10 +236,31 @@
                 <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
-                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
-                    <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
+                    <button class="btn-next" style="margin:0;" onclick="showAdBreak('replay')">もう一度</button>
+                    <button class="btn-reset" onclick="showAdBreak('home')">タイトルへ</button>
                 </div>
             `;
+        }
+
+        // 広告ブレイク画面を表示
+        function showAdBreak(type) {
+            document.getElementById('final-ui').style.display = "none";
+            document.getElementById('question-title').innerText = "Ad Break";
+            const interUi = document.getElementById('interstitial-ui');
+            interUi.style.display = "block";
+
+            const title = document.getElementById('inter-title');
+            const btn = document.getElementById('inter-btn');
+
+            if (type === 'replay') {
+                title.innerText = "次のクイズを準備中...";
+                btn.innerText = "新しく始める";
+                btn.onclick = () => location.reload();
+            } else {
+                title.innerText = "ご利用ありがとうございました！";
+                btn.innerText = "タイトルへ戻る";
+                btn.onclick = () => location.href = 'index.html';
+            }
         }
 
         function makeDraggable(el) {
