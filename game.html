@@ -15,24 +15,25 @@
         .ui-container { 
             position: absolute; bottom: 20px; left: 20px; z-index: 10; 
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); 
-            padding: 0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+            padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); 
             width: 320px; max-height: 85vh; display: flex; flex-direction: column;
-            transition: all 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .ui-header { background: rgba(0, 0, 0, 0.05); padding: 10px; cursor: move; font-size: 11px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; color: #888; }
+        .ui-header { 
+            background: #007AFF; color: white; padding: 12px; 
+            cursor: pointer; font-size: 12px; text-align: center; 
+            border-top-left-radius: 12px; border-top-right-radius: 12px; 
+            user-select: none; flex-shrink: 0; font-weight: bold;
+        }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
-        
-        /* 入力欄（スマホでのズーム防止のため16px） */
-        input { padding: 12px; font-size: 16px; width: 100%; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; appearance: none; }
+        input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
 
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; transition: background 0.2s; }
+        button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; }
         button:active { opacity: 0.7; }
-        button:disabled { background: #ccc !important; cursor: default; }
-
         .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
@@ -42,7 +43,7 @@
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
 
-        /* リザルト表示 */
+        /* リザルト用 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
@@ -56,23 +57,19 @@
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 15px 5px; }
 
-        /* スマホ向けメディアクエリ */
+        /* スマホ用デザイン */
         @media (max-width: 600px) {
             .ui-container {
-                width: 100%;
-                left: 0;
-                bottom: 0;
+                width: 100%; left: 0; bottom: 0;
                 border-radius: 20px 20px 0 0;
-                max-height: 60vh; /* 画面の下半分強を占有 */
+                max-height: 70vh;
             }
-            .ui-header { 
-                padding: 5px;
-                font-size: 10px;
+            /* 閉じている状態 */
+            .ui-container.minimized {
+                transform: translateY(calc(100% - 45px)); /* ヘッダーだけ残して下へ移動 */
             }
-            .ui-content {
-                padding: 12px 15px 25px 15px; /* 下部に余裕を持たせる */
-            }
-            h2 { font-size: 14px; }
+            .ui-header { padding: 14px; font-size: 13px; }
+            .ui-header::after { content: ' (タップで開閉)'; font-weight: normal; font-size: 10px; opacity: 0.8; }
         }
     </style>
 </head>
@@ -81,7 +78,7 @@
     <div id="map"></div>
 
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header">ここを掴んで移動 (PCのみ)</div>
+        <div class="ui-header" id="ui-header" onclick="togglePanel()">ここをタップで開閉</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
@@ -125,29 +122,30 @@
             "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]
         };
 
+        // スマホ用開閉
+        function togglePanel() {
+            if (window.innerWidth <= 600) {
+                document.getElementById('ui-panel').classList.toggle('minimized');
+            }
+        }
+        // 強制的に開く
+        function expandPanel() {
+            document.getElementById('ui-panel').classList.remove('minimized');
+        }
+
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
         
         function init() {
             const params = new URLSearchParams(window.location.search);
             isLocked = params.get('lock') === 'true';
-            
-            map = L.map('map', { 
-                zoomControl:false, 
-                dragging:!isLocked, 
-                touchZoom:!isLocked, 
-                doubleClickZoom:!isLocked, 
-                scrollWheelZoom:!isLocked, 
-                boxZoom:!isLocked, 
-                keyboard:!isLocked 
-            });
-
+            map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
             if (typeof stations === 'undefined') return;
 
             totalQuestions = parseInt(params.get('num')) || 10;
             let filtered = [...stations];
 
-            // フィルタリング処理
+            // フィルタ
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
             if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
@@ -157,7 +155,6 @@
                     filtered = filtered.filter(s => reg.includes(s.pref));
                 } else filtered = filtered.filter(s => s.pref === sPref);
             }
-
             const mComps = params.get('comps') ? params.get('comps').split(',') : null;
             const sComp = params.get('company');
             if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
@@ -167,7 +164,6 @@
                     filtered = filtered.filter(s => grp.includes(s.company));
                 } else filtered = filtered.filter(s => s.company === sComp);
             }
-
             const mLines = params.get('lines') ? params.get('lines').split(',') : null;
             const sLine = params.get('line');
             if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
@@ -180,7 +176,6 @@
 
             const dl = document.getElementById('station-list');
             [...new Set(stations.map(s => s.name))].forEach(n => { const o = document.createElement('option'); o.value = n; dl.appendChild(o); });
-            
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
@@ -204,6 +199,7 @@
         
         function checkAnswer() {
             if (answered) return;
+            expandPanel(); // 正誤が見えるように開く
             const time = (Date.now() - startTime) / 1000;
             const user = document.getElementById('station-input').value;
             const res = document.getElementById('result');
@@ -217,6 +213,7 @@
 
         function showAnswer() {
             if (answered) return;
+            expandPanel(); // 正解が見えるように開く
             const time = (Date.now() - startTime) / 1000;
             const info = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + info;
@@ -237,6 +234,7 @@
         }
 
         function showFinalResult() {
+            expandPanel();
             document.getElementById('game-ui').style.display = "none";
             document.getElementById('question-title').innerText = "結果発表";
             const finalUi = document.getElementById('final-ui');
@@ -252,7 +250,7 @@
         }
 
         function makeDraggable(el) {
-            if (window.innerWidth <= 600) return; // スマホではドラッグ無効
+            if (window.innerWidth <= 600) return;
             const h = document.getElementById("ui-header");
             let p1=0, p2=0, p3=0, p4=0;
             h.onmousedown = (e) => {
