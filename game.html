@@ -247,6 +247,11 @@
             });
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
             finalUi.innerHTML = `<div class="final-score">${score} / ${totalQuestions} 問正解！</div><div class="total-time-display">総解答時間: ${mt > 0 ? mt + '分' : ''}${st}秒</div><p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>${listH + '</ul>'}<div class="result-footer-buttons"><button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button><button class="btn-reset" onclick="location.href='index.html'">タイトル</button></div>`;
+            function shareOnX() {
+    const text = `航空写真・駅当てクイズ「サテステ」で、${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${document.querySelector('.total-time-display').innerText}\n\n#サテステ #鉄道クイズ #地理クイズ\n`;
+    const url = window.location.origin; // 自分のサイトのURL
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+}
         }
 
         function makeDraggable(el) {
