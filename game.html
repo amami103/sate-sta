@@ -278,7 +278,7 @@
                 
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}')">𝕏</button>
-                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText + '\\n' + shareUrl)}')">LINE</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText + '\' + shareUrl)}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + '\\n' + shareUrl)}')">Threads</button>
                     <button class="btn-sns btn-fb" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}')">Facebook</button>
                     <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}\\n${shareUrl}')">Instagram</button>
