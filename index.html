@@ -18,8 +18,11 @@
 
     <style>
         body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        header { width: 100%; height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
+        
+        /* ヘッダーの修正：スマホで伸びるように min-height に変更 */
+        header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
         .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
         h1 { margin: 0; font-size: 28px; }
         p.subtitle { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
         main { flex: 1; width: 95%; max-width: 650px; padding: 20px 0; text-align: center; }
@@ -49,7 +52,13 @@
         .ad-slot { background: #ebf0f5; color: #999; padding: 20px; text-align: center; font-size: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px dashed #cbd5e0; }
         
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
-        @media (max-width: 480px) { .check-grid { grid-template-columns: 1fr; } }
+
+        /* スマホ用レスポンス：ロゴが被らないように修正 */
+        @media (max-width: 480px) { 
+            header { padding: 20px 0; }
+            .header-logo { position: static; height: 80px; margin-bottom: 10px; }
+            .check-grid { grid-template-columns: 1fr; } 
+        }
     </style>
 </head>
 <body>
