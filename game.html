@@ -16,10 +16,19 @@
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); 
             width: 320px; max-height: 85vh; display: flex; flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* スマホの最小化時のみアニメーションを適用 */
+            transition: transform 0.3s ease;
         }
         
-        .ui-header { background: #007AFF; color: white; padding: 12px; cursor: pointer; font-size: 12px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        /* 青いヘッダー部分 */
+        .ui-header { 
+            background: #007AFF; color: white; padding: 12px; 
+            cursor: move; /* PCでは移動アイコン */
+            font-size: 13px; text-align: center; 
+            border-top-left-radius: 12px; border-top-right-radius: 12px; 
+            user-select: none; flex-shrink: 0; font-weight: bold; 
+        }
+
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
@@ -62,11 +71,16 @@
 
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
 
+        /* スマホ向け：下側に固定し、最小化できるようにする */
         @media (max-width: 600px) {
-            .ui-container { width: 100%; left: 0; bottom: 0; border-radius: 20px 20px 0 0; max-height: 75vh; }
-            .ui-container.minimized { transform: translateY(calc(100% - 45px)); }
-            .ui-header { padding: 14px; font-size: 13px; }
-            .ui-header::after { content: ' (タップで地図を広く見る)'; font-weight: normal; font-size: 10px; opacity: 0.8; }
+            .ui-container { 
+                width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important;
+                border-radius: 20px 20px 0 0; max-height: 70vh; 
+            }
+            .ui-header { cursor: pointer; padding: 14px; }
+            /* 最小化状態 */
+            .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
+            .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         }
     </style>
 </head>
@@ -75,7 +89,7 @@
     <div id="map"></div>
 
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="togglePanel()">サテステ（ドラッグで移動）</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
             
@@ -101,30 +115,32 @@
     </div>
 
     <script>
-        // 定数をグローバルに戻して確実に参照できるように修正
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
 
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-        function togglePanel() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
-        function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
+
+        // スマホ用：ヘッダークリックで最小化切り替え
+        function handleHeaderClick() {
+            if (window.innerWidth <= 600) {
+                document.getElementById('ui-panel').classList.toggle('minimized');
+            }
+        }
+        function expandPanel() {
+            document.getElementById('ui-panel').classList.remove('minimized');
+        }
 
         function init() {
             const params = new URLSearchParams(window.location.search);
             isLocked = params.get('lock') === 'true';
             
-            // マップ初期化
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
 
-            if (typeof stations === 'undefined') {
-                alert("駅データが読み込めませんでした。");
-                return;
-            }
+            if (typeof stations === 'undefined') return;
 
-            // フィルタリングロジック
             let filtered = [...stations];
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
@@ -135,7 +151,6 @@
                     filtered = filtered.filter(s => reg.includes(s.pref));
                 } else filtered = filtered.filter(s => s.pref === sPref);
             }
-
             const mComps = params.get('comps') ? params.get('comps').split(',') : null;
             const sComp = params.get('company');
             if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
@@ -145,23 +160,18 @@
                     filtered = filtered.filter(s => grp.includes(s.company));
                 } else filtered = filtered.filter(s => s.company === sComp);
             }
-
             const mLines = params.get('lines') ? params.get('lines').split(',') : null;
             const sLine = params.get('line');
             if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
             else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
             if (filtered.length === 0) filtered = [...stations];
-            
             shuffle(filtered);
-            let requestedNum = parseInt(params.get('num')) || 10;
-            gameStations = filtered.slice(0, requestedNum);
+            gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
 
-            // データリスト作成（重複排除）
             const dl = document.getElementById('station-list');
-            const uniqueNames = [...new Set(stations.map(s => s.name))].sort();
-            uniqueNames.forEach(n => {
+            [...new Set(stations.map(s => s.name))].sort().forEach(n => {
                 const o = document.createElement('option');
                 o.value = n;
                 dl.appendChild(o);
@@ -172,17 +182,13 @@
         }
 
         function nextQuestion() {
-            if (questionCount >= gameStations.length) {
-                showFinalResult();
-                return;
-            }
+            if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
             document.getElementById('answer-btn').style.display = "block";
             document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             document.getElementById('hint-area').style.display = "none";
-            
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
@@ -197,9 +203,7 @@
             }
         }
 
-        function resetView() {
-            if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17);
-        }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
         function checkAnswer() {
             if (answered) return;
@@ -209,14 +213,8 @@
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            
-            if (isCorrect) {
-                res.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText;
-                score++;
-            } else {
-                res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText;
-            }
-            
+            if (isCorrect) { res.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText; score++; }
+            else { res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText; }
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time });
             finishOne();
         }
@@ -227,7 +225,6 @@
             const time = (Date.now() - startTime) / 1000;
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
             document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time: time });
             finishOne();
         }
@@ -252,7 +249,7 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            alert("結果をクリップボードにコピーしました！\nアプリを開いてペーストして共有してください。");
+            alert("コピー完了！貼り付けて共有してね！");
         }
 
         function showFinalResult() {
@@ -298,16 +295,40 @@
             `;
         }
 
+        // PC用：ドラッグ移動機能
         function makeDraggable(el) {
             if (window.innerWidth <= 600) return;
             const h = document.getElementById("ui-header");
             let p1=0, p2=0, p3=0, p4=0;
+
             h.onmousedown = (e) => {
-                p3 = e.clientX; p4 = e.clientY;
-                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+                e.preventDefault();
+                // 初期マウス位置
+                p3 = e.clientX;
+                p4 = e.clientY;
+
+                // ドラッグ開始時にtransitionを切る（動きを滑らかにするため）
+                el.style.transition = "none";
+
+                document.onmouseup = () => {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                    // ドラッグ終了後にtransitionを戻す
+                    el.style.transition = "transform 0.3s ease";
+                };
+
                 document.onmousemove = (e) => {
-                    p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY;
-                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto";
+                    e.preventDefault();
+                    // 移動量を計算
+                    p1 = p3 - e.clientX;
+                    p2 = p4 - e.clientY;
+                    p3 = e.clientX;
+                    p4 = e.clientY;
+
+                    // 要素の位置を更新
+                    el.style.top = (el.offsetTop - p2) + "px";
+                    el.style.left = (el.offsetLeft - p1) + "px";
+                    el.style.bottom = "auto";
                 };
             }
         }
