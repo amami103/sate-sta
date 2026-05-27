@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>クイズプレイ | サテステ</title>
@@ -38,7 +34,14 @@
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
-        .btn-x      { background: #000; grid-column: span 2; margin-bottom: 10px; font-size: 14px; padding: 12px; }
+
+        /* SNS共有ボタンエリア */
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+        .btn-sns { padding: 10px 0; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn-x { background: #000; }
+        .btn-line { background: #06C755; }
+        .btn-threads { background: #000; border: 1px solid #333; }
+        .btn-fb { background: #1877F2; }
         
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
@@ -56,7 +59,6 @@
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 15px 5px; }
 
-        /* 広告用：自然な埋め込みスタイル */
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
 
         @media (max-width: 600px) {
@@ -90,8 +92,6 @@
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
-                
-                <!-- ゲーム中の広告枠（視線の邪魔にならない場所） -->
                 <div class="ad-box">スポンサーリンク</div>
             </div>
 
@@ -209,24 +209,25 @@
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
             const timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
 
-            const shareText = encodeURIComponent(`航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n\n#サテステ #鉄道クイズ #地理クイズ\n`);
-            const shareUrl = encodeURIComponent(window.location.origin);
+            // SNS送信用テキスト
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n\n#サテステ #鉄道クイズ #地理クイズ\n`;
+            const shareUrl = window.location.origin;
 
             finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <!-- 広告枠1: 最も注目が集まるスコアの直下 -->
-                <div class="ad-box">スポンサーリンク (正解数下)</div>
-                
+                <div class="ad-box">スポンサーリンク</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
                 
-                <button class="btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}')">𝕏 で結果をシェアする</button>
-                
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}')">𝕏(Twitter)</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText + shareUrl)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + shareUrl)}')">Threads</button>
+                    <button class="btn-sns btn-fb" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}')">Facebook</button>
+                </div>
+
                 <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listH + '</ul>'}
-                
-                <!-- 広告枠2: 次に遊ぶボタンのすぐ上（クリック率が高い） -->
-                <div class="ad-box">スポンサーリンク (リスタート上)</div>
-                
+                <div class="ad-box">スポンサーリンク</div>
                 <div class="result-footer-buttons">
                     <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
