@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>サテステ | 航空写真・駅当てクイズで全国の鉄道を旅しよう</title>
-    <meta name="description" content="人工衛星から撮影された航空写真を見て駅名を当てるクイズゲームです。JR、大手私鉄、地下鉄など日本全国の駅から出題！鉄道ファンから地理好きまで楽しめます。">
+    <meta name="description" content="人工衛星から撮影された航空写真を見て駅名を当てるクイズゲームです。JR、大手私鉄、地下鉄など日本全国の駅から出題！">
     
     <!-- X(Twitter)共有設定 -->
     <meta name="twitter:card" content="summary_large_image">
@@ -32,12 +32,12 @@
         
         .btn-toggle-custom { background: #5856D6; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin: 10px 0; width: 100%; font-weight: bold; }
         #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
+        .custom-group { margin-bottom: 15px; }
         .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
         .btn-start { display: inline-block; background: #34C759; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.4); cursor: pointer; margin-top: 5px; }
         
-        /* 審査対策：記事・ポリシー */
         .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 30px; }
         .article-section h3 { font-size: 17px; color: #333; margin-top: 20px; }
         .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
@@ -45,7 +45,6 @@
         .ad-slot { background: #ebf0f5; color: #999; padding: 20px; text-align: center; font-size: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px dashed #cbd5e0; }
         
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
-        
         @media (max-width: 480px) { .check-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -80,12 +79,12 @@
                     </div>
                     <div class="setting-item">
                         <label>鉄道会社</label>
-                        <input type="text" class="search-input" placeholder="会社名を絞り込む..." oninput="filterSelect('company-select', this.value)">
+                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select', this.value)">
                         <select id="company-select"><option value="all">すべての会社</option></select>
                     </div>
                     <div class="setting-item">
                         <label>路線名</label>
-                        <input type="text" class="search-input" placeholder="路線名を絞り込む..." oninput="filterSelect('line-select', this.value)">
+                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select', this.value)">
                         <select id="line-select"><option value="all">すべての路線</option></select>
                     </div>
                 </div>
@@ -119,7 +118,6 @@
                 </label>
             </div>
 
-            <!-- 同意の注釈 -->
             <div style="margin-top: 20px; text-align: center;">
                 <p style="font-size: 10px; color: #888; margin-bottom: 8px;">
                     「開始」ボタンを押すことで、ページ下部の<br>
@@ -129,30 +127,21 @@
             </div>
         </div>
 
-        <!-- 審査対策：解説セクション -->
         <div class="card article-section">
             <h2>サテステとは？</h2>
-            <p>「サテステ」は、国土地理院が提供する高精細な航空写真を使用して、全国の駅名を当てる地理クイズゲームです。普段利用している駅や、一生に一度は行ってみたい秘境駅まで、真上からの視点で眺めることで新しい発見があるかもしれません。鉄道ファンだけでなく、地図マニアや旅行好きの方も楽しめる内容となっています。</p>
-            
-            <h3>より楽しむためのヒント</h3>
-            <p>航空写真から駅を特定するには、線路の数やホームの長さはもちろん、駅周辺の建物の密集度や道路の走り方、川や山などの自然地形が大きなヒントになります。都会の複雑な配線を楽しむもよし、地方の単線が描く美しいカーブに浸るもよし。自分なりの楽しみ方を見つけてください。</p>
+            <p>「サテステ」は、国土地理院が提供する高精細な航空写真を使用して、全国の駅名を当てる地理クイズゲームです。日本全国約9,000駅のデータからランダムに出題されます。</p>
+            <h3>航空写真で駅を特定するコツ</h3>
+            <p>線路の数やホームの長さ、周辺の街並みや建物の密集度が大きなヒントになります。都会の複雑な配線や、地方ののどかな風景など、真上からの視点をお楽しみください。</p>
         </div>
 
-        <!-- 審査対策：利用規約・プライバシーポリシー -->
         <div class="card policy-box" id="policy">
             <h3>利用規約・免責事項</h3>
-            <p><b>1. サービスの概要</b><br>本サイトは、個人が運営する無料のブラウザゲームです。予告なく内容の変更やサービスの停止を行う場合があります。</p>
-            <p><b>2. 免責事項</b><br>掲載データの正確性には万全を期していますが、情報の古さや誤りに起因する損害について、運営者は一切の責任を負いません。本サイトを移動や旅行の公式な根拠として利用しないでください。</p>
-            <p><b>3. 出典・権利</b><br>
-            ・地図データ：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（空中写真）</a><br>
-            ・駅データ：<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a><br>
-            各データの著作権はそれぞれの権利者に帰属します。</p>
-
+            <p>本サイトは無料でご利用いただけます。掲載データの正確性には万全を期していますが、情報の誤りに起因する損害について、運営者は一切の責任を負いません。<br>
+            ・地図データ：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a><br>
+            ・駅データ：<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a></p>
             <h3>プライバシーポリシー</h3>
-            <p><b>広告配信について:</b><br>当サイトではGoogle AdSenseを利用しています。Google等の第三者配信事業者はCookieを使用して、ユーザーが当サイトや他のウェブサイトに過去にアクセスした際の情報に基づいて広告を配信します。Cookieを無効にする方法はGoogleの「<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">広告 – ポリシーと規約</a>」をご確認ください。</p>
-            
-            <p><b>お問い合わせ:</b><br>不具合報告やご意見は、以下のフォームより受け付けております。<br>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">サテステ お問い合わせフォーム</a></p>
+            <p>当サイトではGoogle AdSenseを利用しています。Google等の第三者配信事業者はCookieを使用して広告を配信します。詳細はGoogleのポリシーをご確認ください。</p>
+            <p><b>お問い合わせ:</b><br><a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a></p>
         </div>
     </main>
 
