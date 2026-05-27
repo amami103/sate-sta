@@ -16,21 +16,17 @@
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); 
             padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); 
             width: 320px; max-height: 85vh; display: flex; flex-direction: column;
-            /* スマホの最小化時のみアニメーションを適用 */
             transition: transform 0.3s ease;
         }
         
-        /* 青いヘッダー部分 */
         .ui-header { 
             background: #007AFF; color: white; padding: 12px; 
-            cursor: move; /* PCでは移動アイコン */
-            font-size: 13px; text-align: center; 
+            cursor: move; font-size: 13px; text-align: center; 
             border-top-left-radius: 12px; border-top-right-radius: 12px; 
             user-select: none; flex-shrink: 0; font-weight: bold; 
         }
 
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
-
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
 
@@ -45,7 +41,7 @@
         .btn-hint   { background: #5856D6; font-size: 10px; }
 
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
-        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; }
+        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
         .btn-x { background: #000; }
         .btn-line { background: #06C755; }
         .btn-threads { background: #000; border: 1px solid #333; }
@@ -63,22 +59,16 @@
         .res-sub { font-size: 10px; color: #777; display: block; }
         .res-time-label { font-size: 10px; color: #007AFF; font-weight: bold; }
         .res-status { width: 25px; text-align: center; font-size: 16px; }
-        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; }
         .final-score { font-size: 24px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
         .total-time-display { font-size: 14px; color: #333; text-align: center; margin-bottom: 15px; padding: 5px; border-bottom: 1px solid #eee; }
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 15px 5px; }
-
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
 
-        /* スマホ向け：下側に固定し、最小化できるようにする */
         @media (max-width: 600px) {
-            .ui-container { 
-                width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important;
-                border-radius: 20px 20px 0 0; max-height: 70vh; 
-            }
+            .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; }
             .ui-header { cursor: pointer; padding: 14px; }
-            /* 最小化状態 */
             .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
             .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         }
@@ -122,11 +112,8 @@
 
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-        // スマホ用：ヘッダークリックで最小化切り替え
         function handleHeaderClick() {
-            if (window.innerWidth <= 600) {
-                document.getElementById('ui-panel').classList.toggle('minimized');
-            }
+            if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized');
         }
         function expandPanel() {
             document.getElementById('ui-panel').classList.remove('minimized');
@@ -135,7 +122,6 @@
         function init() {
             const params = new URLSearchParams(window.location.search);
             isLocked = params.get('lock') === 'true';
-            
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
 
@@ -171,7 +157,8 @@
             totalQuestions = gameStations.length;
 
             const dl = document.getElementById('station-list');
-            [...new Set(stations.map(s => s.name))].sort().forEach(n => {
+            const uniqueNames = [...new Set(stations.map(s => s.name))].sort();
+            uniqueNames.forEach(n => {
                 const o = document.createElement('option');
                 o.value = n;
                 dl.appendChild(o);
@@ -271,18 +258,24 @@
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ`;
             const shareUrl = window.location.origin;
 
+            // SNSリンク生成
+            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
             finalUi.innerHTML = `
                 <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
                 <div class="ad-box">スポンサーリンク</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
                 
                 <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}')">𝕏</button>
-                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText + '\' + shareUrl)}')">LINE</button>
-                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + '\\n' + shareUrl)}')">Threads</button>
-                    <button class="btn-sns btn-fb" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}')">Facebook</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}\\n${shareUrl}')">Instagram</button>
-                    <button class="btn-sns btn-tiktok" onclick="copyToClipboard('${shareText}\\n${shareUrl}')">TikTok</button>
+                    <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
+                    <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
+                    <button class="btn-sns btn-fb" onclick="window.open('${fbUrl}')">Facebook</button>
+                    <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
+                    <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
                 </div>
 
                 <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
@@ -293,42 +286,29 @@
                     <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
                 </div>
             `;
+
+            // ボタンのクリックイベント（コピー用）
+            const fullText = shareText + "\n" + shareUrl;
+            document.getElementById('insta-copy').onclick = () => copyToClipboard(fullText);
+            document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullText);
         }
 
-        // PC用：ドラッグ移動機能
         function makeDraggable(el) {
             if (window.innerWidth <= 600) return;
             const h = document.getElementById("ui-header");
             let p1=0, p2=0, p3=0, p4=0;
-
             h.onmousedown = (e) => {
                 e.preventDefault();
-                // 初期マウス位置
-                p3 = e.clientX;
-                p4 = e.clientY;
-
-                // ドラッグ開始時にtransitionを切る（動きを滑らかにするため）
+                p3 = e.clientX; p4 = e.clientY;
                 el.style.transition = "none";
-
                 document.onmouseup = () => {
-                    document.onmouseup = null;
-                    document.onmousemove = null;
-                    // ドラッグ終了後にtransitionを戻す
+                    document.onmouseup = null; document.onmousemove = null;
                     el.style.transition = "transform 0.3s ease";
                 };
-
                 document.onmousemove = (e) => {
                     e.preventDefault();
-                    // 移動量を計算
-                    p1 = p3 - e.clientX;
-                    p2 = p4 - e.clientY;
-                    p3 = e.clientX;
-                    p4 = e.clientY;
-
-                    // 要素の位置を更新
-                    el.style.top = (el.offsetTop - p2) + "px";
-                    el.style.left = (el.offsetLeft - p1) + "px";
-                    el.style.bottom = "auto";
+                    p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY;
+                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto";
                 };
             }
         }
