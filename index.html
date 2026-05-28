@@ -59,6 +59,18 @@
         .update-date { color: #888; font-family: monospace; flex-shrink: 0; }
         .update-text { color: #333; }
 
+        /* --- 広告用の追加スタイル --- */
+        .page-container { display: flex; justify-content: center; width: 100%; gap: 20px; }
+        .side-ad { width: 160px; flex-shrink: 0; padding-top: 20px; }
+        .side-ad-inner { position: sticky; top: 20px; background: #ebf0f5; border: 1px dashed #cbd5e0; height: 600px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border-radius: 10px; }
+        .mobile-ad { display: none; }
+
+        /* PCサイド広告を隠す設定（1050px以下で非表示） */
+        @media (max-width: 1050px) {
+            .side-ad { display: none; }
+            .mobile-ad { display: block; } /* 代わりにスマホ用枠を表示 */
+        }
+
         /* スマホ用レスポンシブ対応：ロゴが被らないように縦に並べる */
         @media (max-width: 600px) { 
             header { min-height: auto; padding: 20px 10px; }
@@ -75,160 +87,178 @@
         <p class="subtitle">衛星画像から駅を当てよう</p>
     </header>
 
-    <main>
-        <div class="ad-slot">スポンサーリンク</div>
+    <!-- 左右広告のためのラッパー追加 -->
+    <div class="page-container">
+        
+        <!-- PC用左サイド広告 -->
+        <aside class="side-ad">
+            <div class="side-ad-inner">スポンサーリンク</div>
+        </aside>
 
-        <div class="card">
-            <div class="setting-box">
-                <div id="normal-settings">
-                    <div class="setting-item">
-                        <label>都道府県・地方</label>
-                        <select id="pref-select">
-                            <option value="all">全国（指定なし）</option>
-                            <option value="reg:北海道地方">・北海道地方</option>
-                            <option value="reg:東北地方">・東北地方</option>
-                            <option value="reg:関東地方">・関東地方</option>
-                            <option value="reg:中部地方">・中部地方</option>
-                            <option value="reg:近畿地方">・近畿地方</option>
-                            <option value="reg:中国地方">・中国地方</option>
-                            <option value="reg:四国地方">・四国地方</option>
-                            <option value="reg:九州地方">・九州地方</option>
-                            <option disabled>----------</option>
-                        </select>
+        <main>
+            <div class="ad-slot">スポンサーリンク</div>
+
+            <div class="card">
+                <div class="setting-box">
+                    <div id="normal-settings">
+                        <div class="setting-item">
+                            <label>都道府県・地方</label>
+                            <select id="pref-select">
+                                <option value="all">全国（指定なし）</option>
+                                <option value="reg:北海道地方">・北海道地方</option>
+                                <option value="reg:東北地方">・東北地方</option>
+                                <option value="reg:関東地方">・関東地方</option>
+                                <option value="reg:中部地方">・中部地方</option>
+                                <option value="reg:近畿地方">・近畿地方</option>
+                                <option value="reg:中国地方">・中国地方</option>
+                                <option value="reg:四国地方">・四国地方</option>
+                                <option value="reg:九州地方">・九州地方</option>
+                                <option disabled>----------</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>鉄道会社</label>
+                            <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select', this.value)">
+                            <select id="company-select"><option value="all">すべての会社</option></select>
+                        </div>
+                        <div class="setting-item">
+                            <label>路線名</label>
+                            <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select', this.value)">
+                            <select id="line-select"><option value="all">すべての路線</option></select>
+                        </div>
                     </div>
-                    <div class="setting-item">
-                        <label>鉄道会社</label>
-                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select', this.value)">
-                        <select id="company-select"><option value="all">すべての会社</option></select>
+
+                    <button class="btn-toggle-custom" onclick="toggleCustom()">カスタムモードに切り替え</button>
+
+                    <div id="custom-area">
+                        <div class="custom-group">
+                            <h4 style="margin:0 0 5px 0;">都道府県を選択</h4>
+                            <div class="check-grid" id="pref-checks"></div>
+                        </div>
+                        <div class="custom-group">
+                            <h4 style="margin:0 0 5px 0;">鉄道会社を選択</h4>
+                            <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterCheckboxes('company-checks', this.value)">
+                            <div class="check-grid" id="company-checks"></div>
+                        </div>
+                        <div class="custom-group">
+                            <h4 style="margin:0 0 5px 0;">路線を選択</h4>
+                            <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterCheckboxes('line-checks', this.value)">
+                            <div class="check-grid" id="line-checks"></div>
+                        </div>
                     </div>
-                    <div class="setting-item">
-                        <label>路線名</label>
-                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select', this.value)">
-                        <select id="line-select"><option value="all">すべての路線</option></select>
+
+                    <div class="setting-item" style="text-align: center; margin-top: 20px;">
+                        <label>出題数</label>
+                        <input type="number" id="num-input" value="10" min="1" max="100">
                     </div>
+                    <label class="lock-option">
+                        <input type="checkbox" id="map-lock">
+                        <span>地図の移動・拡大を禁止する（ハードモード）</span>
+                    </label>
                 </div>
 
-                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタムモードに切り替え</button>
-
-                <div id="custom-area">
-                    <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0;">都道府県を選択</h4>
-                        <div class="check-grid" id="pref-checks"></div>
-                    </div>
-                    <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0;">鉄道会社を選択</h4>
-                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterCheckboxes('company-checks', this.value)">
-                        <div class="check-grid" id="company-checks"></div>
-                    </div>
-                    <div class="custom-group">
-                        <h4 style="margin:0 0 5px 0;">路線を選択</h4>
-                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterCheckboxes('line-checks', this.value)">
-                        <div class="check-grid" id="line-checks"></div>
-                    </div>
-                </div>
-
-                <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                    <label>出題数</label>
-                    <input type="number" id="num-input" value="10" min="1" max="100">
-                </div>
-                <label class="lock-option">
-                    <input type="checkbox" id="map-lock">
-                    <span>地図の移動・拡大を禁止する（ハードモード）</span>
-                </label>
-            </div>
-
-            <div style="margin-top: 20px; text-align: center;">
-                <p style="font-size: 10px; color: #888; margin-bottom: 8px;">
-                    ゲームを開始することで、ページ下部の<br>
-                    <a href="#policy" style="color: #007AFF;">利用規約・プライバシーポリシー</a>に同意したものとみなされます。
-                </p>
-                <button onclick="startGame()" class="btn-start">クイズを開始する</button>
-            </div>
-        </div>
-
-        <div class="card article-section">
-            <h2>サテステとは？</h2>
-            <p>「サテステ」は、国土地理院が提供する高精細な航空写真を使用して、全国の駅名を当てる地理クイズゲームです。日本全国約9,000駅のデータからランダムに出題されます。駅名や路線の表記等は<a href="https://ekidata.jp/faq.php" target="_blank">駅データ.jp</a>様のデータに従います。そのため同じ駅でも別の路線の駅として出題される可能性があります（今後対応予定）。</p>
-        </div>
-
-        <div class="card article-section">
-            <h2>サテステの遊び方</h2>
-            <h3>1. 出題範囲を設定する</h3>
-            <p>まずはトップ画面でクイズの条件を設定しましょう。絞り込まない場合は全国からランダムに出題されます。また、特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、以下のようなやり込みモードもあります。</p>
-            <ul>
-                <li><strong>カスタムモード:</strong> 複数の都道府県や会社を自由に組み合わせて、自分だけのオリジナルクイズを作れます。</li>
-                <li><strong>ハードモード:</strong> 地図の移動や拡大・縮小を一切禁止する難易度の高い玄人向けのモードです。</li>
-            </ul>
-             <p>出題条件を設定したら出題数を設定して、クイズを開始するボタンを押すとクイズが始まります。</p>
-
-            <h3>2. 航空写真から駅名を推測</h3>
-            <p>クイズが始まると、ある駅の真上の航空写真が表示されます。地図を動かしたりズームしたり（通常モードのみ）して、周囲の地形や駅の構造から駅名を導き出しましょう。回答欄に駅名の一部を入力すると、候補がリスト表示されるので、正しい駅名を選択してください。</p>
-
-            <h3>3. ヒント機能を活用</h3>
-            <p>どうしても分からない時は「ヒント」ボタンを使ってみましょう。「都道府県」や「所属路線名」を確認することができます。それでもギブアップの時は「答えを見る」で正解を確認して次に進めます。</p>
-
-            <h3>4. リザルト画面で復習</h3>
-            <p>全問終了後は結果発表画面が表示されます。ここでは各問題に何秒かかったかの「解答時間」も記録されています。また、間違えた問題や気になった駅は「確認」ボタンを押すことで、再度地図上でその場所を詳しく眺めることができます。</p>
-
-            <h3>5. 結果をSNSでシェア</h3>
-            <p>スコアやプレイ履歴などを、ぜひシェアボタンからSNSに投稿してみてくださいね！</p>
-        </div>
-
-        <!-- 動画配信・サイト掲載に関するセクション -->
-        <div class="card article-section">
-            <h2>動画配信・サイト掲載について</h2>
-            <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
-            <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
-            
-            <h3>【利用上の注意点】</h3>
-            <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
-                <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
-                <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
-                <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
-                <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
-            </ul>
-        </div>
-
-        <div class="card policy-box" id="policy">
-            <h3>利用規約・免責事項</h3>
-            <p style="font-size: 11px;">最終更新日：2026年5月27日</p>
-            
-            <p><b>1. サービスの概要</b><br>
-            本サイト「サテステ」は、航空写真を用いた駅名当てクイズを提供する個人運営のウェブサイトです。どなたでも無料でご利用いただけますが、予告なくサービスの内容を変更・停止することがあります。</p>
-
-            <p><b>2. 免責事項</b><br>
-            本サイトで提供する地図情報、駅名、路線名等のデータについては細心の注意を払っておりますが、情報の正確性、完全性、最新性を保証するものではありません。本サイトの利用により生じた直接的、間接的な損害（データの誤りに起因するトラブル等）について、運営者は一切の責任を負いません。実際の旅行や移動の際は、必ず公共交通機関の公式サイト等をご確認ください。</p>
-            
-            <p><b>3. 知的財産権について</b><br>
-            ・本サイト内のプログラム、デザインに関する著作権は運営者に帰属します。<br>
-            ・地図データは、<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a>を利用しています。<br>
-            ・駅データは、<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a>の提供データを利用しています。<br>
-            各データの二次利用については、各データ提供元の規約に従ってください。</p>
-
-            <p><b>4. 禁止事項</b><br>
-            本サイトのプログラムの改ざん、不正アクセス、サーバーへの過度な負荷をかける行為、および本サイトのイメージを損なうような不適切な利用を禁止します。</p>
-
-            <h3>プライバシーポリシー</h3>
-            <p><b>広告の配信について:</b><br>
-            当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、Cookie（クッキー）を使用することがあります。Cookieを無効にする設定およびGoogleアドセンスに関する詳細は「<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">広告 – ポリシーと規約 – Google</a>」をご覧ください。</p>
-            
-            <p><b>アクセス解析について:</b><br>
-            当サイトでは、サイトの分析と改善のためにGoogleアナリティクスを利用することがあります。その際、データ収集のためにCookieを使用しますが、データは匿名で収集されており、個人を特定するものではありません。</p>
-
-            <p><b>お問い合わせ:</b><br>
-            不具合報告やご意見は、こちらの<a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a>よりお寄せください。</p>
-        </div>
-
-        <div class="card">
-            <h3>更新履歴</h3>
-            <div class="update-log">
-                <div class="update-item">
-                    <span class="update-date">2026.05.27</span>
-                    <span class="update-text">「サテステ」を公開。</span>
+                <div style="margin-top: 20px; text-align: center;">
+                    <p style="font-size: 10px; color: #888; margin-bottom: 8px;">
+                        ゲームを開始することで、ページ下部の<br>
+                        <a href="#policy" style="color: #007AFF;">利用規約・プライバシーポリシー</a>に同意したものとみなされます。
+                    </p>
+                    <button onclick="startGame()" class="btn-start">クイズを開始する</button>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <div class="card article-section">
+                <h2>サテステとは？</h2>
+                <p>「サテステ」は、国土地理院が提供する高精細な航空写真を使用して、全国の駅名を当てる地理クイズゲームです。日本全国約9,000駅のデータからランダムに出題されます。駅名や路線の表記等は<a href="https://ekidata.jp/faq.php" target="_blank">駅データ.jp</a>様のデータに従います。そのため同じ駅でも別の路線の駅として出題される可能性があります（今後対応予定）。</p>
+            </div>
+
+            <div class="card article-section">
+                <h2>サテステの遊び方</h2>
+                <h3>1. 出題範囲を設定する</h3>
+                <p>まずはトップ画面でクイズの条件を設定しましょう。絞り込まない場合は全国からランダムに出題されます。また、特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、以下のようなやり込みモードもあります。</p>
+                <ul>
+                    <li><strong>カスタムモード:</strong> 複数の都道府県や会社を自由に組み合わせて、自分だけのオリジナルクイズを作れます。</li>
+                    <li><strong>ハードモード:</strong> 地図の移動や拡大・縮小を一切禁止する難易度の高い玄人向けのモードです。</li>
+                </ul>
+                 <p>出題条件を設定したら出題数を設定して、クイズを開始するボタンを押すとクイズが始まります。</p>
+
+                <h3>2. 航空写真から駅名を推測</h3>
+                <p>クイズが始まると、ある駅の真上の航空写真が表示されます。地図を動かしたりズームしたり（通常モードのみ）して、周囲の地形や駅の構造から駅名を導き出しましょう。回答欄に駅名の一部を入力すると、候補がリスト表示されるので、正しい駅名を選択してください。</p>
+
+                <h3>3. ヒント機能を活用</h3>
+                <p>どうしても分からない時は「ヒント」ボタンを使ってみましょう。「都道府県」や「所属路線名」を確認することができます。それでもギブアップの時は「答えを見る」で正解を確認して次に進めます。</p>
+
+                <h3>4. リザルト画面で復習</h3>
+                <p>全問終了後は結果発表画面が表示されます。ここでは各問題に何秒かかったかの「解答時間」も記録されています。また、間違えた問題や気になった駅は「確認」ボタンを押すことで、再度地図上でその場所を詳しく眺めることができます。</p>
+
+                <h3>5. 結果をSNSでシェア</h3>
+                <p>スコアやプレイ履歴などを、ぜひシェアボタンからSNSに投稿してみてくださいね！</p>
+            </div>
+
+            <!-- スマホ版限定広告枠 -->
+            <div class="ad-slot mobile-ad">スポンサーリンク</div>
+
+            <!-- 動画配信・サイト掲載に関するセクション -->
+            <div class="card article-section">
+                <h2>動画配信・サイト掲載について</h2>
+                <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
+                <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
+                
+                <h3>【利用上の注意点】</h3>
+                <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
+                    <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
+                    <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
+                    <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
+                    <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
+                </ul>
+            </div>
+
+            <div class="card policy-box" id="policy">
+                <h3>利用規約・免責事項</h3>
+                <p style="font-size: 11px;">最終更新日：2026年5月27日</p>
+                
+                <p><b>1. サービスの概要</b><br>
+                本サイト「サテステ」は、航空写真を用いた駅名当てクイズを提供する個人運営のウェブサイトです。どなたでも無料でご利用いただけますが、予告なくサービスの内容を変更・停止することがあります。</p>
+
+                <p><b>2. 免責事項</b><br>
+                本サイトで提供する地図情報、駅名、路線名等のデータについては細心の注意を払っておりますが、情報の正確性、完全性、最新性を保証するものではありません。本サイトの利用により生じた直接的、間接的な損害（データの誤りに起因するトラブル等）について、運営者は一切の責任を負いません。実際の旅行や移動の際は、必ず公共交通機関の公式サイト等をご確認ください。</p>
+                
+                <p><b>3. 知的財産権について</b><br>
+                ・本サイト内のプログラム、デザインに関する著作権は運営者に帰属します。<br>
+                ・地図データは、<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a>を利用しています。<br>
+                ・駅データは、<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a>の提供データを利用しています。<br>
+                各データの二次利用については、各データ提供元の規約に従ってください。</p>
+
+                <p><b>4. 禁止事項</b><br>
+                本サイトのプログラムの改ざん、不正アクセス、サーバーへの過度な負荷をかける行為、および本サイトのイメージを損なうような不適切な利用を禁止します。</p>
+
+                <h3>プライバシーポリシー</h3>
+                <p><b>広告の配信について:</b><br>
+                当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、Cookie（クッキー）を使用することがあります。Cookieを無効にする設定およびGoogleアドセンスに関する詳細は「<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">広告 – ポリシーと規約 – Google</a>」をご覧ください。</p>
+                
+                <p><b>アクセス解析について:</b><br>
+                当サイトでは、サイトの分析と改善のためにGoogleアナリティクスを利用することがあります。その際、データ収集のためにCookieを使用しますが、データは匿名で収集されており、個人を特定するものではありません。</p>
+
+                <p><b>お問い合わせ:</b><br>
+                不具合報告やご意見は、こちらの<a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a>よりお寄せください。</p>
+            </div>
+
+            <div class="card">
+                <h3>更新履歴</h3>
+                <div class="update-log">
+                    <div class="update-item">
+                        <span class="update-date">2026.05.27</span>
+                        <span class="update-text">「サテステ」を公開。</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- PC用右サイド広告 -->
+        <aside class="side-ad">
+            <div class="side-ad-inner">スポンサーリンク</div>
+        </aside>
+
+    </div><!-- /page-container -->
 
     <footer>&copy; 2026 サテステ -From Satellite to Station- 制作委員会  </footer>
 
@@ -263,7 +293,7 @@
             const select = document.getElementById(id);
             select.innerHTML = `<option value="all">${defaultText}</option>`;
             if(type === "grp") {
-                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手私鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
+                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
             }
             items.forEach(item => select.add(new Option(item, item)));
         }
