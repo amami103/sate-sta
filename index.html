@@ -295,7 +295,7 @@
             const select = document.getElementById(id);
             select.innerHTML = `<option value="all">${defaultText}</option>`;
             if(type === "grp") {
-                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
+                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手私鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
             }
             items.forEach(item => select.add(new Option(item, item)));
         }
