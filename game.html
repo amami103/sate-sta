@@ -36,6 +36,14 @@
             user-select: none; flex-shrink: 0; font-weight: bold; 
         }
 
+        /* PC用のヒント表示を追加 */
+        .ui-header::after {
+            content: ' (ドラッグで移動)';
+            font-size: 10px;
+            font-weight: normal;
+            opacity: 0.8;
+        }
+
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
@@ -86,6 +94,7 @@
             .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; }
             .ui-header { cursor: pointer; padding: 14px; }
             .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
+            /* スマホ用のヒント表示に上書き */
             .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         }
     </style>
