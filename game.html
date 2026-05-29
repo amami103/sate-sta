@@ -182,7 +182,7 @@
                 }
             });
 
-            // 2. フィルタリング処理（ゲーム用）
+            // 2. フィルタリング（ゲーム用）
             let filtered = [...allUniqueStations];
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
@@ -212,18 +212,24 @@
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
 
-            // 3. 入力候補の作成（同名異駅がある場合のみ詳細表示）
+            // 3. 入力候補の作成（同名駅のみ区別、他は検索を妨げないようにする）
             const dl = document.getElementById('station-list');
             const nameCounts = {};
-            // 物理的に違う場所にある同じ駅名をカウント
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             
+            // 重複名があった場合のみ区別できるように、不可視文字（ゼロ幅スペース）を付与
+            const nameIndices = {};
             allUniqueStations.sort((a, b) => a.name.localeCompare(b.name, 'ja')).forEach(s => {
                 const o = document.createElement('option');
                 if (nameCounts[s.name] > 1) {
-                    // 同名で場所が違う駅がある場合のみ詳細をつける
-                    o.value = `${s.name} (${s.pref} / ${s.line})`;
+                    // 同名異駅がある場合のみ、ラベルで詳細を表示
+                    // ゼロ幅スペースを付与することで、ブラウザに別々の選択肢として認識させる
+                    const idx = nameIndices[s.name] || 0;
+                    o.value = s.name + '\u200B'.repeat(idx);
+                    o.label = `(${s.pref} / ${s.line})`;
+                    nameIndices[s.name] = idx + 1;
                 } else {
+                    // 同名駅がないなら名前のみ。これで「福島」で「郡山（福島）」がヒットしなくなる
                     o.value = s.name;
                 }
                 dl.appendChild(o);
@@ -261,10 +267,8 @@
             if (answered) return;
             expandPanel();
             const time = (Date.now() - startTime) / 1000;
-            const userRaw = document.getElementById('station-input').value.trim();
-            // カッコ内の情報を除去して比較
-            const user = userRaw.split(' (')[0];
-            
+            // 入力値からゼロ幅スペースを除去して判定
+            const user = document.getElementById('station-input').value.replace(/\u200B/g, '').trim();
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
