@@ -137,7 +137,7 @@
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
-        let allStationLabels = []; // 全駅の表示用ラベルリスト
+        let allStationLabels = []; 
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -160,7 +160,7 @@
             document.getElementById('ui-panel').classList.remove('minimized');
         }
 
-        // 入力に合わせて候補を絞り込む（カッコ内を無視するカスタムフィルタ）
+        // カスタムフィルタ：前方一致（駅名の先頭が入力文字と一致する場合のみ表示）
         function updateDatalist() {
             const val = document.getElementById('station-input').value.toLowerCase();
             const dl = document.getElementById('station-list');
@@ -171,14 +171,14 @@
             const fragment = document.createDocumentFragment();
             let count = 0;
             for (const label of allStationLabels) {
-                // カッコより前の部分（純粋な駅名）だけで検索判定
                 const namePart = label.split(' (')[0].toLowerCase();
-                if (namePart.includes(val)) {
+                // .includes から .startsWith に変更
+                if (namePart.startsWith(val)) {
                     const o = document.createElement('option');
                     o.value = label;
                     fragment.appendChild(o);
                     count++;
-                    if (count >= 100) break; // 動作を軽くするため最大100件
+                    if (count >= 100) break;
                 }
             }
             dl.innerHTML = "";
@@ -193,7 +193,6 @@
 
             if (typeof stations === 'undefined') return;
 
-            // 1. 同一場所の重複排除
             const allUniqueStations = [];
             const stationMap = new Map();
             stations.forEach(s => {
@@ -208,17 +207,14 @@
                 }
             });
 
-            // 2. 検索用ラベルの生成（同名異駅がある場合のみ詳細を付与）
             const nameCounts = {};
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             allStationLabels = allUniqueStations.map(s => {
                 return (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
             }).sort();
 
-            // 3. 入力イベントの設定
             document.getElementById('station-input').addEventListener('input', updateDatalist);
 
-            // 4. フィルタリング処理（ゲーム用）
             let filtered = [...allUniqueStations];
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
@@ -259,7 +255,7 @@
             document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
-            document.getElementById('station-list').innerHTML = ""; // 毎回クリア
+            document.getElementById('station-list').innerHTML = ""; 
             document.getElementById('hint-area').style.display = "none";
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
