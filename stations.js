@@ -1,5 +1,4 @@
 const stations = [
-  [
   {
     "name": "東京",
     "lat": 35.681236,
