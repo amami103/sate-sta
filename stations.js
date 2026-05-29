@@ -822,7 +822,7 @@ const stations = [
     "pref": "福井県",
     "line": "北陸新幹線",
     "company": "JR西日本"
-  }
+  },
   {
     "name": "函館",
     "lat": 41.773709,
