@@ -167,7 +167,7 @@
 
             if (typeof stations === 'undefined') return;
 
-            // 1. 同一場所の重複排除（天王寺などを1つに統合）
+            // 1. 同一場所の重複排除（天王寺などを統合）
             const allUniqueStations = [];
             const stationMap = new Map();
             stations.forEach(s => {
@@ -212,15 +212,16 @@
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
 
-            // 3. 入力候補の作成（同名異駅がある場合のみ詳細を表示）
+            // 3. 入力候補の作成（同名異駅がある場合のみ詳細表示）
             const dl = document.getElementById('station-list');
             const nameCounts = {};
+            // 物理的に違う場所にある同じ駅名をカウント
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             
             allUniqueStations.sort((a, b) => a.name.localeCompare(b.name, 'ja')).forEach(s => {
                 const o = document.createElement('option');
                 if (nameCounts[s.name] > 1) {
-                    // 同名で場所が違う駅がある場合は「駅名 (県名 / 路線)」を表示
+                    // 同名で場所が違う駅がある場合のみ詳細をつける
                     o.value = `${s.name} (${s.pref} / ${s.line})`;
                 } else {
                     o.value = s.name;
@@ -261,7 +262,7 @@
             expandPanel();
             const time = (Date.now() - startTime) / 1000;
             const userRaw = document.getElementById('station-input').value.trim();
-            // 候補から選んだ場合の「 (県名 / 路線)」の部分をカットして比較
+            // カッコ内の情報を除去して比較
             const user = userRaw.split(' (')[0];
             
             const res = document.getElementById('result');
