@@ -53,7 +53,7 @@
         button:active { opacity: 0.7; }
         
         .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
-        .btn-reset  { background: #8E8E93; }
+        .btn-reset  { background: #8E8E8E; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
@@ -168,7 +168,28 @@
 
             if (typeof stations === 'undefined') return;
 
-            let filtered = [...stations];
+            // --- 重複排除ロジックの追加 ---
+            const uniqueStations = [];
+            const stationMap = new Map();
+            stations.forEach(s => {
+                // 名前と座標(小数点3桁)でキーを作成
+                const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
+                if (stationMap.has(key)) {
+                    const existing = stationMap.get(key);
+                    // 路線名がまだ含まれていなければ追加
+                    if (!existing.line.includes(s.line)) {
+                        existing.line += `・${s.line}`;
+                    }
+                } else {
+                    const copy = { ...s };
+                    stationMap.set(key, copy);
+                    uniqueStations.push(copy);
+                }
+            });
+            // フィルタリング対象を重複排除後のデータに変更
+            let filtered = [...uniqueStations];
+            // --- 重複排除ここまで ---
+
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
             const sPref = params.get('pref');
             if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
@@ -192,7 +213,7 @@
             if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
             else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
-            if (filtered.length === 0) filtered = [...stations];
+            if (filtered.length === 0) filtered = [...uniqueStations];
             shuffle(filtered);
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
