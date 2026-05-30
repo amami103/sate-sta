@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <head>
-    <!-- 他のタグ（metaやtitleなど） -->
-    
-    <!-- ここを追加：タブに表示されるアイコン設定 -->
+    <!-- タブに表示されるアイコン設定 -->
     <link rel="icon" href="logo2.png">
-    <!-- スマホでホーム画面に追加した時のアイコン（任意） -->
     <link rel="apple-touch-icon" href="logo2.png">
     
-    <!-- 既存の他のコード（script, styleなど） -->
-</head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>クイズプレイ | サテステ</title>
@@ -36,7 +30,6 @@
             user-select: none; flex-shrink: 0; font-weight: bold; 
         }
 
-        /* PC用のヒント表示を追加 */
         .ui-header::after {
             content: ' (ドラッグで移動)';
             font-size: 10px;
@@ -58,7 +51,6 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
 
-        /* 追加：全画面ボタンのスタイル */
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
 
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
@@ -77,6 +69,7 @@
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
         .res-name { font-weight: bold; color: #333; display: block; font-size: 13px; }
+        .res-user-ans { font-size: 11px; color: #555; display: block; margin-top: 2px; } /* 解答表示用 */
         .res-sub { font-size: 10px; color: #777; display: block; }
         .res-time-label { font-size: 10px; color: #007AFF; font-weight: bold; }
         .res-status { width: 25px; text-align: center; font-size: 16px; }
@@ -88,13 +81,10 @@
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
 
         @media (max-width: 600px) {
-            /* 追加：モバイル時は全画面ボタンを隠す */
             .btn-fullscreen { display: none; }
-
             .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; }
             .ui-header { cursor: pointer; padding: 14px; }
             .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
-            /* スマホ用のヒント表示に上書き */
             .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         }
     </style>
@@ -113,9 +103,7 @@
                 <datalist id="station-list"></datalist>
                 
                 <div class="button-group">
-                    <!-- 追加：全画面ボタン（PCのみ表示） -->
                     <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
-
                     <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                     <button class="btn-reset" onclick="resetView()">場所を戻す</button>
                     <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
@@ -160,7 +148,6 @@
             document.getElementById('ui-panel').classList.remove('minimized');
         }
 
-        // カスタムフィルタ：前方一致（駅名の先頭が入力文字と一致する場合のみ表示）
         function updateDatalist() {
             const val = document.getElementById('station-input').value.toLowerCase();
             const dl = document.getElementById('station-list');
@@ -172,7 +159,6 @@
             let count = 0;
             for (const label of allStationLabels) {
                 const namePart = label.split(' (')[0].toLowerCase();
-                // .includes から .startsWith に変更
                 if (namePart.startsWith(val)) {
                     const o = document.createElement('option');
                     o.value = label;
@@ -283,9 +269,27 @@
             const res = document.getElementById('result');
             const isCorrect = (user === currentStation.name);
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            if (isCorrect) { res.innerHTML = "<span style='color:#D33;'>正解！</span>" + infoText; score++; }
-            else { res.innerHTML = "<span style='color:#007AFF;'>正解は「" + currentStation.name + "」</span>" + infoText; }
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: isCorrect, time: time });
+            
+            // 解答表示を追加
+            const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
+
+            if (isCorrect) { 
+                res.innerHTML = userAnsDisplay + "<span style='color:#D33;'>正解！</span>" + infoText; 
+                score++; 
+            } else { 
+                res.innerHTML = userAnsDisplay + "<span style='color:#007AFF;'>残念！ 正解は「" + currentStation.name + "」</span>" + infoText; 
+            }
+            
+            playHistory.push({ 
+                name: currentStation.name, 
+                pref: currentStation.pref, 
+                line: currentStation.line, 
+                lat: currentStation.lat, 
+                lng: currentStation.lng, 
+                isCorrect: isCorrect, 
+                time: time,
+                userAnswer: userRaw || "(未入力)" // 履歴に追加
+            });
             finishOne();
         }
 
@@ -293,9 +297,22 @@
             if (answered) return;
             expandPanel();
             const time = (Date.now() - startTime) / 1000;
+            const userRaw = document.getElementById('station-input').value.trim();
             const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time: time });
+            
+            const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
+            document.getElementById('result').innerHTML = userAnsDisplay + "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
+            
+            playHistory.push({ 
+                name: currentStation.name, 
+                pref: currentStation.pref, 
+                line: currentStation.line, 
+                lat: currentStation.lat, 
+                lng: currentStation.lng, 
+                isCorrect: false, 
+                time: time,
+                userAnswer: userRaw || "(未入力)" // 履歴に追加
+            });
             finishOne();
         }
 
@@ -333,7 +350,17 @@
             playHistory.forEach((h) => {
                 totalT += h.time;
                 const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                listH += `
+                <li class="result-item">
+                    <div class="res-status">${m}</div>
+                    <div class="res-info">
+                        <span class="res-name">${h.name}</span>
+                        <span class="res-user-ans">あなたの解答: ${h.userAnswer}</span>
+                        <span class="res-sub">${h.pref} / ${h.line}</span>
+                        <span class="res-time-label">${h.time.toFixed(1)}秒</span>
+                    </div>
+                    <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
+                </li>`;
             });
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
             const timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
