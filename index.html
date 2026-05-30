@@ -73,11 +73,11 @@
         
         footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
 
-        /* 更新履歴用のスタイル */
-        .update-log { max-height: 150px; overflow-y: auto; font-size: 13px; border: 1px solid #eee; padding: 10px; background: #fafafa; border-radius: 8px; text-align: left; }
-        .update-item { margin-bottom: 8px; display: flex; gap: 10px; }
-        .update-date { color: #888; font-family: monospace; flex-shrink: 0; }
-        .update-text { color: #333; }
+        /* 更新履歴用のスタイルを調整 */
+        .update-log { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; text-align: left; }
+        .update-item { margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+        .update-date { color: #888; flex-shrink: 0; width: 80px; font-size: 13px; } /* 固定幅とサイズ指定 */
+        .update-text { color: #333; font-size: 13px; } /* サイズを日付と統一 */
 
         /* --- 広告用の追加スタイル --- */
         .page-container { display: flex; justify-content: center; width: 100%; gap: 20px; }
@@ -251,7 +251,7 @@
                 <p><b>2. 免責事項</b><br>
                 本サイトで提供する地図情報、駅名、路線名等のデータについては細心の注意を払っておりますが、情報の正確性、完全性、最新性を保証するものではありません。本サイトの利用により生じた直接的、間接的な損害（データの誤りに起因するトラブル等）について、運営者は一切の責任を負いません。実際の旅行や移動の際は、必ず公共交通機関の公式サイト等をご確認ください。</p>
                 
-                <p><b>3. 知的財産権について</b><br>
+                <p><b>3. 知する財産権について</b><br>
                 ・本サイト内のプログラム、デザインに関する著作権は運営者に帰属します。<br>
                 ・地図データは、<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a>を利用しています。<br>
                 ・駅データは、一部を除いて<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a>の提供データを利用しています。<br>
@@ -277,9 +277,10 @@
                 <h3>更新履歴</h3>
                 <div class="update-log">
                     <div class="update-item">
-                         <span class="update-date">2026.05.30</span>
+                        <span class="update-date">2026.05.30</span>
                         <span class="update-text">「あなたの解答」が表示されるように変更。</span>
-                        
+                    </div>
+                    <div class="update-item">
                         <span class="update-date">2026.05.29</span>
                         <span class="update-text">「サテステ」を公開。</span>
                     </div>
