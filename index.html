@@ -1,388 +1,305 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVMQ4R05XJ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-RVMQ4R05XJ');
-</script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
+    <link rel="icon" href="logo2.png">
+    <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サテステ | 航空写真から駅当てクイズ</title>
-    <!-- タブに表示されるアイコンを追加 -->
-    <link rel="icon" href="logo2.jpg">
-    <meta name="description" content="人工衛星から撮影された航空写真を見て駅名を当てる無料クイズゲームです。JR、私鉄、地下鉄など日本全国約9,000駅からランダム出題。鉄道ファンから地理好きまで楽しめる Webアプリです。">
-    
-    <!-- X(Twitter)共有設定 -->
-    <meta property="og:url" content="https://sate-sta.com/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="サテステ | 航空写真から駅当てクイズ" />
-    <meta property="og:description" content="この駅、どこか分かりますか？全国約9,000駅からランダム出題！" />
-    <meta property="og:site_name" content="サテステ" />
-    <meta property="og:image" content="https://github.com/amami103/sate-sta/blob/main/logo.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Amami103_" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>チャレンジモード | サテステ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="stations.js"></script>
     <style>
-        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
-        .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        
-        h1 { margin: 0; font-size: 28px; }
-        p.subtitle { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-        main { flex: 1; width: 95%; max-width: 650px; padding: 20px 0; text-align: center; }
-        
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .card-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
-
-        .setting-item { margin-bottom: 15px; }
-        .setting-item label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
-        
-        select, input[type="number"], .search-input { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
-        .search-input { margin-bottom: 5px; border-style: dashed; font-size: 13px; }
-        
-        .num-input { width: 100px; text-align: center; display: block; margin: 0 auto; font-size: 20px; border-color: #007AFF; }
-        .lock-option { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; padding: 12px; background: #f0f4ff; border-radius: 10px; margin-top: 15px; border: 1px solid #007AFF; }
-        
-        .btn-toggle-custom { background: #5856D6; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin: 10px 0; width: 100%; font-weight: bold; }
-        #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
-        .custom-group { margin-bottom: 15px; }
-        .custom-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .btn-clear { background: #ddd; border: none; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
-        .btn-clear:hover { background: #ccc; }
-
-        .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-
-        .btn-start { display: inline-block; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; cursor: pointer; margin-top: 5px; }
-        .btn-challenge { background: #FF3B30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
-        .btn-free { background: #007AFF; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
-        
-        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 30px; }
-        .article-section h3 { font-size: 17px; color: #333; margin-top: 20px; }
-        .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
-        .policy-box { font-size: 12px; color: #777; border-top: 1px solid #ddd; margin-top: 40px; padding-top: 20px; }
-        .ad-slot { background: #ebf0f5; color: #999; padding: 20px; text-align: center; font-size: 12px; border-radius: 10px; margin-bottom: 30px; border: 1px dashed #cbd5e0; }
-        
-        footer { width: 100%; padding: 20px 0; font-size: 12px; color: #888; text-align: center; background: #eee; }
-
-        .update-log { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; text-align: left; }
-        .update-item { margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
-        .update-date { color: #888; flex-shrink: 0; width: 80px; font-size: 13px; }
-        .update-text { color: #333; font-size: 13px; }
-
-        .page-container { display: flex; justify-content: center; width: 100%; gap: 20px; }
-        .side-ad { width: 160px; flex-shrink: 0; padding-top: 20px; }
-        .side-ad-inner { position: sticky; top: 20px; background: #ebf0f5; border: 1px dashed #cbd5e0; height: 600px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border-radius: 10px; }
-        .mobile-ad { display: none; }
-
-        @media (max-width: 1050px) {
-            .side-ad { display: none; }
-            .mobile-ad { display: block; }
-        }
-
-        @media (max-width: 600px) { 
-            header { min-height: auto; padding: 20px 10px; }
-            .header-logo { position: static; height: 80px; margin-bottom: 10px; }
-            .check-grid { grid-template-columns: 1fr; } 
-        }
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+        .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .ui-header { background: #FF3B30; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
+        .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
+        h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
+        input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; }
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
+        .btn-reset  { background: #8E8E93; }
+        .btn-giveup { background: #FF9500; }
+        .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
+        .btn-hint   { background: #5856D6; font-size: 10px; }
+        .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
+        .result-list { list-style: none; padding: 0; margin: 10px 0; }
+        .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
+        .res-name { font-weight: bold; color: #333; display: block; font-size: 13px; }
+        .res-user-ans { font-size: 11px; color: #666; display: block; }
+        .res-sub { font-size: 10px; color: #999; display: block; }
+        .res-score-detail { font-size: 10px; color: #007AFF; font-weight: bold; }
+        .res-status { width: 25px; text-align: center; font-size: 16px; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
+        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
+        .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
     </style>
 </head>
-<body>
-
-    <header>
-        <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
-        <h1>サテステ</h1>
-        <p class="subtitle">衛星画像から駅を当てよう</p>
-    </header>
-
-    <div class="page-container">
-        <aside class="side-ad">
-            <div class="side-ad-inner">スポンサーリンク</div>
-        </aside>
-
-        <main>
-            <div class="ad-slot">スポンサーリンク</div>
-
-            <!-- フリーモードのボックス -->
-            <div class="card" style="border: 2px solid #007AFF;">
-                <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
-                <div class="card-desc">スコアを気にせずのんびり遊べるモードです。カスタム機能で複数の都道府県や路線を自由に組み合わせることができます。</div>
-                
-                <div id="normal-settings-f">
-                    <div class="setting-item">
-                        <label>都道府県・地方</label>
-                        <select id="pref-select-f"><option value="all">全国（指定なし）</option></select>
-                    </div>
-                    <div class="setting-item">
-                        <label>鉄道会社</label>
-                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-f', this.value, 'f')">
-                        <select id="company-select-f"><option value="all">すべての会社</option></select>
-                    </div>
-                    <div class="setting-item">
-                        <label>路線名</label>
-                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-f', this.value, 'f')">
-                        <select id="line-select-f"><option value="all">すべての路線</option></select>
-                    </div>
+<body onload="init()">
+    <div id="map"></div>
+    <div class="ui-container" id="ui-panel">
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-content" id="ui-content">
+            <h2 id="question-title">準備中...</h2>
+            <div id="game-ui">
+                <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
+                <datalist id="station-list"></datalist>
+                <div class="button-group">
+                    <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
+                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
                 </div>
-
-                <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム設定を表示</button>
-
-                <div id="custom-area">
-                    <div class="custom-group">
-                        <div class="custom-title-row">
-                            <h4 style="margin:0;">都道府県を選択</h4>
-                            <button type="button" class="btn-clear" onclick="clearChecks('pref-checks')">クリア</button>
-                        </div>
-                        <div class="check-grid" id="pref-checks"></div>
-                    </div>
-                    <div class="custom-group">
-                        <div class="custom-title-row">
-                            <h4 style="margin:0;">鉄道会社を選択</h4>
-                            <button type="button" class="btn-clear" onclick="clearChecks('company-checks')">クリア</button>
-                        </div>
-                        <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterCheckboxes('company-checks', this.value)">
-                        <div class="check-grid" id="company-checks"></div>
-                    </div>
-                    <div class="custom-group">
-                        <div class="custom-title-row">
-                            <h4 style="margin:0;">路線を選択</h4>
-                            <button type="button" class="btn-clear" onclick="clearChecks('line-checks')">クリア</button>
-                        </div>
-                        <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterCheckboxes('line-checks', this.value)">
-                        <div class="check-grid" id="line-checks"></div>
-                    </div>
-                </div>
-
-                <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                    <label>出題数</label>
-                    <input type="number" id="num-input-f" class="num-input" value="10" min="1" max="100">
-                </div>
-                <label class="lock-option">
-                    <input type="checkbox" id="map-lock-f">
-                    <span>地図の移動・拡大を禁止する（ハードモード）</span>
-                </label>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="startGame('game2.html', 'f')" class="btn-start btn-free">フリープレイ開始</button>
-                </div>
+                <div id="hint-area"></div>
+                <div id="result"></div>
             </div>
-
-            <!-- チャレンジモードのボックス -->
-            <div class="card" style="border: 2px solid #FF3B30;">
-                <div class="card-title" style="color: #FF3B30;">🏆 チャレンジモード</div>
-                <div class="card-desc">高得点と最高ランクを目指す本気モードです。解答速度と正確さがスコア化されます。※カスタム設定は使用できません。</div>
-                
-                <div class="setting-item">
-                    <label>都道府県・地方</label>
-                    <select id="pref-select-c"><option value="all">全国（指定なし）</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>鉄道会社</label>
-                    <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-c', this.value, 'c')">
-                    <select id="company-select-c"><option value="all">すべての会社</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>路線名</label>
-                    <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-c', this.value, 'c')">
-                    <select id="line-select-c"><option value="all">すべての路線</option></select>
-                </div>
-                <div class="setting-item" style="text-align: center; padding: 10px; background: #fff5f5; border-radius: 10px; border: 1px dashed #FF3B30; margin-bottom: 15px;">
-                    <span style="font-weight: bold; color: #FF3B30; font-size: 16px;">出題数: 10問固定</span>
-                </div>
-                <label class="lock-option">
-                    <input type="checkbox" id="map-lock-c">
-                    <span>地図の移動・拡大を禁止する（ハードモード）</span>
-                </label>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
-                </div>
-            </div>
-
-            <div class="card article-section">
-                <h2>サテステとは？</h2>
-                <p>「サテステ」は、国土地理院が提供する高精細な航空写真を使用して、全国の駅名を当てる地理クイズゲームです。日本全国約9,000駅のデータからランダムに出題されます。駅名や路線の表記等は<a href="https://ekidata.jp/faq.php" target="_blank">駅データ.jp</a>様のデータに従います。そのため同じ駅でも別の路線の駅として出題される可能性があります（今後対応予定）。</p>
-            </div>
-
-            <div class="card article-section">
-                <h2>サテステの遊び方</h2>
-                <h3>1. モードを選択する</h3>
-                <p>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。チャレンジモードでは複数の条件を組み合わせるカスタム機能は制限されています。</p>
-                <h3>2. 出題範囲を設定する</h3>
-                <p>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、地図の移動や拡大・縮小を一切禁止する難易度の高い「ハードモード」も選択できます。</p>
-                <h3>3. 航空写真から駅名を推測</h3>
-                <p>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</p>
-                
-                <h3>4. チャレンジモードのルール</h3>
-                <p>チャレンジモードでは、以下のルールに基づいて1問最大 2,000点 のスコアが算出されます。</p>
-                <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
-                    <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
-                    <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます（50km以上離れると 0点）。</li>
-                    <li><strong>タイムボーナス（最大 500点）:</strong> 10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。</li>
-                    <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うとタイムボーナスが 0点 になり、さらに合計点に倍率（県: 0.5倍 / 路線: 0.25倍 / 両方: 0.1倍）が掛かります。</li>
-                    <li><strong>ランク判定:</strong> 全問終了時の合計スコアによって、D から最高ランク SSS まで判定されます。</li>
-                </ul>
-            </div>
-
-            <div class="ad-slot mobile-ad">スポンサーリンク</div>
-
-            <div class="card article-section">
-                <h2>動画配信・サイト掲載について</h2>
-                <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
-                <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
-                
-                <h3>【利用上の注意点】</h3>
-                <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
-                    <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
-                    <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
-                    <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
-                    <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
-                </ul>
-            </div>
-
-            <div class="card policy-box" id="policy">
-                <h3>利用規約・免責事項</h3>
-                <p style="font-size: 11px;">最終更新日：2026年5月29日</p>
-                
-                <p><b>1. サービスの概要</b><br>
-                本サイト「サテステ」は、航空写真を用いた駅名当てクイズを提供する個人運営のウェブサイトです。どなたでも無料でご利用いただけますが、予告なくサービスの内容を変更・停止することがあります。</p>
-
-                <p><b>2. 免責事項</b><br>
-                本サイトで提供する地図情報、駅名、路線名等のデータについては細心の注意を払っておりますが、情報の正確性、完全性、最新性を保証するものではありません。本サイトの利用により生じた直接的、間接的な損害（データの誤りに起因するトラブル等）について、運営者は一切の責任を負いません。実際の旅行や移動の際は、必ず公共交通機関の公式サイト等をご確認ください。</p>
-                
-                <p><b>3. 知する財産権について</b><br>
-                ・本サイト内のプログラム、デザインに関する著作権は運営者に帰属します。<br>
-                ・地図データは、<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a>を利用しています。<br>
-                ・駅データは、一部を除いて<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a>の提供データを利用しています。<br>
-                各データの二次利用については、各データ提供元の規約に従ってください。</p>
-
-                <p><b>4. 禁止事項</b><br>
-                本サイトのプログラムの改ざん、不正アクセス、サーバーへの過度な負荷をかける行為、および本サイトのイメージを損なうような不適切な利用を禁止します。</p>
-
-                <h3>プライバシーポリシー</h3>
-                <p><b>広告の配信について:</b><br>
-                当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、Cookie（クッキー）を使用することがあります。Cookieを無効にする設定およびGoogleアドセンスに関する詳細は「<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">広告 – ポリシーと規約 – Google</a>」をご覧ください。</p>
-                
-                <p><b>アクセス解析について:</b><br>
-                当サイトでは、サイトの分析と改善のためにGoogleアナリティクスを利用することがあります。その際、データ収集のためにCookieを使用しますが、データは匿名で収集されており、個人を特定するものではありません。</p>
-
-                <p><b>お問い合わせ:</b><br>
-                不具合報告やご意見は、こちらの<a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a>から、返信が必要な場合は<a href="mailto:satesta.support@gmail.com?subject=お問い合わせ&body=ここに本文を入力してください。">
-  こちら
-</a>からメールをお寄せください。</p>
-            </div>
-
-            <div class="card">
-                <h3>更新履歴</h3>
-                <div class="update-log">
-                    <div class="update-item"><span class="update-date">2026.06.01</span><span class="update-text">「チャレンジモード」と「フリーモード」を分離。スコアリング機能を実装。</span></div>
-                    <div class="update-item"><span class="update-date">2026.05.30</span><span class="update-text">「あなたの解答」が表示されるように変更。</span></div>
-                    <div class="update-item"><span class="update-date">2026.05.29</span><span class="update-text">「サテステ」を公開。</span></div>
-                </div>
-            </div>
-        </main>
-
-        <aside class="side-ad">
-            <div class="side-ad-inner">スポンサーリンク</div>
-        </aside>
+            <div id="final-ui" style="display:none;"></div>
+        </div>
     </div>
 
-    <footer>&copy; 2026 サテステ -From Satellite to Station- 制作委員会  
-        <a href="https://x.com/Amami103_" target="_blank" style="color: #888; text-decoration: none; font-size: 11px;">運営者のXアカウント：@Amami103</a>
-    </footer>
-
-    <script src="stations.js"></script>
     <script>
-        const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+        // 地方とグループの定義を復元
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
-        let masterCompanies = [], masterLines = [];
+        let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
+        let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
 
-        window.onload = function() {
+        function getDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
+
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            isLocked = params.get('lock') === 'true';
+            map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+
             if (typeof stations === 'undefined') return;
-            const existingPrefs = new Set(stations.map(s => s.pref));
-            masterCompanies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
-            masterLines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
 
-            ["c", "f"].forEach(mode => {
-                const ps = document.getElementById(`pref-select-${mode}`);
-                prefOrder.forEach(p => { if (existingPrefs.has(p)) ps.add(new Option(p, p)); });
-                fillSelect(`company-select-${mode}`, masterCompanies, "すべての会社", mode === "c" || mode === "f" ? "grp" : "");
-                fillSelect(`line-select-${mode}`, masterLines, "すべての路線");
+            const stationMap = new Map();
+            stations.forEach(s => {
+                const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
+                if (stationMap.has(key)) {
+                    const existing = stationMap.get(key);
+                    if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                } else {
+                    const copy = { ...s };
+                    stationMap.set(key, copy);
+                    allUniqueStations.push(copy);
+                }
             });
 
-            const prefChecks = document.getElementById("pref-checks");
-            prefOrder.forEach(p => { if (existingPrefs.has(p)) prefChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-pref" value="${p}">${p}</label>`; });
-            masterCompanies.forEach(c => document.getElementById("company-checks").innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`);
-            masterLines.forEach(l => document.getElementById("line-checks").innerHTML += `<label class="check-item" title="${l}"><input type="checkbox" name="c-line" value="${l}">${l}</label>`);
-        };
+            const nameCounts = {};
+            allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
+            allStationLabels = allUniqueStations.map(s => (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name).sort();
 
-        function fillSelect(id, items, defaultText, type="") {
-            const select = document.getElementById(id);
-            select.innerHTML = `<option value="all">${defaultText}</option>`;
-            if(type === "grp") {
-                select.innerHTML += `<option value="grp:大手私鉄">・大手私鉄</option><option value="grp:関東大手私鉄">・関東大手私鉄</option><option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:地下鉄">・地下鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
-            }
-            items.forEach(item => select.add(new Option(item, item)));
-        }
+            document.getElementById('station-input').addEventListener('input', updateDatalist);
 
-        function filterSelect(id, query, mode) {
-            const items = (id.includes("company")) ? masterCompanies : masterLines;
-            const filtered = items.filter(item => item.includes(query));
-            fillSelect(id, filtered, (id.includes("company") ? "すべての会社" : "すべての路線"), (id.includes("company") ? "grp" : ""));
-        }
-
-        function filterCheckboxes(containerId, query) {
-            document.getElementById(containerId).querySelectorAll('.check-item').forEach(label => {
-                label.style.display = label.textContent.includes(query) ? "flex" : "none";
-            });
-        }
-
-        function clearChecks(id) {
-            document.getElementById(id).querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        }
-
-        function toggleCustom() {
-            const area = document.getElementById("custom-area");
-            area.style.display = (area.style.display === "block") ? "none" : "block";
-            document.getElementById("normal-settings-f").style.opacity = (area.style.display === "block") ? "0.3" : "1";
-        }
-
-        function startGame(targetHtml, modeSuffix) {
-            // チャレンジモード(c)の場合は常に10問、フリーモード(f)の場合は入力値を取得
-            const num = (modeSuffix === 'c') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
-            const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
+            let filtered = [...allUniqueStations];
             
-            let url = targetHtml + "?num=" + num;
+            // 絞り込みロジックの完全復旧
+            const sPref = params.get('pref');
+            if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) {
+                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    filtered = filtered.filter(s => reg.includes(s.pref));
+                } else filtered = filtered.filter(s => s.pref === sPref);
+            }
+            const sComp = params.get('company');
+            if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
+                    filtered = filtered.filter(s => grp.includes(s.company));
+                } else filtered = filtered.filter(s => s.company === sComp);
+            }
+            const sLine = params.get('line');
+            if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
-            if (modeSuffix === 'f' && document.getElementById("custom-area").style.display === "block") {
-                const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
-                const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
-                const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
-                if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
-                if (selComps.length > 0) url += "&comps=" + encodeURIComponent(selComps.join(','));
-                if (selLines.length > 0) url += "&lines=" + encodeURIComponent(selLines.join(','));
-            } else {
-                const p = document.getElementById(`pref-select-${modeSuffix}`).value;
-                const c = document.getElementById(`company-select-${modeSuffix}`).value;
-                const l = document.getElementById(`line-select-${modeSuffix}`).value;
-                if (p !== "all") url += "&pref=" + encodeURIComponent(p);
-                if (c !== "all") url += "&company=" + encodeURIComponent(c);
-                if (l !== "all") url += "&line=" + encodeURIComponent(l);
+            // シャッフルと問題数決定
+            for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
+            gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
+            
+            if (gameStations.length === 0) {
+                alert("条件に合う駅が見つかりませんでした。設定をやり直してください。");
+                location.href = "index.html";
+                return;
             }
 
-            if (lock) url += "&lock=true";
-            window.location.href = url;
+            nextQuestion();
+            makeDraggable(document.getElementById("ui-panel"));
+        }
+
+        function updateDatalist() {
+            const val = document.getElementById('station-input').value.toLowerCase();
+            const dl = document.getElementById('station-list');
+            if (val.length < 1) { dl.innerHTML = ""; return; }
+            const frag = document.createDocumentFragment();
+            let count = 0;
+            for (const label of allStationLabels) {
+                if (label.toLowerCase().startsWith(val)) {
+                    const o = document.createElement('option'); o.value = label; frag.appendChild(o);
+                    if (++count >= 100) break;
+                }
+            }
+            dl.innerHTML = ""; dl.appendChild(frag);
+        }
+
+        function nextQuestion() {
+            if (questionCount >= gameStations.length) { showFinalResult(); return; }
+            answered = false; usedHints = { pref: false, line: false };
+            document.getElementById('answer-btn').style.display = "block";
+            document.getElementById('next-btn').style.display = "none";
+            document.getElementById('result').innerText = "";
+            document.getElementById('station-input').value = "";
+            document.getElementById('hint-area').style.display = "none";
+            document.getElementById('hint-area').innerText = ""; 
+            currentStation = gameStations[questionCount];
+            map.setView([currentStation.lat, currentStation.lng], 17);
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
+            startTime = Date.now();
+        }
+
+        function showHint(t) {
+            if(!answered){
+                usedHints[t] = true;
+                const a = document.getElementById('hint-area');
+                a.style.display = "block";
+                const content = t === 'pref' ? `都道府県: ${currentStation.pref}` : `路線名: ${currentStation.line}`;
+                if (!a.innerHTML.includes(content)) a.innerHTML = (a.innerHTML ? a.innerHTML + "<br>" : "") + content;
+            }
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            const time = (Date.now() - startTime) / 1000;
+            const userRaw = document.getElementById('station-input').value.trim();
+            const userName = userRaw.split(' (')[0];
+            
+            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
+
+            if (userName !== "") {
+                const found = allUniqueStations.find(s => s.name === userName);
+                const userCoords = found ? { lat: found.lat, lng: found.lng } : null;
+                dist = userCoords ? getDistance(currentStation.lat, currentStation.lng, userCoords.lat, userCoords.lng) : 999;
+                isCorrect = (userName === currentStation.name);
+
+                if (isCorrect) baseScore = 1500;
+                else baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, 50) / 50)));
+
+                if (!usedHints.pref && !usedHints.line) {
+                    timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+                }
+            }
+
+            let multiplier = 1.0;
+            if (usedHints.pref && usedHints.line) multiplier = 0.1;
+            else if (usedHints.line) multiplier = 0.25;
+            else if (usedHints.pref) multiplier = 0.5;
+
+            const questionScore = Math.round((baseScore + timeBonus) * multiplier);
+            totalScore += questionScore;
+
+            const res = document.getElementById('result');
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            const distDisplay = (userName !== "" && !isCorrect) ? `<div style="font-size: 11px; color: #E60;">誤差: ${dist.toFixed(2)}km</div>` : "";
+            const timeDisplay = `<div style="font-size: 11px; color: #666;">解答時間: ${time.toFixed(1)}秒</div>`;
+
+            res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
+                            `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '正解は「'+currentStation.name+'」'}</span>` +
+                            infoText + distDisplay + timeDisplay +
+                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:5px;">+${questionScore.toLocaleString()}点</div>` +
+                            `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
+
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw, isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function showAnswer() {
+            if (answered) return;
+            const res = document.getElementById('result');
+            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            res.innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span>` + infoText + `<div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function showFinalResult() {
+            document.getElementById('game-ui').style.display = "none";
+            document.getElementById('question-title').innerText = isLocked ? "結果発表 (ハードモード)" : "結果発表 (通常モード)";
+            const finalUi = document.getElementById('final-ui');
+            finalUi.style.display = "block";
+
+            const totalMax = gameStations.length * 2000;
+            let rank = "D";
+            const ratio = totalScore / (totalMax || 1);
+            if (ratio >= 0.9) rank = "SSS";
+            else if (ratio >= 0.8) rank = "SS";
+            else if (ratio >= 0.7) rank = "S";
+            else if (ratio >= 0.5) rank = "A";
+            else if (ratio >= 0.3) rank = "B";
+            else if (ratio >= 0.1) rank = "C";
+
+            let listH = '<ul class="result-list">';
+            playHistory.forEach(h => {
+                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 100 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+            });
+
+            finalUi.innerHTML = `
+                <div class="final-score">${totalScore.toLocaleString()} 点</div>
+                <div class="final-rank">ランク: ${rank}</div>
+                ${listH + '</ul>'}
+                <div class="result-footer-buttons">
+                    <button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>
+                    <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
+                </div>
+            `;
+        }
+
+        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+
+        function makeDraggable(el) {
+            if (window.innerWidth <= 600) return;
+            const h = document.getElementById("ui-header");
+            let p1=0, p2=0, p3=0, p4=0;
+            h.onmousedown = (e) => {
+                e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none";
+                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; };
+                document.onmousemove = (e) => {
+                    e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY;
+                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto";
+                };
+            }
         }
     </script>
 </body>
