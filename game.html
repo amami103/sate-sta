@@ -36,7 +36,7 @@
         .res-sub { font-size: 10px; color: #999; display: block; }
         .res-score-detail { font-size: 10px; color: #007AFF; font-weight: bold; }
         .res-status { width: 25px; text-align: center; font-size: 16px; }
-        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; color: white; border-radius: 4px; border: none; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
@@ -68,6 +68,10 @@
     </div>
 
     <script>
+        // 地方とグループの定義を復元
+        const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
+        const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
+
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
 
@@ -114,13 +118,35 @@
             document.getElementById('station-input').addEventListener('input', updateDatalist);
 
             let filtered = [...allUniqueStations];
-            const p = params;
-            if (p.get('pref')) filtered = filtered.filter(s => s.pref === p.get('pref'));
-            if (p.get('company')) filtered = filtered.filter(s => s.company === p.get('company'));
-            if (p.get('line')) filtered = filtered.filter(s => s.line === p.get('line'));
+            
+            // 絞り込みロジックの完全復旧
+            const sPref = params.get('pref');
+            if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) {
+                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    filtered = filtered.filter(s => reg.includes(s.pref));
+                } else filtered = filtered.filter(s => s.pref === sPref);
+            }
+            const sComp = params.get('company');
+            if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
+                    filtered = filtered.filter(s => grp.includes(s.company));
+                } else filtered = filtered.filter(s => s.company === sComp);
+            }
+            const sLine = params.get('line');
+            if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
+            // シャッフルと問題数決定
             for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
-            gameStations = filtered.slice(0, parseInt(p.get('num')) || 10);
+            gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
+            
+            if (gameStations.length === 0) {
+                alert("条件に合う駅が見つかりませんでした。設定をやり直してください。");
+                location.href = "index.html";
+                return;
+            }
+
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
@@ -148,6 +174,7 @@
             document.getElementById('result').innerText = "";
             document.getElementById('station-input').value = "";
             document.getElementById('hint-area').style.display = "none";
+            document.getElementById('hint-area').innerText = ""; 
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
