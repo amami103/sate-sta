@@ -114,39 +114,7 @@
         <main>
             <div class="ad-slot">スポンサーリンク</div>
 
-            <!-- チャレンジモードのボックス -->
-            <div class="card" style="border: 2px solid #FF3B30;">
-                <div class="card-title" style="color: #FF3B30;">🏆 チャレンジモード</div>
-                <div class="card-desc">高得点と最高ランクを目指す本気モードです。解答速度と正確さがスコア化されます。※カスタム設定は使用できません。</div>
-                
-                <div class="setting-item">
-                    <label>都道府県・地方</label>
-                    <select id="pref-select-c"><option value="all">全国（指定なし）</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>鉄道会社</label>
-                    <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-c', this.value, 'c')">
-                    <select id="company-select-c"><option value="all">すべての会社</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>路線名</label>
-                    <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-c', this.value, 'c')">
-                    <select id="line-select-c"><option value="all">すべての路線</option></select>
-                </div>
-                <div class="setting-item" style="text-align: center;">
-                    <label>出題数</label>
-                    <input type="number" id="num-input-c" class="num-input" value="10" min="1" max="100">
-                </div>
-                <label class="lock-option">
-                    <input type="checkbox" id="map-lock-c">
-                    <span>地図の移動・拡大を禁止する（ハードモード）</span>
-                </label>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
-                </div>
-            </div>
-
-            <!-- フリーモードのボックス -->
+            <!-- フリーモードのボックス (上に移動) -->
             <div class="card" style="border: 2px solid #007AFF;">
                 <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
                 <div class="card-desc">スコアを気にせずのんびり遊べるモードです。カスタム機能で複数の都道府県や路線を自由に組み合わせることができます。</div>
@@ -206,6 +174,38 @@
                 </label>
                 <div style="margin-top: 20px; text-align: center;">
                     <button onclick="startGame('game2.html', 'f')" class="btn-start btn-free">フリープレイ開始</button>
+                </div>
+            </div>
+
+            <!-- チャレンジモードのボックス (下に移動) -->
+            <div class="card" style="border: 2px solid #FF3B30;">
+                <div class="card-title" style="color: #FF3B30;">🏆 チャレンジモード</div>
+                <div class="card-desc">高得点と最高ランクを目指す本気モードです。解答速度と正確さがスコア化されます。※カスタム設定は使用できません。</div>
+                
+                <div class="setting-item">
+                    <label>都道府県・地方</label>
+                    <select id="pref-select-c"><option value="all">全国（指定なし）</option></select>
+                </div>
+                <div class="setting-item">
+                    <label>鉄道会社</label>
+                    <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-c', this.value, 'c')">
+                    <select id="company-select-c"><option value="all">すべての会社</option></select>
+                </div>
+                <div class="setting-item">
+                    <label>路線名</label>
+                    <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-c', this.value, 'c')">
+                    <select id="line-select-c"><option value="all">すべての路線</option></select>
+                </div>
+                <div class="setting-item" style="text-align: center;">
+                    <label>出題数</label>
+                    <input type="number" id="num-input-c" class="num-input" value="10" min="1" max="100">
+                </div>
+                <label class="lock-option">
+                    <input type="checkbox" id="map-lock-c">
+                    <span>地図の移動・拡大を禁止する（ハードモード）</span>
+                </label>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
                 </div>
             </div>
 
@@ -276,7 +276,6 @@
             masterCompanies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
             masterLines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
 
-            // どちらのセレクトボックスも埋める
             ["c", "f"].forEach(mode => {
                 const ps = document.getElementById(`pref-select-${mode}`);
                 prefOrder.forEach(p => { if (existingPrefs.has(p)) ps.add(new Option(p, p)); });
@@ -284,7 +283,6 @@
                 fillSelect(`line-select-${mode}`, masterLines, "すべての路線");
             });
 
-            // フリーモード用のカスタムチェックボックス
             const prefChecks = document.getElementById("pref-checks");
             prefOrder.forEach(p => { if (existingPrefs.has(p)) prefChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-pref" value="${p}">${p}</label>`; });
             masterCompanies.forEach(c => document.getElementById("company-checks").innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`);
@@ -339,14 +337,8 @@
                 const p = document.getElementById(`pref-select-${modeSuffix}`).value;
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
                 const l = document.getElementById(`line-select-${modeSuffix}`).value;
-                if (p !== "all") {
-                    if (p.startsWith("reg:")) url += "&pref=" + encodeURIComponent(p);
-                    else url += "&pref=" + encodeURIComponent(p);
-                }
-                if (c !== "all") {
-                    if (c.startsWith("grp:")) url += "&company=" + encodeURIComponent(c);
-                    else url += "&company=" + encodeURIComponent(c);
-                }
+                if (p !== "all") url += "&pref=" + encodeURIComponent(p);
+                if (c !== "all") url += "&company=" + encodeURIComponent(c);
                 if (l !== "all") url += "&line=" + encodeURIComponent(l);
             }
 
