@@ -27,14 +27,6 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
-        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
-        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
-        .btn-x { background: #000; }
-        .btn-line { background: #06C755; }
-        .btn-threads { background: #000; border: 1px solid #333; }
-        .btn-fb { background: #1877F2; }
-        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
-        .btn-tiktok { background: #000; border-left: 2px solid #ff0050; border-right: 2px solid #00f2ea; }
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
@@ -48,8 +40,6 @@
         .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
-        .total-time-display { font-size: 13px; color: #666; text-align: center; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; } }
     </style>
@@ -81,6 +71,9 @@
     </div>
 
     <script>
+        const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
+        const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
+
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allStationLabels = [], allUniqueStations = [], usedHints = { pref: false, line: false };
 
@@ -96,8 +89,6 @@
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else if (document.exitFullscreen) document.exitFullscreen();
         }
-
-        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
         function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
 
@@ -128,11 +119,31 @@
 
             document.getElementById('station-input').addEventListener('input', updateDatalist);
 
-            // フィルタ処理 (簡易化)
             let filtered = [...allUniqueStations];
-            // ... (フィルタのロジック indexと同じ) ...
-            
-            shuffle(filtered);
+            const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
+            const sPref = params.get('pref');
+            if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
+            else if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) {
+                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    filtered = filtered.filter(s => reg.includes(s.pref));
+                } else filtered = filtered.filter(s => s.pref === sPref);
+            }
+            const mComps = params.get('comps') ? params.get('comps').split(',') : null;
+            const sComp = params.get('company');
+            if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
+            else if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
+                    filtered = filtered.filter(s => grp.includes(s.company));
+                } else filtered = filtered.filter(s => s.company === sComp);
+            }
+            const mLines = params.get('lines') ? params.get('lines').split(',') : null;
+            const sLine = params.get('line');
+            if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
+            else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
+
+            for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
@@ -173,7 +184,7 @@
                 const a = document.getElementById('hint-area');
                 a.style.display = "block";
                 const content = t === 'pref' ? `都道府県: ${currentStation.pref}` : `路線名: ${currentStation.line}`;
-                a.innerHTML = a.innerHTML.includes(content) ? a.innerHTML : (a.innerHTML + (a.innerHTML ? "<br>" : "") + content);
+                if (!a.innerHTML.includes(content)) a.innerHTML = (a.innerHTML ? a.innerHTML + "<br>" : "") + content;
             }
         }
 
@@ -183,30 +194,28 @@
             const userRaw = document.getElementById('station-input').value.trim();
             const userName = userRaw.split(' (')[0];
             
-            // 距離計測用の座標取得
-            let userCoords = null;
-            const found = allUniqueStations.find(s => s.name === userName);
-            if (found) userCoords = { lat: found.lat, lng: found.lng };
-
-            const dist = userCoords ? getDistance(currentStation.lat, currentStation.lng, userCoords.lat, userCoords.lng) : 999;
-            const isCorrect = (userName === currentStation.name);
-
-            // スコア計算
             let baseScore = 0;
-            if (isCorrect) {
-                baseScore = 1500;
-            } else {
-                // 不正解時の距離スコア (最大1000点、50kmで0点、平方根カーブ)
-                baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, 50) / 50)));
-            }
-
-            // タイムボーナス (最大500点、10秒まで満点、1秒ごとに-10点、ヒント使用で0点)
             let timeBonus = 0;
-            if (!usedHints.pref && !usedHints.line) {
-                timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+            let dist = 999;
+            let isCorrect = false;
+
+            if (userName !== "") {
+                const found = allUniqueStations.find(s => s.name === userName);
+                const userCoords = found ? { lat: found.lat, lng: found.lng } : null;
+                dist = userCoords ? getDistance(currentStation.lat, currentStation.lng, userCoords.lat, userCoords.lng) : 999;
+                isCorrect = (userName === currentStation.name);
+
+                if (isCorrect) {
+                    baseScore = 1500;
+                } else {
+                    baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, 50) / 50)));
+                }
+
+                if (!usedHints.pref && !usedHints.line) {
+                    timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+                }
             }
 
-            // ヒント倍率 (県:0.5, 路線:0.25, 両方:0.1)
             let multiplier = 1.0;
             if (usedHints.pref && usedHints.line) multiplier = 0.1;
             else if (usedHints.line) multiplier = 0.25;
@@ -215,27 +224,29 @@
             const questionScore = Math.round((baseScore + timeBonus) * multiplier);
             totalScore += questionScore;
 
-            // 結果表示
             const res = document.getElementById('result');
-            const distText = isCorrect ? "" : `<br>誤差: ${dist.toFixed(2)}km`;
+            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            const distDisplay = (userName !== "" && !isCorrect) ? `<div style="font-size: 11px; color: #E60;">誤差: ${dist.toFixed(2)}km</div>` : "";
+
             res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'};">${isCorrect ? '正解！' : '正解は「'+currentStation.name+'」'}</span>` +
-                            `<div style="font-size:16px; color:#E60;">+${questionScore}点</div>` +
+                            infoText + distDisplay +
+                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:5px;">+${questionScore.toLocaleString()}点</div>` +
                             `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
 
-            playHistory.push({ name: currentStation.name, userAns: userRaw, isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
-            finishOne();
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw, isCorrect, dist, score: questionScore, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            questionCount++;
         }
 
         function showAnswer() {
-            // ギブアップは0点
+            if (answered) return;
             const res = document.getElementById('result');
-            res.innerHTML = `<span style="color:#FF9500;">正解は「${currentStation.name}」</span><div style="font-size:16px;">+0点</div>`;
-            playHistory.push({ name: currentStation.name, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
-            finishOne();
-        }
-
-        function finishOne() {
+            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
+            res.innerHTML = `<span style="color:#FF9500;">正解は「${currentStation.name}」</span>` + infoText + `<div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, lat: currentStation.lat, lng: currentStation.lng });
             answered = true;
             document.getElementById('answer-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "block";
@@ -251,7 +262,7 @@
             const maxPerQuestion = 2000;
             const totalMax = gameStations.length * maxPerQuestion;
             let rank = "D";
-            const ratio = totalScore / totalMax;
+            const ratio = totalScore / (totalMax || 1);
             if (ratio >= 0.9) rank = "SSS";
             else if (ratio >= 0.8) rank = "SS";
             else if (ratio >= 0.7) rank = "S";
@@ -263,7 +274,7 @@
             playHistory.forEach(h => {
                 const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
                 const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
-                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 100 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 100 ? '-' : h.dist.toFixed(1)+'km'}</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
             finalUi.innerHTML = `
@@ -272,8 +283,8 @@
                 <div class="ad-box">スポンサーリンク</div>
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
-                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
-                    <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
+                    <button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>
+                    <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトル</button>
                 </div>
             `;
         }
