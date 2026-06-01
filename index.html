@@ -42,7 +42,7 @@
         main { flex: 1; width: 95%; max-width: 650px; padding: 20px 0; text-align: center; }
         
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .card-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
 
         .setting-item { margin-bottom: 15px; }
@@ -64,7 +64,7 @@
         .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
         .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
 
-        .btn-start { display: inline-block; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; margin-top: 5px; }
+        .btn-start { display: inline-block; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; cursor: pointer; margin-top: 5px; }
         .btn-challenge { background: #FF3B30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
         .btn-free { background: #007AFF; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
         
@@ -114,7 +114,7 @@
         <main>
             <div class="ad-slot">スポンサーリンク</div>
 
-            <!-- フリーモードのボックス (上に移動) -->
+            <!-- フリーモードのボックス -->
             <div class="card" style="border: 2px solid #007AFF;">
                 <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
                 <div class="card-desc">スコアを気にせずのんびり遊べるモードです。カスタム機能で複数の都道府県や路線を自由に組み合わせることができます。</div>
@@ -177,7 +177,7 @@
                 </div>
             </div>
 
-            <!-- チャレンジモードのボックス (下に移動) -->
+            <!-- チャレンジモードのボックス -->
             <div class="card" style="border: 2px solid #FF3B30;">
                 <div class="card-title" style="color: #FF3B30;">🏆 チャレンジモード</div>
                 <div class="card-desc">高得点と最高ランクを目指す本気モードです。解答速度と正確さがスコア化されます。※カスタム設定は使用できません。</div>
@@ -216,37 +216,79 @@
 
             <div class="card article-section">
                 <h2>サテステの遊び方</h2>
-                <h3>1. モードを選択する</h3>
-                <p>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。チャレンジモードでは複数の条件を組み合わせるカスタム機能は制限されています。</p>
-                <h3>2. 出題範囲を設定する</h3>
-                <p>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、地図の移動や拡大・縮小を一切禁止する難易度の高い「ハードモード」も選択できます。</p>
-                <h3>3. 航空写真から駅名を推測</h3>
-                <p>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</p>
+                <h3>1. 出題範囲を設定する</h3>
+                <p>まずはトップ画面でクイズの条件を設定しましょう。絞り込まない場合は全国からランダムに出題されます。また、特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、以下のようなやり込みモードもあります。</p>
+                <ul>
+                    <li><strong>カスタムモード:</strong> 複数の都道府県や会社を自由に組み合わせて、自分だけのオリジナルクイズを作れます。</li>
+                    <li><strong>ハードモード:</strong> 地図の移動や拡大・縮小を一切禁止する難易度の高い玄人向けのモードです。</li>
+                </ul>
+                 <p>出題条件を設定したら出題数を設定して、クイズを開始するボタンを押すとクイズが始まります。</p>
+
+                <h3>2. 航空写真から駅名を推測</h3>
+                <p>クイズが始まると、ある駅の真上の航空写真が表示されます。地図を動かしたりズームしたり（通常モードのみ）して、周囲の地形や駅の構造から駅名を導き出しましょう。回答欄に駅名の一部を入力すると、候補がリスト表示されるので、正しい駅名を選択してください。全画面切替ボタン（PCのみ）を押すと全画面表示に切り替わります。全画面表示を終了するときはキーボードのescキーを押します。</p>
+
+                <h3>3. ヒント機能を活用</h3>
+                <p>どうしても分からない時は「ヒント」ボタンを使ってみましょう。「都道府県」や「所属路線名」を確認することができます。それでもギブアップの時は「答えを見る」で正解を確認して次に進めます。</p>
+
+                <h3>4. リザルト画面で復習</h3>
+                <p>全問終了後は結果発表画面が表示されます。ここでは各問題に何秒かかったかの「解答時間」も記録されています。また、間違えた問題や気になった駅は「確認」ボタンを押すことで、再度地図上でその場所を詳しく眺めることができます。</p>
+
+                <h3>5. 結果をSNSでシェア</h3>
+                <p>スコアやプレイ履歴などを、ぜひシェアボタンからSNSに投稿してみてくださいね！</p>
             </div>
 
             <div class="ad-slot mobile-ad">スポンサーリンク</div>
 
             <div class="card article-section">
                 <h2>動画配信・サイト掲載について</h2>
-                <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。収益化についても特に制限いたしません。本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと幸いです。</p>
+                <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
+                <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
+                
+                <h3>【利用上の注意点】</h3>
+                <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
+                    <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
+                    <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
+                    <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
+                    <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
+                </ul>
             </div>
 
             <div class="card policy-box" id="policy">
                 <h3>利用規約・免責事項</h3>
                 <p style="font-size: 11px;">最終更新日：2026年5月29日</p>
-                <p>本サイト内の地図データは、国土地理院（シームレス空中写真）を利用しています。駅データは、一部を除いて駅データ.jpの提供データを利用しています。本サイトの利用により生じた損害について、運営者は一切の責任を負いません。</p>
+                
+                <p><b>1. サービスの概要</b><br>
+                本サイト「サテステ」は、航空写真を用いた駅名当てクイズを提供する個人運営のウェブサイトです。どなたでも無料でご利用いただけますが、予告なくサービスの内容を変更・停止することがあります。</p>
+
+                <p><b>2. 免責事項</b><br>
+                本サイトで提供する地図情報、駅名、路線名等のデータについては細心の注意を払っておりますが、情報の正確性、完全性、最新性を保証するものではありません。本サイトの利用により生じた直接的、間接的な損害（データの誤りに起因するトラブル等）について、運営者は一切の責任を負いません。実際の旅行や移動の際は、必ず公共交通機関の公式サイト等をご確認ください。</p>
+                
+                <p><b>3. 知する財産権について</b><br>
+                ・本サイト内のプログラム、デザインに関する著作権は運営者に帰属します。<br>
+                ・地図データは、<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院（シームレス空中写真）</a>を利用しています。<br>
+                ・駅データは、一部を除いて<a href="http://www.ekidata.jp/" target="_blank">駅データ.jp</a>の提供データを利用しています。<br>
+                各データの二次利用については、各データ提供元の規約に従ってください。</p>
+
+                <p><b>4. 禁止事項</b><br>
+                本サイトのプログラムの改ざん、不正アクセス、サーバーへの過度な負荷をかける行為、および本サイトのイメージを損なうような不適切な利用を禁止します。</p>
 
                 <h3>プライバシーポリシー</h3>
-                <p>当サイトでは、Google AdSenseおよびGoogle Analyticsを利用しています。データ収集のためにCookieを使用することがありますが、匿名で収集されており個人を特定するものではありません。</p>
+                <p><b>広告の配信について:</b><br>
+                当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、Cookie（クッキー）を使用することがあります。Cookieを無効にする設定およびGoogleアドセンスに関する詳細は「<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">広告 – ポリシーと規約 – Google</a>」をご覧ください。</p>
+                
+                <p><b>アクセス解析について:</b><br>
+                当サイトでは、サイトの分析と改善のためにGoogleアナリティクスを利用することがあります。その際、データ収集のためにCookieを使用しますが、データは匿名で収集されており、個人を特定するものではありません。</p>
 
                 <p><b>お問い合わせ:</b><br>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a> / <a href="mailto:satesta.support@gmail.com?subject=お問い合わせ">メールでお問い合わせ</a></p>
+                不具合報告やご意見は、こちらの<a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" target="_blank">お問い合わせフォーム</a>から、返信が必要な場合は<a href="mailto:satesta.support@gmail.com?subject=お問い合わせ&body=ここに本文を入力してください。">
+  こちら
+</a>からメールをお寄せください。</p>
             </div>
 
             <div class="card">
                 <h3>更新履歴</h3>
                 <div class="update-log">
-                    <div class="update-item"><span class="update-date">2026.06.01</span><span class="update-text">「チャレンジモード」と「フリーモード」を分離。スコアリング機能を実装。</span></div>
+                    <div class="update-item"><span class="update-date">2026.05.31</span><span class="update-text">「チャレンジモード」と「フリーモード」を分離。スコアリング機能を実装。</span></div>
                     <div class="update-item"><span class="update-date">2026.05.30</span><span class="update-text">「あなたの解答」が表示されるように変更。</span></div>
                     <div class="update-item"><span class="update-date">2026.05.29</span><span class="update-text">「サテステ」を公開。</span></div>
                 </div>
@@ -264,7 +306,7 @@
 
     <script src="stations.js"></script>
     <script>
-        const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+        const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","スカイ","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
