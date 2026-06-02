@@ -1,3 +1,5 @@
+--- START OF FILE index.html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -222,7 +224,7 @@
                 <h3>3. 航空写真から駅名を推測</h3>
                 <p>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</p>
                 
-                <h3>4. チャレンジモード hostのルール</h3>
+                <h3>4. チャレンジモードのルール</h3>
                 <p>チャレンジモードでは、以下のルールに基づいて1問最大 2,000点 のスコアが算出されます。</p>
                 <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
                     <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
@@ -316,7 +318,17 @@
 
             ["c", "f"].forEach(mode => {
                 const ps = document.getElementById(`pref-select-${mode}`);
+                
+                // 地方を追加
+                ps.innerHTML += `<option disabled>---------- 地方 ----------</option>`;
+                Object.keys(REGION_PREFS).forEach(reg => {
+                    ps.add(new Option("・" + reg, "reg:" + reg));
+                });
+                
+                // 都道府県を追加
+                ps.innerHTML += `<option disabled>---------- 都道府県 ----------</option>`;
                 prefOrder.forEach(p => { if (existingPrefs.has(p)) ps.add(new Option(p, p)); });
+                
                 fillSelect(`company-select-${mode}`, masterCompanies, "すべての会社", mode === "c" || mode === "f" ? "grp" : "");
                 fillSelect(`line-select-${mode}`, masterLines, "すべての路線");
             });
