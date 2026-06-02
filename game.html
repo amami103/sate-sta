@@ -218,14 +218,12 @@
 
                 if (isCorrect) {
                     baseScore = 1500;
-                    // 正解時のみタイムボーナスを計算
-                    if (!usedHints.pref && !usedHints.line) {
-                        timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
-                    }
+                    // 正解（完全一致）時のみタイムボーナスを計算
+                    timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
                 } else {
                     const ratio = Math.min(dist, maxDistancePenalty) / maxDistancePenalty;
                     baseScore = Math.max(0, 1000 * (1 - Math.sqrt(ratio)));
-                    timeBonus = 0; // 不正解時はボーナスなし
+                    timeBonus = 0; // 不正解時は0
                 }
             }
 
@@ -234,6 +232,7 @@
             else if (usedHints.line) multiplier = 0.25;
             else if (usedHints.pref) multiplier = 0.5;
 
+            // ヒントを使ってもタイムボーナスを含めた合計に倍率をかける
             const questionScore = Math.round((baseScore + timeBonus) * multiplier);
             totalScore += questionScore;
 
