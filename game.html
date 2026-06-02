@@ -75,7 +75,7 @@
 
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
-        let maxDistancePenalty = 50; // デフォルト50km
+        let maxDistancePenalty = 50; 
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -120,12 +120,10 @@
             document.getElementById('station-input').addEventListener('input', updateDatalist);
 
             let filtered = [...allUniqueStations];
-            
             const sPref = params.get('pref');
             const sComp = params.get('company');
             const sLine = params.get('line');
 
-            // --- 採点基準距離の動的設定 ---
             if (sLine && sLine !== "all") {
                 maxDistancePenalty = 10;
                 filtered = filtered.filter(s => s.line === sLine);
@@ -148,10 +146,9 @@
                     filtered = filtered.filter(s => s.pref === sPref);
                 }
             } else {
-                maxDistancePenalty = 50; // 全国
+                maxDistancePenalty = 50;
             }
 
-            // シャッフルと問題数決定
             for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             
@@ -219,14 +216,16 @@
                 dist = userCoords ? getDistance(currentStation.lat, currentStation.lng, userCoords.lat, userCoords.lng) : 999;
                 isCorrect = (userName === currentStation.name);
 
-                if (isCorrect) baseScore = 1500;
-                else {
+                if (isCorrect) {
+                    baseScore = 1500;
+                    // 正解時のみタイムボーナスを計算
+                    if (!usedHints.pref && !usedHints.line) {
+                        timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+                    }
+                } else {
                     const ratio = Math.min(dist, maxDistancePenalty) / maxDistancePenalty;
                     baseScore = Math.max(0, 1000 * (1 - Math.sqrt(ratio)));
-                }
-
-                if (!usedHints.pref && !usedHints.line) {
-                    timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+                    timeBonus = 0; // 不正解時はボーナスなし
                 }
             }
 
