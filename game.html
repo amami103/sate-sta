@@ -42,7 +42,6 @@
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
 
-        /* SNS共有ボタン用スタイル */
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
         .btn-x { background: #000; }
@@ -107,6 +106,23 @@
 
         function init() {
             const params = new URLSearchParams(window.location.search);
+            
+            // --- 共有リンクからの閲覧モード判定 ---
+            const resData = params.get('res');
+            if (resData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
+                    // 閲覧モード用のmap初期化
+                    map = L.map('map', { zoomControl:false });
+                    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+                    playHistory = decoded.history;
+                    totalScore = decoded.score;
+                    isLocked = decoded.locked;
+                    showFinalResult(true); // 閲覧モードで表示
+                    return;
+                } catch(e) { console.error("Invalid share data"); }
+            }
+
             isLocked = params.get('lock') === 'true';
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
@@ -287,14 +303,14 @@
             alert("コピー完了！貼り付けて共有してね！");
         }
 
-        function showFinalResult() {
+        function showFinalResult(isViewMode = false) {
             document.getElementById('game-ui').style.display = "none";
             const modeName = isLocked ? "ハードモード" : "通常モード";
-            document.getElementById('question-title').innerText = "結果発表 (" + modeName + ")";
+            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表 (" + modeName + ")";
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
 
-            const totalMax = gameStations.length * 2000;
+            const totalMax = playHistory.length * 2000;
             let rank = "D";
             const ratio = totalScore / (totalMax || 1);
             if (ratio >= 0.9) rank = "SSS";
@@ -307,38 +323,41 @@
             let listH = '<ul class="result-list">';
             let shareSummary = "";
             playHistory.forEach((h, idx) => {
-                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
-                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
+                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
                 shareSummary += (idx + 1) + "." + mark + " ";
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
-            // SNS共有テキスト作成
-            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName}】スコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n結果: ${shareSummary}\n#サテステ #鉄道クイズ #地理クイズ`;
-            const shareUrl = window.location.origin;
-            const fullShareBody = shareText + "\n" + shareUrl;
+            // 詳細URLの生成 (履歴をBase64化)
+            const resultData = { history: playHistory, score: totalScore, locked: isLocked };
+            const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
+            const shareUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
+            
+            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName}】スコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n詳細結果: `;
+            const fullShareBody = shareText + "\n" + shareUrl + "\n#サテステ #鉄道クイズ";
 
-            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + "\n" + shareSummary)}&url=${encodeURIComponent(shareUrl)}`;
+            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + shareSummary + "\n" + shareUrl)}`;
+            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + shareSummary + "\n" + shareUrl)}`;
 
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 
+                <p style="font-size:10px; color:#777; text-align:center;">詳細共有リンクをコピーして共有！</p>
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
                     <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
-                    <button class="btn-sns btn-fb" onclick="window.open('${fbUrl}')">Facebook</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareUrl}')">リンクをコピー</button>
                     <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
                     <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
                 </div>
 
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
-                    <button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>
+                    ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>
             `;
