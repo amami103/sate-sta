@@ -48,6 +48,7 @@
         .btn-line { background: #06C755; }
         .btn-threads { background: #000; border: 1px solid #333; }
         .btn-fb { background: #1877F2; }
+        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
         .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
         
         #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
@@ -88,7 +89,7 @@
 
     <div id="image-overlay">
         <div id="share-image-container"></div>
-        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を長押しして保存、またはシェアしてください</p>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
         <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
     </div>
 
@@ -237,7 +238,7 @@
 
         function copyToClipboard(text) {
             const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select();
-            document.execCommand('copy'); document.body.removeChild(temp); alert("結果をコピーしました！");
+            document.execCommand('copy'); document.body.removeChild(temp); alert("テキストをコピーしました！");
         }
 
         function showFinalResult(isViewMode = false) {
@@ -254,23 +255,26 @@
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt / ${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
+            // 指定テキスト
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            
+            // 閲覧用リンク (Base64)
             const resultData = { history: playHistory, score: totalScore, locked: isLocked, filters: activeFilters, rank: rank };
             const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
-            const shareUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
-            const shareText = `サテステ【${modeName} / ${activeFilters}】\nスコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n詳細：`;
-            const fullShareBody = shareText + "\n" + shareUrl + "\n#サテステ #鉄道クイズ";
+            const detailUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
 
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}')">𝕏</button>
-                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText + '\\n' + shareUrl)}')">LINE</button>
-                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + '\\n' + shareUrl)}')">Threads</button>
-                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareUrl}')">リンクをコピー</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${fullShareBody}')">Instagram</button>
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareText}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Instagram用コピー</button>
                     <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
                 </div>
+                <p style="font-size:10px; color:#777; text-align:center;">画像と一緒にシェアしてね！</p>
                 ${listH}</ul>
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
@@ -300,23 +304,18 @@
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
-            
             const dataUrl = canvas.toDataURL("image/png");
             const container = document.getElementById('share-image-container');
             container.innerHTML = `<img src="${dataUrl}">`;
-            
-            if (autoShow) {
-                const msg = document.createElement('div');
-                msg.style.cssText = "background:#FF3B30; color:white; padding:10px; font-weight:bold; position:absolute; top:0; width:100%; text-align:center;";
-                msg.innerText = "リザルトを読み込みました";
-                container.prepend(msg);
-            }
             document.getElementById('image-overlay').style.display = "flex";
+            
+            // 直接シェア（可能なブラウザのみ）
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！ #サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
             if (navigator.share && !autoShow) {
                 const blob = await (await fetch(dataUrl)).blob();
                 const file = new File([blob], "result.png", { type: "image/png" });
-                const b = document.createElement('button'); b.className="overlay-close"; b.style.background="#007AFF"; b.style.color="white"; b.innerText="直接シェア";
-                b.onclick = () => navigator.share({ files: [file], title: 'サテステ', text: 'クイズ結果！ #サテステ' });
+                const b = document.createElement('button'); b.className="overlay-close"; b.style.background="#007AFF"; b.style.color="white"; b.innerText="画像を直接SNSに送る";
+                b.onclick = () => navigator.share({ files: [file], title: 'サテステ', text: shareText });
                 container.appendChild(b);
             }
         }
