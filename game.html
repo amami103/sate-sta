@@ -30,15 +30,18 @@
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
+        
+        /* 結果リストの被り対策 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
-        .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
-        .res-name { font-weight: bold; color: #333; display: block; font-size: 13px; }
+        .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
+        .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
         .res-user-ans { font-size: 11px; color: #666; display: block; }
-        .res-sub { font-size: 10px; color: #999; display: block; }
-        .res-score-detail { font-size: 10px; color: #007AFF; font-weight: bold; }
-        .res-status { width: 25px; text-align: center; font-size: 16px; }
-        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
+        .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
+        .res-score-detail { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
+        
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
 
@@ -212,13 +215,9 @@
             const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
 
             const res = document.getElementById('result');
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            const distDisplay = (userName !== "" && !isCorrect) ? `<div style="font-size: 11px; color: #E60;">誤差: ${dist.toFixed(2)}km</div>` : "";
-            const timeDisplay = `<div style="font-size: 11px; color: #666;">解答時間: ${time.toFixed(1)}秒</div>`;
-
             res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '正解は「'+currentStation.name+'」'}</span>` +
-                            infoText + distDisplay + timeDisplay +
+                            `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
                             `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:5px;">+${questionScore.toLocaleString()}点</div>` +
                             `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
 
@@ -229,8 +228,7 @@
 
         function showAnswer() {
             if (answered) return;
-            const infoText = `<br><span style="font-size: 11px; color: #666;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span>` + infoText + `<div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
             questionCount++;
@@ -238,7 +236,7 @@
 
         function copyToClipboard(text) {
             const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select();
-            document.execCommand('copy'); document.body.removeChild(temp); alert("テキストをコピーしました！");
+            document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！");
         }
 
         function showFinalResult(isViewMode = false) {
@@ -252,13 +250,10 @@
             playHistory.forEach((h) => {
                 const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
                 const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
-                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt / ${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
-            // 指定テキスト
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
-            
-            // 閲覧用リンク (Base64)
             const resultData = { history: playHistory, score: totalScore, locked: isLocked, filters: activeFilters, rank: rank };
             const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
             const detailUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
@@ -267,14 +262,13 @@
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏</button>
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
                     <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareText}')">文章をコピー</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Instagram用コピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用コピー</button>
                     <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
                 </div>
-                <p style="font-size:10px; color:#777; text-align:center;">画像と一緒にシェアしてね！</p>
                 ${listH}</ul>
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
@@ -284,7 +278,7 @@
 
         async function generateResultCard(rank, modeName, autoShow = false) {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            canvas.width = 800; canvas.height = 1120;
+            canvas.width = 800; canvas.height = 1450;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#FF3B30"; ctx.fillRect(0, 0, canvas.width, 120);
             ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
@@ -292,15 +286,15 @@
             ctx.fillStyle = "#FF3B30"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
             ctx.fillStyle = "#333333"; ctx.font = "bold 50px sans-serif"; ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
             ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
-            let y = 475;
+            let y = 480;
             playHistory.forEach((h, i) => {
-                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < 5 ? '#FF9500' : '#007AFF');
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < (maxDistancePenalty*0.1) ? '#FF9500' : '#007AFF');
                 ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
-                ctx.fillStyle = "#333333"; ctx.font = "bold 22px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
-                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns || "(未入力)"} (${h.pref}/${h.line})`, 95, y + 25);
-                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; ctx.fillText(`誤差: ${h.dist > 1000 ? '-' : h.dist.toFixed(2) + 'km'} / タイム: ${h.time.toFixed(1)}s`, 95, y + 50);
-                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y);
-                y += 63;
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30);
+                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; ctx.fillText(`誤差: ${h.dist > 1000 ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y + 15);
+                y += 92;
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
@@ -308,8 +302,6 @@
             const container = document.getElementById('share-image-container');
             container.innerHTML = `<img src="${dataUrl}">`;
             document.getElementById('image-overlay').style.display = "flex";
-            
-            // 直接シェア（可能なブラウザのみ）
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！ #サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
             if (navigator.share && !autoShow) {
                 const blob = await (await fetch(dataUrl)).blob();
@@ -319,7 +311,6 @@
                 container.appendChild(b);
             }
         }
-
         function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
         function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
