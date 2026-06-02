@@ -42,13 +42,20 @@
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
 
-        /* 画像生成ボタンと表示エリア */
-        .share-card-btn { background: #5856D6; grid-column: span 2; font-size: 14px; padding: 15px; margin-bottom: 10px; width: 100%; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; }
-        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        #share-image-container img { width: 100%; display: block; }
-        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
+        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
+        .btn-x { background: #000; }
+        .btn-line { background: #06C755; }
+        .btn-threads { background: #000; border: 1px solid #333; }
+        .btn-fb { background: #1877F2; }
+        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
+        .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
         
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
+        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); }
+        #share-image-container img { width: 100%; height: auto; display: block; }
+        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
@@ -83,7 +90,7 @@
     <!-- 画像表示用オーバーレイ -->
     <div id="image-overlay">
         <div id="share-image-container"></div>
-        <p style="color:white; font-size:12px; margin-top:10px;">画像を長押しして保存してください</p>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を長押しして保存、またはシェアしてください</p>
         <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
     </div>
 
@@ -315,16 +322,32 @@
 
             let listH = '<ul class="result-list">';
             playHistory.forEach((h) => {
-                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
-                const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
+
+            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName} / ${activeFilters}】\nスコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n#サテステ #鉄道クイズ`;
+            const shareUrl = window.location.origin;
+
+            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 
-                <button class="share-card-btn" onclick="generateImage('${rank}', '${modeName}')">結果を画像でシェアする</button>
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
+                    <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
+                    <button class="btn-sns btn-fb" onclick="window.open('${fbUrl}')">Facebook</button>
+                    <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
+                    <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
+                    <button class="btn-sns btn-card" id="btn-generate-card">画像で詳細結果をシェア！</button>
+                </div>
 
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
@@ -332,91 +355,134 @@
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>
             `;
+
+            const fullText = shareText + "\n" + shareUrl;
+            document.getElementById('insta-copy').onclick = () => copyToClipboard(fullText);
+            document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullText);
+            document.getElementById('btn-generate-card').onclick = () => generateResultCard(rank, modeName);
         }
 
-        // --- 画像生成ロジック ---
-        function generateImage(rank, modeName) {
+        async function generateResultCard(rank, modeName) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = 600;
-            canvas.height = 950;
+            canvas.width = 800;
+            canvas.height = 1100;
 
-            // 背景
+            // 背景描画
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#FF3B30"; // ヘッダー色
-            ctx.fillRect(0, 0, canvas.width, 100);
-
-            // タイトル
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 30px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("サテステ チャレンジ結果", 300, 60);
-
-            // ランクとスコア
-            ctx.fillStyle = "#333333";
-            ctx.font = "bold 20px sans-serif";
-            ctx.fillText(modeName + " / " + activeFilters, 300, 140);
             
+            // ヘッダー
             ctx.fillStyle = "#FF3B30";
-            ctx.font = "bold 120px sans-serif";
-            ctx.fillText(rank, 300, 260);
-            
-            ctx.fillStyle = "#333333";
+            ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#ffffff";
             ctx.font = "bold 40px sans-serif";
-            ctx.fillText(totalScore.toLocaleString() + " 点", 300, 320);
+            ctx.textAlign = "center";
+            ctx.fillText("サテステ リザルトカード", 400, 75);
 
-            // 仕切り線
+            // メイン情報
+            ctx.fillStyle = "#333333";
+            ctx.font = "bold 24px sans-serif";
+            ctx.fillText(`${modeName} / ${activeFilters}`, 400, 170);
+
+            ctx.fillStyle = "#FF3B30";
+            ctx.font = "bold 140px sans-serif";
+            ctx.fillText(rank, 400, 310);
+
+            ctx.fillStyle = "#333333";
+            ctx.font = "bold 50px sans-serif";
+            ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
+
+            // 区切り線
             ctx.strokeStyle = "#eeeeee";
             ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(550, 350); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
 
-            // 詳細リスト
-            ctx.textAlign = "left";
-            let y = 390;
+            // 詳細リストの描画
+            let y = 470;
             playHistory.forEach((h, i) => {
                 const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
                 const markColor = h.isCorrect ? '#D33' : (h.dist < 5 ? '#FF9500' : '#007AFF');
                 
+                // 番号とマーク
+                ctx.textAlign = "left";
                 ctx.fillStyle = markColor;
-                ctx.font = "bold 24px sans-serif";
+                ctx.font = "bold 28px sans-serif";
                 ctx.fillText(mark, 50, y);
-
+                
                 ctx.fillStyle = "#333333";
-                ctx.font = "bold 18px sans-serif";
-                ctx.fillText((i+1) + ". " + h.name, 90, y);
+                ctx.font = "bold 22px sans-serif";
+                ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
 
-                ctx.fillStyle = "#888888";
-                ctx.font = "14px sans-serif";
-                ctx.fillText("解答: " + (h.userAns || "(未入力)"), 90, y + 20);
+                // 解答と統計
+                ctx.fillStyle = "#666666";
+                ctx.font = "18px sans-serif";
+                const userAnsText = h.userAns ? `解答: ${h.userAns}` : "解答: (未入力)";
+                ctx.fillText(userAnsText, 95, y + 25);
 
+                ctx.fillStyle = "#999999";
+                ctx.font = "16px sans-serif";
+                const stats = `誤差: ${h.dist > 1000 ? '-' : h.dist.toFixed(2) + 'km'} / 解答時間: ${h.time.toFixed(1)}s`;
+                ctx.fillText(stats, 95, y + 50);
+
+                // 個別スコア
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#007AFF";
-                ctx.font = "bold 16px sans-serif";
-                ctx.fillText(h.score + "点", 550, y);
-                ctx.textAlign = "left";
+                ctx.font = "bold 20px sans-serif";
+                ctx.fillText(`${h.score} pt`, 750, y);
 
-                y += 55;
+                y += 63;
             });
 
             // フッター
-            ctx.fillStyle = "#f4f4f4";
-            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = "#f8f8f8";
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             ctx.fillStyle = "#999999";
-            ctx.font = "14px sans-serif";
+            ctx.font = "18px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("航空写真から駅当てクイズ「サテステ」 sate-ste.com", 300, canvas.height - 15);
+            ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
 
-            // 画像を表示
-            const img = document.createElement('img');
-            img.src = canvas.toDataURL("image/png");
+            // 画像の書き出し
+            const dataUrl = canvas.toDataURL("image/png");
+            const blob = await (await fetch(dataUrl)).blob();
+            const file = new File([blob], "satesta_result.png", { type: "image/png" });
+
+            // 共有・表示処理
             const container = document.getElementById('share-image-container');
-            container.innerHTML = "";
-            container.appendChild(img);
+            container.innerHTML = `<img src="${dataUrl}" alt="Result Card">`;
             document.getElementById('image-overlay').style.display = "flex";
+
+            // ブラウザの共有機能が使える場合はボタンを追加
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                const shareBtn = document.createElement('button');
+                shareBtn.className = "overlay-close";
+                shareBtn.style.background = "#007AFF";
+                shareBtn.style.color = "white";
+                shareBtn.style.marginBottom = "10px";
+                shareBtn.innerText = "直接SNSに送る";
+                shareBtn.onclick = () => {
+                    navigator.share({
+                        files: [file],
+                        title: 'サテステ リザルト',
+                        text: 'サテステでクイズに挑戦したよ！ #サテステ'
+                    }).catch(console.error);
+                };
+                container.appendChild(shareBtn);
+            }
         }
 
         function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
+
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert("結果テキストをコピーしました！");
+        }
+
         function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
