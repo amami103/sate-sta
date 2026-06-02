@@ -42,14 +42,13 @@
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
 
-        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
-        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
-        .btn-x { background: #000; }
-        .btn-line { background: #06C755; }
-        .btn-threads { background: #000; border: 1px solid #333; }
-        .btn-fb { background: #1877F2; }
-        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
-        .btn-tiktok { background: #000; border-left: 2px solid #ff0050; border-right: 2px solid #00f2ea; }
+        /* 画像生成ボタンと表示エリア */
+        .share-card-btn { background: #5856D6; grid-column: span 2; font-size: 14px; padding: 15px; margin-bottom: 10px; width: 100%; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; }
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #share-image-container img { width: 100%; display: block; }
+        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
@@ -81,6 +80,13 @@
         </div>
     </div>
 
+    <!-- 画像表示用オーバーレイ -->
+    <div id="image-overlay">
+        <div id="share-image-container"></div>
+        <p style="color:white; font-size:12px; margin-top:10px;">画像を長押しして保存してください</p>
+        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
+    </div>
+
     <script>
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
@@ -107,27 +113,9 @@
 
         function init() {
             const params = new URLSearchParams(window.location.search);
-            const resData = params.get('res');
-
-            // 先に地図だけ初期化
             map = L.map('map', { zoomControl:false });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
 
-            // --- 閲覧モード判定 ---
-            if (resData) {
-                try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
-                    playHistory = decoded.history;
-                    totalScore = decoded.score;
-                    isLocked = decoded.locked;
-                    activeFilters = decoded.filters || "不明";
-                    // 確実にDOMが準備できてから実行
-                    setTimeout(() => showFinalResult(true), 100);
-                    return;
-                } catch(e) { console.error("Data error", e); }
-            }
-
-            // 通常ゲームモードの初期化
             isLocked = params.get('lock') === 'true';
             if (isLocked) {
                 map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable();
@@ -308,20 +296,10 @@
             questionCount++;
         }
 
-        function copyToClipboard(text) {
-            const temp = document.createElement('textarea');
-            temp.value = text;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            alert("リンクをコピーしました！");
-        }
-
-        function showFinalResult(isViewMode = false) {
+        function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
             const modeName = isLocked ? "ハードモード" : "通常モード";
-            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表 (" + modeName + ")";
+            document.getElementById('question-title').innerText = "結果発表 (" + modeName + ")";
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
 
@@ -342,48 +320,103 @@
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
-            const resultData = { history: playHistory, score: totalScore, locked: isLocked, filters: activeFilters };
-            const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
-            const shareUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
-            
-            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName} / ${activeFilters}】\nスコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n詳細結果はこちら：`;
-            const fullShareBody = shareText + "\n" + shareUrl + "\n#サテステ #鉄道クイズ";
-
-            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 
-                <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
-                    <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
-                    <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
-                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareUrl}')">リンクをコピー</button>
-                    <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
-                    <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
-                </div>
+                <button class="share-card-btn" onclick="generateImage('${rank}', '${modeName}')">結果を画像でシェアする</button>
 
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
-                    ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>
             `;
-
-            document.getElementById('insta-copy').onclick = () => copyToClipboard(fullShareBody);
-            document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullShareBody);
-            
-            // 地図の操作を有効化（閲覧モード時）
-            if (isViewMode) {
-                map.dragging.enable(); map.touchZoom.enable(); map.doubleClickZoom.enable();
-                map.scrollWheelZoom.enable(); map.boxZoom.enable(); map.keyboard.enable();
-                if(playHistory.length > 0) jumpToStation(playHistory[0].lat, playHistory[0].lng);
-            }
         }
 
+        // --- 画像生成ロジック ---
+        function generateImage(rank, modeName) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 950;
+
+            // 背景
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#FF3B30"; // ヘッダー色
+            ctx.fillRect(0, 0, canvas.width, 100);
+
+            // タイトル
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 30px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("サテステ チャレンジ結果", 300, 60);
+
+            // ランクとスコア
+            ctx.fillStyle = "#333333";
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillText(modeName + " / " + activeFilters, 300, 140);
+            
+            ctx.fillStyle = "#FF3B30";
+            ctx.font = "bold 120px sans-serif";
+            ctx.fillText(rank, 300, 260);
+            
+            ctx.fillStyle = "#333333";
+            ctx.font = "bold 40px sans-serif";
+            ctx.fillText(totalScore.toLocaleString() + " 点", 300, 320);
+
+            // 仕切り線
+            ctx.strokeStyle = "#eeeeee";
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(550, 350); ctx.stroke();
+
+            // 詳細リスト
+            ctx.textAlign = "left";
+            let y = 390;
+            playHistory.forEach((h, i) => {
+                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
+                const markColor = h.isCorrect ? '#D33' : (h.dist < 5 ? '#FF9500' : '#007AFF');
+                
+                ctx.fillStyle = markColor;
+                ctx.font = "bold 24px sans-serif";
+                ctx.fillText(mark, 50, y);
+
+                ctx.fillStyle = "#333333";
+                ctx.font = "bold 18px sans-serif";
+                ctx.fillText((i+1) + ". " + h.name, 90, y);
+
+                ctx.fillStyle = "#888888";
+                ctx.font = "14px sans-serif";
+                ctx.fillText("解答: " + (h.userAns || "(未入力)"), 90, y + 20);
+
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#007AFF";
+                ctx.font = "bold 16px sans-serif";
+                ctx.fillText(h.score + "点", 550, y);
+                ctx.textAlign = "left";
+
+                y += 55;
+            });
+
+            // フッター
+            ctx.fillStyle = "#f4f4f4";
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = "#999999";
+            ctx.font = "14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("航空写真から駅当てクイズ「サテステ」 sate-ste.com", 300, canvas.height - 15);
+
+            // 画像を表示
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL("image/png");
+            const container = document.getElementById('share-image-container');
+            container.innerHTML = "";
+            container.appendChild(img);
+            document.getElementById('image-overlay').style.display = "flex";
+        }
+
+        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
         function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
