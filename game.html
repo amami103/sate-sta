@@ -88,6 +88,7 @@
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
         let maxDistancePenalty = 50; 
+        let activeFilters = "全国";
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -106,26 +107,32 @@
 
         function init() {
             const params = new URLSearchParams(window.location.search);
-            
-            // --- 共有リンクからの閲覧モード判定 ---
             const resData = params.get('res');
+
+            // 先に地図だけ初期化
+            map = L.map('map', { zoomControl:false });
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+
+            // --- 閲覧モード判定 ---
             if (resData) {
                 try {
                     const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
-                    // 閲覧モード用のmap初期化
-                    map = L.map('map', { zoomControl:false });
-                    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
                     playHistory = decoded.history;
                     totalScore = decoded.score;
                     isLocked = decoded.locked;
-                    showFinalResult(true); // 閲覧モードで表示
+                    activeFilters = decoded.filters || "不明";
+                    // 確実にDOMが準備できてから実行
+                    setTimeout(() => showFinalResult(true), 100);
                     return;
-                } catch(e) { console.error("Invalid share data"); }
+                } catch(e) { console.error("Data error", e); }
             }
 
+            // 通常ゲームモードの初期化
             isLocked = params.get('lock') === 'true';
-            map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
-            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+            if (isLocked) {
+                map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable();
+                map.scrollWheelZoom.disable(); map.boxZoom.disable(); map.keyboard.disable();
+            }
 
             if (typeof stations === 'undefined') return;
 
@@ -155,27 +162,35 @@
 
             if (sLine && sLine !== "all") {
                 maxDistancePenalty = 10;
+                activeFilters = "路線: " + sLine;
                 filtered = filtered.filter(s => s.line === sLine);
             } else if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) {
                     maxDistancePenalty = 35;
-                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
+                    const gn = sComp.replace("grp:", "");
+                    activeFilters = "会社: " + gn;
+                    const grp = COMPANY_GROUPS[gn] || [];
                     filtered = filtered.filter(s => grp.includes(s.company));
                 } else {
                     maxDistancePenalty = 20;
+                    activeFilters = "会社: " + sComp;
                     filtered = filtered.filter(s => s.company === sComp);
                 }
             } else if (sPref && sPref !== "all") {
                 if (sPref.startsWith("reg:")) {
                     maxDistancePenalty = 45;
-                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    const rn = sPref.replace("reg:", "");
+                    activeFilters = "地方: " + rn;
+                    const reg = REGION_PREFS[rn] || [];
                     filtered = filtered.filter(s => reg.includes(s.pref));
                 } else {
                     maxDistancePenalty = 25;
+                    activeFilters = "都道府県: " + sPref;
                     filtered = filtered.filter(s => s.pref === sPref);
                 }
             } else {
                 maxDistancePenalty = 50;
+                activeFilters = "全国";
             }
 
             for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
@@ -300,7 +315,7 @@
             temp.select();
             document.execCommand('copy');
             document.body.removeChild(temp);
-            alert("コピー完了！貼り付けて共有してね！");
+            alert("リンクをコピーしました！");
         }
 
         function showFinalResult(isViewMode = false) {
@@ -321,31 +336,27 @@
             else if (ratio >= 0.1) rank = "C";
 
             let listH = '<ul class="result-list">';
-            let shareSummary = "";
-            playHistory.forEach((h, idx) => {
+            playHistory.forEach((h) => {
                 const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
                 const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
-                shareSummary += (idx + 1) + "." + mark + " ";
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
-            // 詳細URLの生成 (履歴をBase64化)
-            const resultData = { history: playHistory, score: totalScore, locked: isLocked };
+            const resultData = { history: playHistory, score: totalScore, locked: isLocked, filters: activeFilters };
             const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
             const shareUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
             
-            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName}】スコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n詳細結果: `;
+            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName} / ${activeFilters}】\nスコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n詳細結果はこちら：`;
             const fullShareBody = shareText + "\n" + shareUrl + "\n#サテステ #鉄道クイズ";
 
-            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + "\n" + shareSummary)}&url=${encodeURIComponent(shareUrl)}`;
-            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + shareSummary + "\n" + shareUrl)}`;
-            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + shareSummary + "\n" + shareUrl)}`;
+            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
 
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 
-                <p style="font-size:10px; color:#777; text-align:center;">詳細共有リンクをコピーして共有！</p>
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
                     <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
@@ -364,9 +375,16 @@
 
             document.getElementById('insta-copy').onclick = () => copyToClipboard(fullShareBody);
             document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullShareBody);
+            
+            // 地図の操作を有効化（閲覧モード時）
+            if (isViewMode) {
+                map.dragging.enable(); map.touchZoom.enable(); map.doubleClickZoom.enable();
+                map.scrollWheelZoom.enable(); map.boxZoom.enable(); map.keyboard.enable();
+                if(playHistory.length > 0) jumpToStation(playHistory[0].lat, playHistory[0].lng);
+            }
         }
 
-        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
+        function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
         function makeDraggable(el) {
