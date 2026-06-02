@@ -1,3 +1,5 @@
+--- START OF FILE game.html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -68,12 +70,12 @@
     </div>
 
     <script>
-        // 地方とグループの定義を復元
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
+        let maxDistancePenalty = 50; // デフォルト50km
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -119,23 +121,35 @@
 
             let filtered = [...allUniqueStations];
             
-            // 絞り込みロジックの完全復旧
             const sPref = params.get('pref');
-            if (sPref && sPref !== "all") {
-                if (sPref.startsWith("reg:")) {
-                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
-                    filtered = filtered.filter(s => reg.includes(s.pref));
-                } else filtered = filtered.filter(s => s.pref === sPref);
-            }
             const sComp = params.get('company');
-            if (sComp && sComp !== "all") {
+            const sLine = params.get('line');
+
+            // --- 採点基準距離の動的設定 ---
+            if (sLine && sLine !== "all") {
+                maxDistancePenalty = 10;
+                filtered = filtered.filter(s => s.line === sLine);
+            } else if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) {
+                    maxDistancePenalty = 35;
                     const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
                     filtered = filtered.filter(s => grp.includes(s.company));
-                } else filtered = filtered.filter(s => s.company === sComp);
+                } else {
+                    maxDistancePenalty = 20;
+                    filtered = filtered.filter(s => s.company === sComp);
+                }
+            } else if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) {
+                    maxDistancePenalty = 45;
+                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
+                    filtered = filtered.filter(s => reg.includes(s.pref));
+                } else {
+                    maxDistancePenalty = 25;
+                    filtered = filtered.filter(s => s.pref === sPref);
+                }
+            } else {
+                maxDistancePenalty = 50; // 全国
             }
-            const sLine = params.get('line');
-            if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
             // シャッフルと問題数決定
             for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
@@ -206,7 +220,10 @@
                 isCorrect = (userName === currentStation.name);
 
                 if (isCorrect) baseScore = 1500;
-                else baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, 50) / 50)));
+                else {
+                    const ratio = Math.min(dist, maxDistancePenalty) / maxDistancePenalty;
+                    baseScore = Math.max(0, 1000 * (1 - Math.sqrt(ratio)));
+                }
 
                 if (!usedHints.pref && !usedHints.line) {
                     timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
@@ -269,9 +286,9 @@
 
             let listH = '<ul class="result-list">';
             playHistory.forEach(h => {
-                const mark = h.isCorrect ? '●' : (h.dist < 5 ? '▲' : '×');
-                const markColor = h.isCorrect ? 'red' : (h.dist < 5 ? 'orange' : 'blue');
-                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 100 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
             finalUi.innerHTML = `
