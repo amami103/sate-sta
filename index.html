@@ -1,5 +1,3 @@
---- START OF FILE index.html ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -230,7 +228,7 @@
                     <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
                     <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます。0点となる境界距離は出題範囲に応じて変動します（全国: 50km / 地方: 45km / 都道府県: 25km / 路線: 10km など）。</li>
                     <li><strong>タイムボーナス（最大 500点）:</strong> 正解（完全一致）時のみ加算されます。10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。不正解の場合は加算されません。</li>
-                    <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うとタイムボーナスが 0点 になり、さらに合計点に倍率（県: 0.5倍 / 路線: 0.25倍 / 両方: 0.1倍）が掛かります。</li>
+                    <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うと、合計点（基礎点＋タイムボーナス）に大幅な倍率（県: 0.5倍 / 路線: 0.25倍 / 両方: 0.1倍）のペナルティが掛かります。</li>
                     <li><strong>ランク判定:</strong> 全問終了時の合計スコアによって、D から最高ランク SSS まで判定されます。</li>
                 </ul>
             </div>
@@ -286,8 +284,7 @@
             <div class="card">
                 <h3>更新履歴</h3>
                 <div class="update-log">
-                      <div class="update-item"><span class="update-date">2026.06.02</span><span class="update-text">スコア機能の見直しを実施。</span></div>
-                    <div class="update-item"><span class="update-date">2026.06.01</span><span class="update-text">「チャレンジモード」と「フリーモード」を分離。スコア機能を実装。</span></div>
+                    <div class="update-item"><span class="update-date">2026.06.01</span><span class="update-text">「チャレンジモード」と「フリーモード」を分離。スコアリング機能を実装。</span></div>
                     <div class="update-item"><span class="update-date">2026.05.30</span><span class="update-text">「あなたの解答」が表示されるように変更。</span></div>
                     <div class="update-item"><span class="update-date">2026.05.29</span><span class="update-text">「サテステ」を公開。</span></div>
                 </div>
@@ -320,13 +317,11 @@
             ["c", "f"].forEach(mode => {
                 const ps = document.getElementById(`pref-select-${mode}`);
                 
-                // 地方を追加
                 ps.innerHTML += `<option disabled>---------- 地方 ----------</option>`;
                 Object.keys(REGION_PREFS).forEach(reg => {
                     ps.add(new Option("・" + reg, "reg:" + reg));
                 });
                 
-                // 都道府県を追加
                 ps.innerHTML += `<option disabled>---------- 都道府県 ----------</option>`;
                 prefOrder.forEach(p => { if (existingPrefs.has(p)) ps.add(new Option(p, p)); });
                 
@@ -372,7 +367,6 @@
         }
 
         function startGame(targetHtml, modeSuffix) {
-            // チャレンジモード(c)の場合は常に10問、フリーモード(f)の場合は入力値を取得
             const num = (modeSuffix === 'c') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
             const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
             
