@@ -150,7 +150,18 @@
             const nameCounts = {};
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             allStationLabels = allUniqueStations.map(s => (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name).sort();
-            document.getElementById('station-input').addEventListener('input', updateDatalist);
+            
+            const inputEl = document.getElementById('station-input');
+            inputEl.addEventListener('input', updateDatalist);
+            
+            // エンターキーでの誤送信防止
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (e.isComposing) return; // IME変換中は無視
+                    e.preventDefault(); // デフォルトの挙動（送信など）を停止
+                    checkAnswer(); // 回答を実行
+                }
+            });
 
             let filtered = [...allUniqueStations];
             const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
