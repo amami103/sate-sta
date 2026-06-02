@@ -41,6 +41,19 @@
         .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
+
+        /* SNS共有ボタン用スタイル */
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
+        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
+        .btn-x { background: #000; }
+        .btn-line { background: #06C755; }
+        .btn-threads { background: #000; border: 1px solid #333; }
+        .btn-fb { background: #1877F2; }
+        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
+        .btn-tiktok { background: #000; border-left: 2px solid #ff0050; border-right: 2px solid #00f2ea; }
+        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .result-footer-buttons button { flex: 1; padding: 12px 5px; }
+
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
     </style>
 </head>
@@ -218,12 +231,11 @@
 
                 if (isCorrect) {
                     baseScore = 1500;
-                    // 正解（完全一致）時のみタイムボーナスを計算
                     timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
                 } else {
                     const ratio = Math.min(dist, maxDistancePenalty) / maxDistancePenalty;
                     baseScore = Math.max(0, 1000 * (1 - Math.sqrt(ratio)));
-                    timeBonus = 0; // 不正解時は0
+                    timeBonus = 0; 
                 }
             }
 
@@ -232,7 +244,6 @@
             else if (usedHints.line) multiplier = 0.25;
             else if (usedHints.pref) multiplier = 0.5;
 
-            // ヒントを使ってもタイムボーナスを含めた合計に倍率をかける
             const questionScore = Math.round((baseScore + timeBonus) * multiplier);
             totalScore += questionScore;
 
@@ -266,9 +277,20 @@
             questionCount++;
         }
 
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert("コピー完了！貼り付けて共有してね！");
+        }
+
         function showFinalResult() {
             document.getElementById('game-ui').style.display = "none";
-            document.getElementById('question-title').innerText = isLocked ? "結果発表 (ハードモード)" : "結果発表 (通常モード)";
+            const modeName = isLocked ? "ハードモード" : "通常モード";
+            document.getElementById('question-title').innerText = "結果発表 (" + modeName + ")";
             const finalUi = document.getElementById('final-ui');
             finalUi.style.display = "block";
 
@@ -283,21 +305,46 @@
             else if (ratio >= 0.1) rank = "C";
 
             let listH = '<ul class="result-list">';
-            playHistory.forEach(h => {
+            let shareSummary = "";
+            playHistory.forEach((h, idx) => {
                 const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
                 const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
+                shareSummary += (idx + 1) + "." + mark + " ";
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}点 / 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} / ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
+
+            // SNS共有テキスト作成
+            const shareText = `航空写真・駅当てクイズ「サテステ」\n【${modeName}】スコア: ${totalScore.toLocaleString()}点 / ランク: ${rank}\n結果: ${shareSummary}\n#サテステ #鉄道クイズ #地理クイズ`;
+            const shareUrl = window.location.origin;
+            const fullShareBody = shareText + "\n" + shareUrl;
+
+            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
+            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
+                
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
+                    <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
+                    <button class="btn-sns btn-fb" onclick="window.open('${fbUrl}')">Facebook</button>
+                    <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
+                    <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
+                </div>
+
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
                     <button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>
             `;
+
+            document.getElementById('insta-copy').onclick = () => copyToClipboard(fullShareBody);
+            document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullShareBody);
         }
 
         function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
