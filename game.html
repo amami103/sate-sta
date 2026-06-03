@@ -1,3 +1,5 @@
+--- START OF FILE game (2).html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -101,7 +103,7 @@
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
         let maxDistancePenalty = 50, activeFilters = "全国";
-        let inputTimer; // 重なり防止用タイマー
+        let inputTimer; // タイマー追加
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -154,13 +156,11 @@
             
             const inputEl = document.getElementById('station-input');
             
-            // 重なり（ななな）防止処理：体感速度を損なわない30msの遅延
-            inputEl.addEventListener('input', (e) => {
+            // 重なり（ななな）防止 ＋ 候補が出るように修正
+            inputEl.addEventListener('input', () => {
                 clearTimeout(inputTimer);
-                inputTimer = setTimeout(() => {
-                    if (e.isComposing) return; 
-                    updateDatalist();
-                }, 30);
+                // 100msの待機。これでタイピング中の負荷を逃がし、変換確定時にも候補が出ます。
+                inputTimer = setTimeout(updateDatalist, 100);
             });
             
             // エンターキーでの誤送信防止
@@ -204,7 +204,7 @@
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = ""; 
             
-            // 前回の問題の残りを完全にクリア
+            // 入力欄と候補リストを完全にリセット
             document.getElementById('station-input').value = "";
             document.getElementById('station-list').innerHTML = ""; 
             
