@@ -3,10 +3,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- タブに表示されるアイコン設定 -->
     <link rel="icon" href="logo2.png">
     <link rel="apple-touch-icon" href="logo2.png">
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>クイズプレイ | サテステ</title>
@@ -16,71 +14,51 @@
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
-
-        .ui-container { 
-            position: absolute; bottom: 20px; left: 20px; z-index: 10; 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); 
-            padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); 
-            width: 320px; max-height: 85vh; display: flex; flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-        
-        .ui-header { 
-            background: #007AFF; color: white; padding: 12px; 
-            cursor: move; font-size: 13px; text-align: center; 
-            border-top-left-radius: 12px; border-top-right-radius: 12px; 
-            user-select: none; flex-shrink: 0; font-weight: bold; 
-        }
-
-        .ui-header::after {
-            content: ' (ドラッグで移動)';
-            font-size: 10px;
-            font-weight: normal;
-            opacity: 0.8;
-        }
-
+        .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; }
-        button:active { opacity: 0.7; }
-        
         .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
         .btn-reset  { background: #8E8E93; }
         .btn-giveup { background: #FF9500; }
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
-
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
-
+        
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
         .btn-x { background: #000; }
         .btn-line { background: #06C755; }
         .btn-threads { background: #000; border: 1px solid #333; }
-        .btn-fb { background: #1877F2; }
+        .btn-fb { background: #555; } /* コピー用 */
         .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
-        .btn-tiktok { background: #000; border-left: 2px solid #ff0050; border-right: 2px solid #00f2ea; }
-        
+        .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
+
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
-
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
         .res-name { font-weight: bold; color: #333; display: block; font-size: 13px; }
-        .res-user-ans { font-size: 11px; color: #555; display: block; margin-top: 2px; } /* 解答表示用 */
+        .res-user-ans { font-size: 11px; color: #555; display: block; margin-top: 2px; }
         .res-sub { font-size: 10px; color: #777; display: block; }
         .res-time-label { font-size: 10px; color: #007AFF; font-weight: bold; }
-        .res-status { width: 25px; text-align: center; font-size: 16px; }
-        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; }
+        .res-status { width: 25px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; }
         .final-score { font-size: 24px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
         .total-time-display { font-size: 14px; color: #333; text-align: center; margin-bottom: 15px; padding: 5px; border-bottom: 1px solid #eee; }
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 15px 5px; }
         .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
+
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
+        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
+        #share-image-container img { width: 100%; height: auto; display: block; }
+        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
 
         @media (max-width: 600px) {
             .btn-fullscreen { display: none; }
@@ -92,18 +70,14 @@
     </style>
 </head>
 <body onload="init()">
-
     <div id="map"></div>
-
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
-            
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
                 <datalist id="station-list"></datalist>
-                
                 <div class="button-group">
                     <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
                     <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
@@ -117,9 +91,14 @@
                 <div id="result"></div>
                 <div class="ad-box">スポンサーリンク</div>
             </div>
-
             <div id="final-ui" style="display:none;"></div>
         </div>
+    </div>
+
+    <div id="image-overlay">
+        <div id="share-image-container"></div>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
+        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
     </div>
 
     <script>
@@ -128,62 +107,49 @@
 
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allStationLabels = []; 
-        
-        let inputTimer; // 追加
-        let isComposing = false; // 追加
+        let inputTimer, isComposing = false;
 
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Error: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
         }
 
         function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-        function handleHeaderClick() {
-            if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized');
-        }
-        function expandPanel() {
-            document.getElementById('ui-panel').classList.remove('minimized');
-        }
+        function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
+        function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
 
         function updateDatalist() {
-            const val = document.getElementById('station-input').value.toLowerCase();
-            const dl = document.getElementById('station-list');
-            if (val.length < 1) {
-                dl.innerHTML = "";
-                return;
-            }
-            const fragment = document.createDocumentFragment();
-            let count = 0;
+            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            if (val.length < 1) { dl.innerHTML = ""; return; }
+            const fragment = document.createDocumentFragment(); let count = 0;
             for (const label of allStationLabels) {
                 const namePart = label.split(' (')[0].toLowerCase();
                 if (namePart.startsWith(val)) {
-                    const o = document.createElement('option');
-                    o.value = label;
-                    fragment.appendChild(o);
-                    count++;
-                    if (count >= 100) break;
+                    const o = document.createElement('option'); o.value = label; fragment.appendChild(o);
+                    if (++count >= 100) break;
                 }
             }
-            dl.innerHTML = "";
-            dl.appendChild(fragment);
+            dl.innerHTML = ""; dl.appendChild(fragment);
         }
 
         function init() {
             const params = new URLSearchParams(window.location.search);
+            const resData = params.get('res');
             isLocked = params.get('lock') === 'true';
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
 
-            if (typeof stations === 'undefined') return;
+            if (resData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
+                    playHistory = decoded.history; score = decoded.score; totalQuestions = decoded.total;
+                    setTimeout(() => { showFinalResult(true); generateResultCard(true); }, 200);
+                    return;
+                } catch(e) { console.error("Data error"); }
+            }
 
+            if (typeof stations === 'undefined') return;
             const allUniqueStations = [];
             const stationMap = new Map();
             stations.forEach(s => {
@@ -192,71 +158,40 @@
                     const existing = stationMap.get(key);
                     if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
                 } else {
-                    const copy = { ...s };
-                    stationMap.set(key, copy);
-                    allUniqueStations.push(copy);
+                    const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
                 }
             });
 
             const nameCounts = {};
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
-            allStationLabels = allUniqueStations.map(s => {
-                return (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
-            }).sort();
+            allStationLabels = allUniqueStations.map(s => (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name).sort();
 
             const inputEl = document.getElementById('station-input');
-            
-            // 重なり防止＆日本語変換対策
             inputEl.addEventListener('compositionstart', () => { isComposing = true; });
-            inputEl.addEventListener('compositionend', () => { 
-                isComposing = false; 
-                updateDatalist(); 
-            });
-
-            inputEl.addEventListener('input', () => {
-                if (isComposing) return;
-                clearTimeout(inputTimer);
-                inputTimer = setTimeout(updateDatalist, 150);
-            });
-
-            // Enterキーでの誤送信ガード
-            inputEl.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    if (isComposing) return;
-                    e.preventDefault(); 
-                    checkAnswer();
-                }
-            });
+            inputEl.addEventListener('compositionend', () => { isComposing = false; updateDatalist(); });
+            inputEl.addEventListener('input', () => { if (isComposing) return; clearTimeout(inputTimer); inputTimer = setTimeout(updateDatalist, 150); });
+            inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
 
             let filtered = [...allUniqueStations];
-            const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
-            const sPref = params.get('pref');
+            const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null, sPref = params.get('pref');
             if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
             else if (sPref && sPref !== "all") {
-                if (sPref.startsWith("reg:")) {
-                    const reg = REGION_PREFS[sPref.replace("reg:", "")] || [];
-                    filtered = filtered.filter(s => reg.includes(s.pref));
-                } else filtered = filtered.filter(s => s.pref === sPref);
+                if (sPref.startsWith("reg:")) { const reg = REGION_PREFS[sPref.replace("reg:", "")] || []; filtered = filtered.filter(s => reg.includes(s.pref)); }
+                else filtered = filtered.filter(s => s.pref === sPref);
             }
-            const mComps = params.get('comps') ? params.get('comps').split(',') : null;
-            const sComp = params.get('company');
+            const mComps = params.get('comps') ? params.get('comps').split(',') : null, sComp = params.get('company');
             if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
             else if (sComp && sComp !== "all") {
-                if (sComp.startsWith("grp:")) {
-                    const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || [];
-                    filtered = filtered.filter(s => grp.includes(s.company));
-                } else filtered = filtered.filter(s => s.company === sComp);
+                if (sComp.startsWith("grp:")) { const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => grp.includes(s.company)); }
+                else filtered = filtered.filter(s => s.company === sComp);
             }
-            const mLines = params.get('lines') ? params.get('lines').split(',') : null;
-            const sLine = params.get('line');
+            const mLines = params.get('lines') ? params.get('lines').split(',') : null, sLine = params.get('line');
             if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
             else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
-            if (filtered.length === 0) filtered = [...allUniqueStations];
             shuffle(filtered);
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
-
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
@@ -264,190 +199,112 @@
         function nextQuestion() {
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
-            document.getElementById('answer-btn').style.display = "block";
-            document.getElementById('next-btn').style.display = "none";
-            document.getElementById('result').innerText = "";
-            
-            // 入力欄と予測リストを完全にクリア
-            document.getElementById('station-input').value = "";
-            document.getElementById('station-list').innerHTML = ""; 
-            
-            document.getElementById('hint-area').style.display = "none";
+            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('result').innerText = ""; document.getElementById('station-input').value = "";
+            document.getElementById('station-list').innerHTML = ""; document.getElementById('hint-area').style.display = "none";
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
             startTime = Date.now();
         }
 
-        function showHint(t) {
-            if(!answered){
-                const a = document.getElementById('hint-area');
-                a.style.display = "block";
-                a.innerText = (t==='pref'?"都道府県: ":"路線名: ")+(currentStation[t]||"不明");
-            }
-        }
-
+        function showHint(t) { if(!answered){ const a = document.getElementById('hint-area'); a.style.display = "block"; a.innerText = (t==='pref'?"都道府県: ":"路線名: ")+(currentStation[t]||"不明"); } }
         function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
 
         function checkAnswer() {
-            if (answered) return;
-            expandPanel();
-            const time = (Date.now() - startTime) / 1000;
-            const userRaw = document.getElementById('station-input').value.trim();
-            const user = userRaw.split(' (')[0];
-            
-            const res = document.getElementById('result');
-            const isCorrect = (user === currentStation.name);
-            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            
-            // 解答表示を追加
+            if (answered) return; expandPanel();
+            const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim(), user = userRaw.split(' (')[0];
+            const res = document.getElementById('result'), isCorrect = (user === currentStation.name);
             const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
-
-            if (isCorrect) { 
-                res.innerHTML = userAnsDisplay + "<span style='color:#D33;'>正解！</span>" + infoText; 
-                score++; 
-            } else { 
-                res.innerHTML = userAnsDisplay + "<span style='color:#007AFF;'>残念！ 正解は「" + currentStation.name + "」</span>" + infoText; 
-            }
-            
-            playHistory.push({ 
-                name: currentStation.name, 
-                pref: currentStation.pref, 
-                line: currentStation.line, 
-                lat: currentStation.lat, 
-                lng: currentStation.lng, 
-                isCorrect: isCorrect, 
-                time: time,
-                userAnswer: userRaw || "(未入力)" // 履歴に追加
-            });
+            if (isCorrect) { res.innerHTML = userAnsDisplay + "<span style='color:#D33;'>正解！</span>"; score++; }
+            else { res.innerHTML = userAnsDisplay + "<span style='color:#007AFF;'>残念！ 正解は「" + currentStation.name + "」</span>"; }
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)" });
             finishOne();
         }
 
         function showAnswer() {
-            if (answered) return;
-            expandPanel();
-            const time = (Date.now() - startTime) / 1000;
-            const userRaw = document.getElementById('station-input').value.trim();
-            const infoText = `<br><span style="font-size: 11px; color: #666; font-weight: normal;">（${currentStation.pref} / ${currentStation.line}）</span>`;
-            
+            if (answered) return; expandPanel();
+            const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim();
             const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
-            document.getElementById('result').innerHTML = userAnsDisplay + "正解: <span style='color:#E60;'>" + currentStation.name + "</span>" + infoText;
-            
-            playHistory.push({ 
-                name: currentStation.name, 
-                pref: currentStation.pref, 
-                line: currentStation.line, 
-                lat: currentStation.lat, 
-                lng: currentStation.lng, 
-                isCorrect: false, 
-                time: time,
-                userAnswer: userRaw || "(未入力)" // 履歴に追加
-            });
+            document.getElementById('result').innerHTML = userAnsDisplay + "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time, userAns: userRaw || "(未入力)" });
             finishOne();
         }
 
-        function finishOne() {
-            answered = true;
-            document.getElementById('answer-btn').style.display = "none";
-            document.getElementById('next-btn').style.display = "block";
-            questionCount++;
-        }
+        function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
+        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
+        function copyToClipboard(text) { const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！"); }
 
-        function jumpToStation(la, ln) {
-            map.dragging.enable();
-            map.scrollWheelZoom.enable();
-            map.flyTo([la, ln], 17);
-        }
-
-        function copyToClipboard(text) {
-            const temp = document.createElement('textarea');
-            temp.value = text;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            alert("コピー完了！貼り付けて共有してね！");
-        }
-
-        function showFinalResult() {
-            expandPanel();
-            document.getElementById('game-ui').style.display = "none";
-            document.getElementById('question-title').innerText = "結果発表";
-            const finalUi = document.getElementById('final-ui');
-            finalUi.style.display = "block";
-
+        function showFinalResult(isViewMode = false) {
+            expandPanel(); document.getElementById('game-ui').style.display = "none";
+            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
             let totalT = 0, listH = '<ul class="result-list">';
             playHistory.forEach((h) => {
                 totalT += h.time;
                 const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                listH += `
-                <li class="result-item">
-                    <div class="res-status">${m}</div>
-                    <div class="res-info">
-                        <span class="res-name">${h.name}</span>
-                        <span class="res-user-ans">あなたの解答: ${h.userAnswer}</span>
-                        <span class="res-sub">${h.pref} / ${h.line}</span>
-                        <span class="res-time-label">${h.time.toFixed(1)}秒</span>
-                    </div>
-                    <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
-                </li>`;
+                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
-            const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1);
-            const timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
-
-            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ`;
-            const shareUrl = window.location.origin;
-
-            const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-            const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + "\n" + shareUrl)}`;
-            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1), timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            
+            const resultData = { history: playHistory, score, total: totalQuestions };
+            const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
+            const detailUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
 
             finalUi.innerHTML = `
-                <div class="final-score">${score} / ${totalQuestions} 問正解！</div>
-                <div class="ad-box">スポンサーリンク</div>
+                <div class="final-score">${totalQuestions}問中 ${score}問正解！</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
-                
                 <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('${xUrl}')">𝕏</button>
-                    <button class="btn-sns btn-line" onclick="window.open('${lineUrl}')">LINE</button>
-                    <button class="btn-sns btn-threads" onclick="window.open('${threadsUrl}')">Threads</button>
-                    <button class="btn-sns btn-fb" onclick="window.open('${fbUrl}')">Facebook</button>
-                    <button class="btn-sns btn-insta" id="insta-copy">Instagram</button>
-                    <button class="btn-sns btn-tiktok" id="tiktok-copy">TikTok</button>
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
+                    <button class="btn-sns btn-fb" onclick="copyToClipboard('${shareText}')">文章コピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard()">画像で詳細結果をシェア！</button>
                 </div>
-
-                <p style="font-size:10px; color:#777; text-align:center;">「確認」で地図を移動できます</p>
                 ${listH + '</ul>'}
-                <div class="ad-box">スポンサーリンク</div>
                 <div class="result-footer-buttons">
-                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
-                    <button class="btn-reset" onclick="location.href='index.html'">タイトル</button>
-                </div>
-            `;
-
-            const fullText = shareText + "\n" + shareUrl;
-            document.getElementById('insta-copy').onclick = () => copyToClipboard(fullText);
-            document.getElementById('tiktok-copy').onclick = () => copyToClipboard(fullText);
+                    ${isViewMode ? '' : '<button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
+                </div>`;
         }
+
+        async function generateResultCard(autoShow = false) {
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = 800; canvas.height = 1350;
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#007AFF"; ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText("通常モード", 400, 170);
+            ctx.fillStyle = "#D33"; ctx.font = "bold 80px sans-serif"; ctx.fillText(`${totalQuestions}問中 ${score}問正解！`, 400, 300);
+            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 360); ctx.lineTo(750, 360); ctx.stroke();
+            let y = 420;
+            playHistory.slice(0, 10).forEach((h, i) => {
+                const mark = h.isCorrect ? '●' : '×', markColor = h.isCorrect ? '#D33' : '#007AFF';
+                ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30);
+                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.time.toFixed(1)}s`, 750, y + 15);
+                y += 85;
+            });
+            ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
+            const dataUrl = canvas.toDataURL("image/png");
+            const container = document.getElementById('share-image-container');
+            container.innerHTML = `<img src="${dataUrl}">`;
+            if (!autoShow) document.getElementById('image-overlay').style.display = "flex";
+        }
+
+        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
 
         function makeDraggable(el) {
             if (window.innerWidth <= 600) return;
-            const h = document.getElementById("ui-header");
-            let p1=0, p2=0, p3=0, p4=0;
+            const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0;
             h.onmousedown = (e) => {
-                e.preventDefault();
-                p3 = e.clientX; p4 = e.clientY;
-                el.style.transition = "none";
-                document.onmouseup = () => {
-                    document.onmouseup = null; document.onmousemove = null;
-                    el.style.transition = "transform 0.3s ease";
-                };
-                document.onmousemove = (e) => {
-                    e.preventDefault();
-                    p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY;
-                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto";
-                };
+                e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none";
+                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; };
+                document.onmousemove = (e) => { e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto"; };
             }
         }
     </script>
