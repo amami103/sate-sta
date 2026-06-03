@@ -101,6 +101,7 @@
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
         let maxDistancePenalty = 50, activeFilters = "全国";
+        let debounceTimer; // 追加
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -152,7 +153,13 @@
             allStationLabels = allUniqueStations.map(s => (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name).sort();
             
             const inputEl = document.getElementById('station-input');
-            inputEl.addEventListener('input', updateDatalist);
+            
+            // 入力ラグ・チャタリング対策を追加
+            inputEl.addEventListener('input', (e) => {
+                if (e.isComposing) return; // IME変換中は実行しない
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updateDatalist, 150); // 入力が止まって150ms後に検索
+            });
             
             // エンターキーでの誤送信防止
             inputEl.addEventListener('keydown', (e) => {
@@ -193,7 +200,12 @@
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false; usedHints = { pref: false, line: false };
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
-            document.getElementById('result').innerText = ""; document.getElementById('station-input').value = "";
+            document.getElementById('result').innerText = ""; 
+            
+            // 入力欄と予測候補を完全にリセット
+            document.getElementById('station-input').value = "";
+            document.getElementById('station-list').innerHTML = ""; 
+            
             document.getElementById('hint-area').style.display = "none"; document.getElementById('hint-area').innerText = ""; currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
