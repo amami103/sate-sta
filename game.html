@@ -1,3 +1,5 @@
+--- START OF FILE game (2).html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -101,7 +103,9 @@
         let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
         let maxDistancePenalty = 50, activeFilters = "全国";
-        let inputTimer; // タイマー追加
+        
+        let inputTimer; 
+        let isComposing = false; // 日本語変換中かどうかを管理
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -154,19 +158,28 @@
             
             const inputEl = document.getElementById('station-input');
             
-            // 重なり（ななな）防止 ＋ 候補が出るように修正
+            // 日本語入力対策（重なり防止の決定版）
+            inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+            inputEl.addEventListener('compositionend', () => { 
+                isComposing = false; 
+                // 変換確定後に即座に候補を更新
+                updateDatalist(); 
+            });
+
             inputEl.addEventListener('input', () => {
+                // 変換中は一切何もしない（重なり防止）
+                if (isComposing) return; 
                 clearTimeout(inputTimer);
-                // 100msの待機。これでタイピング中の負荷を逃がし、変換確定時にも候補が出ます。
-                inputTimer = setTimeout(updateDatalist, 100);
+                // 英数字入力時などは少し待ってから実行
+                inputTimer = setTimeout(updateDatalist, 150);
             });
             
             // エンターキーでの誤送信防止
             inputEl.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    if (e.isComposing) return; // IME変換中は無視
-                    e.preventDefault(); // デフォルトの挙動（送信など）を停止
-                    checkAnswer(); // 回答を実行
+                    if (isComposing) return; // 変換中はチェックしない
+                    e.preventDefault(); 
+                    checkAnswer();
                 }
             });
 
