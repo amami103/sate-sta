@@ -1,3 +1,5 @@
+--- START OF FILE game2 (2).html ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -126,6 +128,9 @@
 
         let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
         let allStationLabels = []; 
+        
+        let inputTimer; // 追加
+        let isComposing = false; // 追加
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -199,7 +204,29 @@
                 return (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
             }).sort();
 
-            document.getElementById('station-input').addEventListener('input', updateDatalist);
+            const inputEl = document.getElementById('station-input');
+            
+            // 重なり防止＆日本語変換対策
+            inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+            inputEl.addEventListener('compositionend', () => { 
+                isComposing = false; 
+                updateDatalist(); 
+            });
+
+            inputEl.addEventListener('input', () => {
+                if (isComposing) return;
+                clearTimeout(inputTimer);
+                inputTimer = setTimeout(updateDatalist, 150);
+            });
+
+            // Enterキーでの誤送信ガード
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (isComposing) return;
+                    e.preventDefault(); 
+                    checkAnswer();
+                }
+            });
 
             let filtered = [...allUniqueStations];
             const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null;
@@ -240,8 +267,11 @@
             document.getElementById('answer-btn').style.display = "block";
             document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = "";
+            
+            // 入力欄と予測リストを完全にクリア
             document.getElementById('station-input').value = "";
             document.getElementById('station-list').innerHTML = ""; 
+            
             document.getElementById('hint-area').style.display = "none";
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
