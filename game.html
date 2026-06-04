@@ -1,4 +1,3 @@
---- START OF FILE game.html ---
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,6 +29,7 @@
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
         
+        /* 結果リストの被り対策 */
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
@@ -103,7 +103,7 @@
         let maxDistancePenalty = 50, activeFilters = "全国";
         
         let inputTimer; 
-        let isComposing = false;
+        let isComposing = false; // 日本語変換中かどうかを管理
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -152,18 +152,38 @@
 
             const nameCounts = {};
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
-            
             allStationLabels = allUniqueStations.map(s => {
                 const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
-                s.fullLabel = label;
+                s.fullLabel = label; // 判定用にオブジェクトに保持
                 return label;
             }).sort();
             
             const inputEl = document.getElementById('station-input');
+            
+            // 日本語入力対策（重なり防止の決定版）
             inputEl.addEventListener('compositionstart', () => { isComposing = true; });
-            inputEl.addEventListener('compositionend', () => { isComposing = false; updateDatalist(); });
-            inputEl.addEventListener('input', () => { if (isComposing) return; clearTimeout(inputTimer); inputTimer = setTimeout(updateDatalist, 150); });
-            inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
+            inputEl.addEventListener('compositionend', () => { 
+                isComposing = false; 
+                // 変換確定後に即座に候補を更新
+                updateDatalist(); 
+            });
+
+            inputEl.addEventListener('input', () => {
+                // 変換中は一切何もしない（重なり防止）
+                if (isComposing) return; 
+                clearTimeout(inputTimer);
+                // 英数字入力時などは少し待ってから実行
+                inputTimer = setTimeout(updateDatalist, 150);
+            });
+            
+            // エンターキーでの誤送信防止
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (isComposing) return; // 変換中はチェックしない
+                    e.preventDefault(); 
+                    checkAnswer();
+                }
+            });
 
             let filtered = [...allUniqueStations];
             const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
@@ -196,8 +216,11 @@
             answered = false; usedHints = { pref: false, line: false };
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = ""; 
+            
+            // 入力欄と候補リストを完全にリセット
             document.getElementById('station-input').value = "";
             document.getElementById('station-list').innerHTML = ""; 
+            
             document.getElementById('hint-area').style.display = "none"; document.getElementById('hint-area').innerText = ""; currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
             document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
@@ -220,19 +243,17 @@
             const userName = userRaw.split(' (')[0];
             const sameNameStations = allUniqueStations.filter(s => s.name === userName);
             
-            // 同名駅チェック: 複数あるのにカッコでの詳細指定がない場合は警告
+            // 同名駅があるのに詳細指定がない場合
             if (sameNameStations.length > 1 && !userRaw.includes(' (')) {
                 alert("同名の駅が複数あります。候補リストから正しい駅（路線や都道府県）を選択してください。");
                 return;
             }
-            
-            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
-            const time = (Date.now() - startTime) / 1000;
 
-            // 1. ラベルに完全一致する駅を検索
-            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
+            const time = (Date.now() - startTime) / 1000;
+            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
             
-            // 2. 見つからなければ名前だけで検索
+            // ユーザーが選択した駅を特定
+            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
             if (!userStation) {
                 userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
             }
@@ -240,10 +261,7 @@
             if (userStation) {
                 dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
                 const isNameMatch = (userName === currentStation.name);
-                
-                // 判定ロジック:
-                // A: 名前が一致し、かつ1km以内（違う場所の同名駅ではない）
-                // B: 名前が違っても、100m(0.1km)以内（別名、乗り換え駅救済）
+                // 判定：名前一致かつ1km以内、または名前不一致でも100m以内
                 if ((isNameMatch && dist < 1.0) || dist < 0.1) {
                     isCorrect = true;
                 }
@@ -265,7 +283,8 @@
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
                             `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
                             `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${dist > 500 ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
-                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>`;
+                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>` +
+                            `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
 
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw, isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
