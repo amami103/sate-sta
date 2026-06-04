@@ -152,7 +152,6 @@
             const nameCounts = {};
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             
-            // 各駅に一意なラベルを付与
             allStationLabels = allUniqueStations.map(s => {
                 const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
                 s.fullLabel = label;
@@ -220,20 +219,26 @@
             let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
             
             if (userName !== "") {
-                // 1. まず、入力された文字列(fullLabel)に完全一致する駅を探す
+                // 1. ラベルに完全一致する駅を検索
                 let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
                 
-                // 2. もし見つからなければ（手入力などの場合）、名前だけで一致するものを探す
+                // 2. 見つからなければ名前だけで検索
                 if (!userStation) {
                     const sameNameStations = allUniqueStations.filter(s => s.name === userName);
-                    // その中に「正解の座標と同じ駅」があれば、それを優先（救済措置）
+                    // 同名駅がある場合、物理的に正解と同じ座標のものを優先（救済）
                     userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
                 }
 
                 if (userStation) {
                     dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
-                    // 厳密な判定: 名前が同じ、かつ座標（物理的な場所）が同じ場合のみ正解
-                    if (userStation.name === currentStation.name && userStation.lat === currentStation.lat && userStation.lng === currentStation.lng) {
+                    
+                    const isSameName = (userName === currentStation.name);
+                    
+                    // 判定ロジック:
+                    // A: 駅名が一致し、かつ距離が1km以内（違う場所の同名駅ではない）
+                    // B: 駅名が違っても、距離が0.1km(100m)以内（別名駅、乗り換え駅扱い）
+                    // 100m制限により、路面電車の隣の停留所（200m以上）は不正解になります
+                    if ((isSameName && dist < 1.0) || dist < 0.1) {
                         isCorrect = true;
                     }
                 }
@@ -242,7 +247,6 @@
                     baseScore = 1500;
                     timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
                 } else {
-                    // 不正解の場合は距離に応じたスコア（同じ名前の別の駅を選んだ場合、ここで大きな距離ペナルティが出る）
                     baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, maxDistancePenalty) / maxDistancePenalty)));
                 }
             }
