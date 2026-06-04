@@ -1,55 +1,366 @@
-/* --- 修正後の checkAnswer 関数 --- */
-function checkAnswer() {
-    if (answered) return;
-    const userRaw = document.getElementById('station-input').value.trim();
-    if (!userRaw) return; // 未入力時は何もしない
-
-    const userName = userRaw.split(' (')[0];
-    
-    // 同名駅（同じ名前で場所が違う駅）が複数あるかチェック
-    const sameNameStations = allUniqueStations.filter(s => s.name === userName);
-    
-    // 【追加】同名駅が2つ以上存在し、かつ入力にカッコ（詳細情報）が含まれていない場合
-    if (sameNameStations.length > 1 && !userRaw.includes(' (')) {
-        alert("同名の駅が複数あります。候補リストから正しい駅（路線や都道府県）を選択してください。");
-        return; // 回答処理を中断
-    }
-    
-    let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
-    const time = (Date.now() - startTime) / 1000;
-
-    // 1. ラベルに完全一致する駅を検索
-    let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
-    
-    // 2. 見つからなければ名前だけで検索（同名駅がない場合や、手入力の救済）
-    if (!userStation) {
-        // 同名駅がある場合は上で弾かれているため、ここに来る userName 一致は一意の駅
-        userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
-    }
-
-    if (userStation) {
-        dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
-        const isSameName = (userName === currentStation.name);
+--- START OF FILE game.html ---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <link rel="icon" href="logo2.png">
+    <link rel="apple-touch-icon" href="logo2.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>チャレンジモード | サテステ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="stations.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+        .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .ui-header { background: #FF3B30; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
+        .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
+        h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
+        input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; }
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
+        .btn-reset  { background: #8E8E93; }
+        .btn-giveup { background: #FF9500; }
+        .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
+        .btn-hint   { background: #5856D6; font-size: 10px; }
+        .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
         
-        // 判定: 「名前一致＋1km以内」 or 「名前不一致でも100m以内（別名駅救済）」
-        if ((isSameName && dist < 1.0) || dist < 0.1) {
-            isCorrect = true;
+        .result-list { list-style: none; padding: 0; margin: 10px 0; }
+        .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
+        .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
+        .res-user-ans { font-size: 11px; color: #666; display: block; }
+        .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
+        .res-score-detail { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
+        
+        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
+        .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
+
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
+        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
+        .btn-x { background: #000; }
+        .btn-line { background: #06C755; }
+        .btn-threads { background: #000; border: 1px solid #333; }
+        .btn-fb { background: #1877F2; }
+        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
+        .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
+        
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
+        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
+        #share-image-container img { width: 100%; height: auto; display: block; }
+        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .result-footer-buttons button { flex: 1; padding: 12px 5px; }
+
+        @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
+    </style>
+</head>
+<body onload="init()">
+    <div id="map"></div>
+    <div class="ui-container" id="ui-panel">
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-content" id="ui-content">
+            <h2 id="question-title">準備中...</h2>
+            <div id="game-ui">
+                <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
+                <datalist id="station-list"></datalist>
+                <div class="button-group">
+                    <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
+                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+                </div>
+                <div id="hint-area"></div>
+                <div id="result"></div>
+            </div>
+            <div id="final-ui" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div id="image-overlay">
+        <div id="share-image-container"></div>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
+        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
+    </div>
+
+    <script>
+        const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
+        const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
+
+        let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
+        let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
+        let maxDistancePenalty = 50, activeFilters = "全国";
+        
+        let inputTimer; 
+        let isComposing = false;
+
+        function getDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
-    }
 
-    // --- 以下、既存のスコア計算・表示処理 ---
-    let multiplier = 1.0;
-    if (usedHints.pref && usedHints.line) multiplier = 0.1; else if (usedHints.line) multiplier = 0.25; else if (usedHints.pref) multiplier = 0.5;
-    const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
 
-    const res = document.getElementById('result');
-    res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw}</div>` +
-                    `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
-                    `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
-                    `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${dist > 500 ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
-                    `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>`;
+        function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
 
-    playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw, isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
-    answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
-    questionCount++;
-}
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const resData = params.get('res');
+            map = L.map('map', { zoomControl:false });
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+
+            if (resData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
+                    playHistory = decoded.history; totalScore = decoded.score; isLocked = decoded.locked; activeFilters = decoded.filters || "全国";
+                    setTimeout(() => { showFinalResult(true); generateResultCard(decoded.rank || "SSS", isLocked ? "ハード" : "通常", true); }, 200);
+                    return;
+                } catch(e) { console.error("Data error"); }
+            }
+
+            isLocked = params.get('lock') === 'true';
+            if (isLocked) { map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable(); map.scrollWheelZoom.disable(); map.boxZoom.disable(); map.keyboard.disable(); }
+
+            if (typeof stations === 'undefined') return;
+            const stationMap = new Map();
+            stations.forEach(s => {
+                const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
+                if (stationMap.has(key)) {
+                    const existing = stationMap.get(key);
+                    if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                } else {
+                    const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
+                }
+            });
+
+            const nameCounts = {};
+            allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
+            
+            allStationLabels = allUniqueStations.map(s => {
+                const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
+                s.fullLabel = label;
+                return label;
+            }).sort();
+            
+            const inputEl = document.getElementById('station-input');
+            inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+            inputEl.addEventListener('compositionend', () => { isComposing = false; updateDatalist(); });
+            inputEl.addEventListener('input', () => { if (isComposing) return; clearTimeout(inputTimer); inputTimer = setTimeout(updateDatalist, 150); });
+            inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
+
+            let filtered = [...allUniqueStations];
+            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
+            if (sLine && sLine !== "all") { maxDistancePenalty = 10; activeFilters = "路線: "+sLine; filtered = filtered.filter(s => s.line === sLine); }
+            else if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) { maxDistancePenalty = 35; activeFilters = "会社: "+sComp.replace("grp:",""); const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => grp.includes(s.company)); }
+                else { maxDistancePenalty = 20; activeFilters = "会社: "+sComp; filtered = filtered.filter(s => s.company === sComp); }
+            } else if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) { maxDistancePenalty = 45; activeFilters = "地方: "+sPref.replace("reg:",""); const reg = REGION_PREFS[sPref.replace("reg:", "")] || []; filtered = filtered.filter(s => reg.includes(s.pref)); }
+                else { maxDistancePenalty = 25; activeFilters = "都道府県: "+sPref; filtered = filtered.filter(s => s.pref === sPref); }
+            } else { maxDistancePenalty = 50; activeFilters = "全国"; }
+
+            for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
+            gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
+            if (gameStations.length === 0) { alert("駅が見つかりませんでした。"); location.href = "index.html"; return; }
+            nextQuestion();
+            makeDraggable(document.getElementById("ui-panel"));
+        }
+
+        function updateDatalist() {
+            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            if (val.length < 1) { dl.innerHTML = ""; return; }
+            const frag = document.createDocumentFragment(); let count = 0;
+            for (const label of allStationLabels) { if (label.toLowerCase().startsWith(val)) { const o = document.createElement('option'); o.value = label; frag.appendChild(o); if (++count >= 100) break; } }
+            dl.innerHTML = ""; dl.appendChild(frag);
+        }
+
+        function nextQuestion() {
+            if (questionCount >= gameStations.length) { showFinalResult(); return; }
+            answered = false; usedHints = { pref: false, line: false };
+            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('result').innerText = ""; 
+            document.getElementById('station-input').value = "";
+            document.getElementById('station-list').innerHTML = ""; 
+            document.getElementById('hint-area').style.display = "none"; document.getElementById('hint-area').innerText = ""; currentStation = gameStations[questionCount];
+            map.setView([currentStation.lat, currentStation.lng], 17);
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
+            startTime = Date.now();
+        }
+
+        function showHint(t) {
+            if(!answered){
+                usedHints[t] = true; const a = document.getElementById('hint-area'); a.style.display = "block";
+                const content = t === 'pref' ? `都道府県: ${currentStation.pref}` : `路線名: ${currentStation.line}`;
+                if (!a.innerHTML.includes(content)) a.innerHTML = (a.innerHTML ? a.innerHTML + "<br>" : "") + content;
+            }
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            const userRaw = document.getElementById('station-input').value.trim();
+            if (!userRaw) return;
+
+            const userName = userRaw.split(' (')[0];
+            const sameNameStations = allUniqueStations.filter(s => s.name === userName);
+            
+            // 同名駅チェック: 複数あるのにカッコでの詳細指定がない場合は警告
+            if (sameNameStations.length > 1 && !userRaw.includes(' (')) {
+                alert("同名の駅が複数あります。候補リストから正しい駅（路線や都道府県）を選択してください。");
+                return;
+            }
+            
+            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
+            const time = (Date.now() - startTime) / 1000;
+
+            // 1. ラベルに完全一致する駅を検索
+            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
+            
+            // 2. 見つからなければ名前だけで検索
+            if (!userStation) {
+                userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
+            }
+
+            if (userStation) {
+                dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
+                const isNameMatch = (userName === currentStation.name);
+                
+                // 判定ロジック:
+                // A: 名前が一致し、かつ1km以内（違う場所の同名駅ではない）
+                // B: 名前が違っても、100m(0.1km)以内（別名、乗り換え駅救済）
+                if ((isNameMatch && dist < 1.0) || dist < 0.1) {
+                    isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                baseScore = 1500;
+                timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+            } else {
+                baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, maxDistancePenalty) / maxDistancePenalty)));
+            }
+
+            let multiplier = 1.0;
+            if (usedHints.pref && usedHints.line) multiplier = 0.1; else if (usedHints.line) multiplier = 0.25; else if (usedHints.pref) multiplier = 0.5;
+            const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
+
+            const res = document.getElementById('result');
+            res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw}</div>` +
+                            `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
+                            `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
+                            `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${dist > 500 ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
+                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>`;
+
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw, isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function showAnswer() {
+            if (answered) return;
+            document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select();
+            document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！");
+        }
+
+        function showFinalResult(isViewMode = false) {
+            document.getElementById('game-ui').style.display = "none"; const modeName = isLocked ? "ハード" : "通常";
+            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
+            const totalMax = playHistory.length * 2000; let rank = "D"; const ratio = totalScore / (totalMax || 1);
+            if (ratio >= 0.9) rank = "SSS"; else if (ratio >= 0.8) rank = "SS"; else if (ratio >= 0.7) rank = "S"; else if (ratio >= 0.5) rank = "A"; else if (ratio >= 0.3) rank = "B"; else if (ratio >= 0.1) rank = "C";
+
+            let listH = '<ul class="result-list">';
+            playHistory.forEach((h) => {
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+            });
+
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const resultData = { history: playHistory, score: totalScore, locked: isLocked, filters: activeFilters, rank: rank };
+            const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
+            const detailUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
+
+            finalUi.innerHTML = `
+                <div class="final-score">${totalScore.toLocaleString()} 点</div>
+                <div class="final-rank">ランク: ${rank}</div>
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareText}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用コピー</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
+                </div>
+                ${listH}</ul>
+                <div class="result-footer-buttons">
+                    ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
+                </div>`;
+        }
+
+        async function generateResultCard(rank, modeName, autoShow = false) {
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = 800; canvas.height = 1450;
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#FF3B30"; ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${modeName} / ${activeFilters}`, 400, 170);
+            ctx.fillStyle = "#FF3B30"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 50px sans-serif"; ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
+            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
+            let y = 480;
+            playHistory.forEach((h, i) => {
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < (maxDistancePenalty*0.1) ? '#FF9500' : '#007AFF');
+                ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30);
+                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; ctx.fillText(`誤差: ${h.dist > 1000 ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y + 15);
+                y += 92;
+            });
+            ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
+            const dataUrl = canvas.toDataURL("image/png");
+            const container = document.getElementById('share-image-container');
+            container.innerHTML = `<img src="${dataUrl}">`;
+            document.getElementById('image-overlay').style.display = "flex";
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！ #サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            if (navigator.share && !autoShow) {
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], "result.png", { type: "image/png" });
+                const b = document.createElement('button'); b.className="overlay-close"; b.style.background="#007AFF"; b.style.color="white"; b.innerText="画像を直接SNSに送る";
+                b.onclick = () => navigator.share({ files: [file], title: 'サテステ', text: shareText });
+                container.appendChild(b);
+            }
+        }
+        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
+        function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+        function makeDraggable(el) { if (window.innerWidth <= 600) return; const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0; h.onmousedown = (e) => { e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none"; document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; }; document.onmousemove = (e) => { e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto"; }; } }
+    </script>
+</body>
+</html>
