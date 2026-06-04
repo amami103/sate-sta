@@ -222,9 +222,10 @@
             const userName = userRaw.split(' (')[0];
             const sameNameStations = allUniqueStations.filter(s => s.name === userName);
             
-            // 同名駅チェック: 入力がある場合のみ実行
+            // 同名駅選択ミス救済: alertの代わりにresultエリアに警告を表示して中断
             if (userRaw !== "" && sameNameStations.length > 1 && !userRaw.includes(' (')) {
-                alert("同名の駅が複数あります。候補リストから正しい駅（路線や都道府県）を選択してください。");
+                const res = document.getElementById('result');
+                res.innerHTML = `<span style="color:#FF3B30; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
                 return;
             }
 
@@ -239,6 +240,7 @@
             if (userStation) {
                 dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
                 const isNameMatch = (userName === currentStation.name);
+                // 判定：名前一致かつ1km以内、または名前不一致でも100m以内
                 if ((isNameMatch && dist < 1.0) || dist < 0.1) {
                     isCorrect = true;
                 }
