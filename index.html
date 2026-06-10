@@ -35,7 +35,6 @@
         h1 { margin: 0; font-size: 28px; }
         p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
 
-        /* 追加：ナビゲーションメニュー */
         nav.header-nav { margin-top: 10px; display: flex; gap: 15px; }
         nav.header-nav a { color: white; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; transition: 0.3s; }
         nav.header-nav a:hover { background: rgba(255,255,255,0.4); }
@@ -67,18 +66,15 @@
         
         .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 30px; }
         .article-section h3 { font-size: 17px; color: #333; margin-top: 20px; }
+        .article-section h4 { font-size: 15px; color: #444; margin-bottom: 8px; border-left: 4px solid #007AFF; padding-left: 8px; }
         .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
+        .article-section ul { padding-left: 20px; color: #444; font-size: 14px; line-height: 1.8; }
+        .article-section li { margin-bottom: 10px; }
         
         .update-log { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; text-align: left; }
         .update-item { margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
         .update-date { color: #888; flex-shrink: 0; width: 80px; font-size: 13px; }
         .update-text { color: #333; font-size: 13px; }
-
-        /* 追加：リンク用カードスタイル */
-        .info-card { background: #fff; border: 1px solid #007AFF; display: flex; flex-direction: column; gap: 10px; }
-        .btn-link { text-decoration: none; color: #007AFF; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .btn-link:last-child { border-bottom: none; }
-        .btn-link:after { content: '→'; }
 
         footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
         .footer-links { margin-bottom: 15px; }
@@ -100,21 +96,13 @@
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>サテステ</h1>
         <p class="subtitle">衛星画像から駅を当てよう</p>
-        <!-- 追加：ナビゲーション -->
         <nav class="header-nav">
-            <a href="about.html">サテステについて</a>
-            <a href="guide.html">攻略ガイド・遊び方</a>
+            <a href="guide.html">遊び方詳細</a>
             <a href="contact.html">お問い合わせ</a>
         </nav>
     </header>
 
     <main>
-        <!-- 追加：詳細ページへのリンクカード -->
-        <div class="card info-card">
-            <a href="about.html" class="btn-link">開発者紹介・サテステの目的について</a>
-            <a href="guide.html" class="btn-link">【攻略】航空写真から駅を特定するテクニック</a>
-        </div>
-
         <!-- フリーモードのボックス -->
         <div class="card" style="border: 2px solid #007AFF;">
             <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
@@ -213,23 +201,30 @@
             <h2>サテステとは？</h2>
             <p>「サテステ」は、国土地理院の高精細な航空写真を使用して、全国約9,000駅の中から駅名を当てる地理・鉄道クイズゲームです。普段利用している駅や、行ったことのない遠くの駅を「真上」から見ることで、新しい発見があるかもしれません。</p>
             
-            <h3>遊び方の流れ</h3>
-            <p>1. モードと出題範囲（都道府県や路線）を選択して開始します。<br>
-            2. 表示された航空写真から駅名を推測し、入力欄にキーワードを入れます。<br>
-            3. 候補から正しい駅名を選択して回答！</p>
+            <h3>サテステの遊び方</h3>
+            <ul>
+                <li><strong>1. モードを選択する</strong><br>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。チャレンジモードでは複数の条件を組み合わせるカスタム機能は制限されています。</li>
+                <li><strong>2. 出題範囲を設定する</strong><br>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、地図の移動や拡大・縮小を一切禁止する難易度の高い「ハードモード」も選択できます。</li>
+                <li><strong>3. 航空写真から駅名を推測</strong><br>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</li>
+                <li><strong>4. チャレンジモードのルール</strong><br>チャレンジモードでは、以下のルールに基づいて1問最大 2,000点 のスコアが算出されます。
+                    <ul>
+                        <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
+                        <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます。0点となる境界距離は出題範囲に応じて変動します（全国: 50km / 地方: 45km / 都道府県: 25km / 路線: 10km など）。</li>
+                        <li><strong>タイムボーナス（最大 500点）:</strong> 正解（完全一致）時のみ加算されます。10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。不正解の場合は加算されません。</li>
+                        <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うと、合計点（基礎点＋タイムボーナス）に大幅な倍率（県: 0.5倍 / 路線: 0.25倍 / 両方: 0.1倍）のペナルティが掛かります。</li>
+                        <li><strong>ランク判定:</strong> 全問終了時の合計スコアによって、D から最高ランク SSS まで判定されます。</li>
+                    </ul>
+                </li>
+            </ul>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="guide.html" style="color: #007AFF; font-weight: bold; text-decoration: none;">→ より詳細な攻略ガイドはこちら</a>
+            </div>
         </div>
 
         <div class="card article-section">
               <h2>動画配信・サイト掲載について</h2>
                 <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
-                <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-ste.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
-             <h3>【利用上の注意点】</h3>
-                <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
-                    <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
-                    <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
-                    <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
-                    <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
-                </ul>
+                <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-sta.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
             </div>
 
         <div class="card">
@@ -245,8 +240,8 @@
     <footer>
         <div class="footer-links">
             <a href="/">ホーム</a>
-            <a href="about.html">サテステについて</a>
-            <a href="guide.html">遊び方ガイド</a>
+            <a href="about.html">サテステについて（自己紹介）</a>
+            <a href="guide.html">攻略ガイド</a>
             <a href="terms.html">利用規約</a>
             <a href="privacy.html">プライバシーポリシー</a>
             <a href="contact.html">お問い合わせ</a>
@@ -259,11 +254,9 @@
 
     <script src="stations.js"></script>
     <script>
-        // ゲームロジック
         const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
-        const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
-
+        
         let masterCompanies = [], masterLines = [];
 
         window.onload = function() {
