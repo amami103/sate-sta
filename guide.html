@@ -36,6 +36,12 @@
         .article-section li { margin-bottom: 12px; }
         .article-section strong { color: #333; }
 
+        .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .rank-table th, .rank-table td { border: 1px solid #eee; padding: 8px; text-align: center; }
+        .rank-table th { background: #f9f9f9; color: #666; }
+        .rank-sss { color: #FFD700; font-weight: bold; }
+        .rank-s { color: #FF3B30; font-weight: bold; }
+
         .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
         .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
@@ -73,24 +79,35 @@
             <p>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</p>
 
             <h3>4. チャレンジモードのルール</h3>
-            <p>チャレンジモードでは、以下のルールに基づいて1問最大 <strong>2,000点</strong> のスコアが算出されます。</p>
+            <p>チャレンジモードでは、以下のルールに基づいて1問最大 <strong>2,000点</strong>（10問合計 <strong>20,000点</strong>）のスコアが算出されます。</p>
             <ul>
                 <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
-                <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます。0点となる境界距離は出題範囲に応じて変動します（全国: 50km / 地方: 45km / 都道府県: 25km / 路線: 10km など）。</li>
-                <li><strong>タイムボーナス（最大 500点）:</strong> 正解（完全一致）時のみ加算されます。10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。不正解の場合は加算されません。</li>
-                <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うと、合計点（基礎点＋タイムボーナス）に大幅な倍率（県: 0.5倍 / 路線: 0.25倍 / 両方: 0.1倍）のペナルティが掛かります。</li>
-                <li><strong>ランク判定:</strong> 全問終了時の合計スコアによって、D から最高ランク SSS まで判定されます。</li>
+                <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます。</li>
+                <li><strong>タイムボーナス（最大 500点）:</strong> 正解（完全一致）時のみ加算されます。10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。</li>
+                <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うと、合計点に大幅な倍率ペナルティが掛かります。</li>
+                <li><strong>ランク判定:</strong> 全問終了時の合計スコア（得点率）によって判定されます。
+                    <table class="rank-table">
+                        <tr><th>ランク</th><th>得点率</th><th>スコア目安（10問時）</th></tr>
+                        <tr><td class="rank-sss">SSS</td><td>90% 以上</td><td>18,000点 〜</td></tr>
+                        <tr><td class="rank-sss">SS</td><td>80% 以上</td><td>16,000点 〜</td></tr>
+                        <tr><td class="rank-s">S</td><td>70% 以上</td><td>14,000点 〜</td></tr>
+                        <tr><td>A</td><td>50% 以上</td><td>10,000点 〜</td></tr>
+                        <tr><td>B</td><td>30% 以上</td><td>6,000点 〜</td></tr>
+                        <tr><td>C</td><td>10% 以上</td><td>2,000点 〜</td></tr>
+                        <tr><td>D</td><td>10% 未満</td><td>0点 〜</td></tr>
+                    </table>
+                </li>
             </ul>
         </div>
 
         <div class="card article-section">
             <h2>航空写真攻略のヒント</h2>
-            <p>駅を特定するためには、駅そのものだけでなく周囲の環境に目を向けるのがポイントです。地理的な特徴を捉えることで、正解率が格段に上がります。</p>
+            <p>駅を特定するためには、駅そのものだけでなく周囲の環境に目を向けるのがポイントです。</p>
             <ul>
-                <li><strong>ホームの形状:</strong> 新幹線停車駅はホームが非常に長く、都市部では島式ホームが整然と並んでいます。地方の無人駅などは、短いホームがポツンと置かれているのが特徴です。</li>
-                <li><strong>線路の配線:</strong> 線路が複数に分かれている場所は、車両基地や大きなターミナル駅、あるいは貨物列車の待避所の合図です。</li>
-                <li><strong>周辺の街並み:</strong> 駅前の大きなロータリー、バス停、特徴的な形の駅舎などは大きなヒントになります。近くに学校や工場があるかどうかも手がかりです。</li>
-                <li><strong>地形の特徴:</strong> 山間部であれば線路の曲線（カーブ）が強くなり、海岸沿いであれば防波堤や砂浜が見えることがあります。これらは都道府県を絞り込む強い根拠になります。</li>
+                <li><strong>ホームの形状:</strong> 新幹線停車駅はホームが非常に長く、都市部では島式ホームが整然と並んでいます。</li>
+                <li><strong>線路の配線:</strong> 線路が複数に分かれている場所は、車両基地や大きなターミナル駅の合図です。</li>
+                <li><strong>周辺の街並み:</strong> 駅前のロータリー、バス停、特徴的な形の駅舎などは大きなヒントになります。</li>
+                <li><strong>地形の特徴:</strong> 山間部であれば線路の曲線（カーブ）が強くなり、海岸沿いであれば防波堤や砂浜が見えることがあります。</li>
             </ul>
         </div>
 
