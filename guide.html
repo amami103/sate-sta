@@ -24,15 +24,10 @@
         
         h1 { margin: 0; font-size: 28px; }
         p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-
-        nav.header-nav { margin-top: 10px; display: flex; gap: 15px; }
-        nav.header-nav a { color: white; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; transition: 0.3s; }
-        nav.header-nav a:hover { background: rgba(255,255,255,0.4); }
         
         main { flex: 1; width: 95%; max-width: 700px; padding: 30px 0; text-align: center; }
         
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #007AFF; }
         
         .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
         .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
@@ -53,7 +48,6 @@
         @media (max-width: 600px) { 
             header { min-height: auto; padding: 20px 10px; }
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
-            nav.header-nav { flex-wrap: wrap; justify-content: center; }
         }
     </style>
 </head>
@@ -63,10 +57,6 @@
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>サテステ</h1>
         <p class="subtitle">衛星画像から駅を当てよう</p>
-        <nav class="header-nav">
-            <a href="index.html">ホームへ戻る</a>
-            <a href="contact.html">お問い合わせ</a>
-        </nav>
     </header>
 
     <main>
@@ -95,12 +85,12 @@
 
         <div class="card article-section">
             <h2>航空写真攻略のヒント</h2>
-            <p>駅を特定するためには、駅そのものだけでなく周囲の環境に目を向けるのがポイントです。</p>
+            <p>駅を特定するためには、駅そのものだけでなく周囲の環境に目を向けるのがポイントです。地理的な特徴を捉えることで、正解率が格段に上がります。</p>
             <ul>
-                <li><strong>ホームの形状:</strong> 新幹線停車駅はホームが非常に長く、都市部では島式ホームが並列しています。</li>
-                <li><strong>線路の配線:</strong> 線路が複数に分かれている場所は、車両基地や大きなターミナル駅の合図です。</li>
-                <li><strong>周辺の街並み:</strong> 駅前のロータリーの形や、近くを流れる川、大きな道路との交差状況を確認しましょう。</li>
-                <li><strong>地方の特徴:</strong> 北海道の駅は防雪用の屋根が特徴的だったり、海に近い場所では防波堤が見えたりすることもあります。</li>
+                <li><strong>ホームの形状:</strong> 新幹線停車駅はホームが非常に長く、都市部では島式ホームが整然と並んでいます。地方の無人駅などは、短いホームがポツンと置かれているのが特徴です。</li>
+                <li><strong>線路の配線:</strong> 線路が複数に分かれている場所は、車両基地や大きなターミナル駅、あるいは貨物列車の待避所の合図です。</li>
+                <li><strong>周辺の街並み:</strong> 駅前の大きなロータリー、バス停、特徴的な形の駅舎などは大きなヒントになります。近くに学校や工場があるかどうかも手がかりです。</li>
+                <li><strong>地形の特徴:</strong> 山間部であれば線路の曲線（カーブ）が強くなり、海岸沿いであれば防波堤や砂浜が見えることがあります。これらは都道府県を絞り込む強い根拠になります。</li>
             </ul>
         </div>
 
