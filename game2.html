@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
+    <!-- Google AdSense 共通スクリプト -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617" crossorigin="anonymous"></script>
+
     <link rel="icon" href="logo2.png">
     <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
@@ -20,6 +19,11 @@
         .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
+        
+        /* 広告用スタイル */
+        .ad-container { margin: 10px 0; text-align: center; background: #fafafa; border-radius: 4px; overflow: hidden; min-height: 60px; font-size: 10px; color: #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
+        .ad-label { font-size: 8px; color: #999; margin-bottom: 2px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; }
+
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
         .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -55,7 +59,6 @@
         .total-time-display { font-size: 14px; color: #333; text-align: center; margin-bottom: 15px; padding: 5px; border-bottom: 1px solid #eee; }
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 15px 5px; }
-        .ad-box { background: #fdfdfd; border: 1px solid #eee; padding: 10px; text-align: center; font-size: 10px; color: #999; margin: 10px 0; }
 
         #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
         #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
@@ -76,6 +79,18 @@
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
         <div class="ui-content" id="ui-content">
+            
+            <!-- 広告枠: コンテンツ最上部 -->
+            <div class="ad-container">
+                <span class="ad-label">Sponsor</span>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-6887981844690617"
+                     data-ad-slot="6887981844690617"
+                     data-ad-format="horizontal"
+                     data-full-width-responsive="true"></ins>
+            </div>
+
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
@@ -91,7 +106,17 @@
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
-                <div class="ad-box">スポンサーリンク</div>
+                
+                <!-- 広告枠: ゲームUIの下 -->
+                <div class="ad-container">
+                    <span class="ad-label">Sponsor</span>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-6887981844690617"
+                         data-ad-slot="6887981844690617"
+                         data-ad-format="rectangle"
+                         data-full-width-responsive="true"></ins>
+                </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
         </div>
@@ -104,6 +129,11 @@
     </div>
 
     <script>
+        // 広告更新用関数
+        function refreshAds() {
+            try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+        }
+
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
@@ -144,6 +174,9 @@
         }
 
         function init() {
+            refreshAds();
+            refreshAds();
+
             const params = new URLSearchParams(window.location.search);
             const resData = params.get('res');
             isLocked = params.get('lock') === 'true';
@@ -275,13 +308,16 @@
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1), timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
             
-            const resultData = { history: playHistory, score, total: totalQuestions };
-            const base64Data = btoa(unescape(encodeURIComponent(JSON.stringify(resultData))));
-            const detailUrl = window.location.origin + window.location.pathname + "?res=" + base64Data;
-
             finalUi.innerHTML = `
                 <div class="final-score">${totalQuestions}問中 ${score}問正解！</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
+
+                <!-- リザルト広告1 -->
+                <div class="ad-container">
+                    <span class="ad-label">Sponsor</span>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins>
+                </div>
+
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
@@ -291,10 +327,22 @@
                     <button class="btn-sns btn-card" onclick="generateResultCard()">画像で詳細結果をシェア！</button>
                 </div>
                 ${listH + '</ul>'}
+
+                <!-- リザルト広告2 -->
+                <div class="ad-container">
+                    <span class="ad-label">Sponsor</span>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="rectangle"></ins>
+                </div>
+
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
+            
+            setTimeout(() => {
+                const ads = finalUi.querySelectorAll('.adsbygoogle');
+                ads.forEach(() => refreshAds());
+            }, 100);
         }
 
         async function generateResultCard(autoShow = false) {
@@ -311,12 +359,9 @@
                 const mark = h.isCorrect ? '●' : '×', markColor = h.isCorrect ? '#D33' : '#007AFF';
                 ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
                 ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; 
-                // 文字はみ出し対策
                 ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
                 ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; 
-                // 文字はみ出し対策
                 ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
-                
                 ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; 
                 const distStr = (h.userAns === "(未入力)" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
                 ctx.fillText(`${distStr} / ${h.time.toFixed(1)}s`, 750, y + 15);
