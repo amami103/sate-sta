@@ -226,7 +226,6 @@
             const userName = userRaw.split(' (')[0];
             const sameNameStations = allUniqueStations.filter(s => s.name === userName);
             
-            // 同名駅選択ミス救済: alertの代わりにresultエリアに警告を表示して中断
             if (userRaw !== "" && sameNameStations.length > 1 && !userRaw.includes(' (')) {
                 const res = document.getElementById('result');
                 res.innerHTML = `<span style="color:#FF3B30; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
@@ -244,7 +243,6 @@
             if (userStation) {
                 dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
                 const isNameMatch = (userName === currentStation.name);
-                // 判定：名前一致かつ1km以内、または名前不一致でも100m以内
                 if ((isNameMatch && dist < 1.0) || dist < 0.1) {
                     isCorrect = true;
                 }
@@ -265,7 +263,7 @@
             res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
                             `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
-                            `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${dist > 500 ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
+                            `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${!userRaw ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
                             `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>` +
                             `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
 
@@ -298,7 +296,7 @@
             playHistory.forEach((h) => {
                 const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
                 const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
-                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${h.dist > 1000 ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
@@ -338,9 +336,17 @@
             playHistory.forEach((h, i) => {
                 const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < (maxDistancePenalty*0.1) ? '#FF9500' : '#007AFF');
                 ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
-                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y);
-                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30);
-                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; ctx.fillText(`誤差: ${h.dist > 1000 ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; 
+                // 駅名が長すぎる場合の対策 (最大幅600px)
+                ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600); 
+                
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; 
+                // 解答・路線情報が長すぎる場合の対策 (最大幅650px)
+                ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30, 650);
+                
+                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; 
+                ctx.fillText(`誤差: ${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                
                 ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y + 15);
                 y += 92;
             });
