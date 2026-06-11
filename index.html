@@ -258,12 +258,10 @@
         window.onload = function() {
             if (typeof stations === 'undefined') return;
 
-            // 都道府県
             const existingPrefs = new Set(stations.map(s => s.pref));
-
-            // 会社名と路線名をバラして収集
-            let compSet = new Set();
-            let lineSet = new Set();
+            let compSet = new Set(), lineSet = new Set();
+            
+            // データをバラしてプルダウン用のマスターを作成
             stations.forEach(s => {
                 if(s.company) s.company.split(/[,、・/]/).forEach(v => compSet.add(v.trim()));
                 if(s.line) s.line.split(/[,、・/]/).forEach(v => lineSet.add(v.trim()));
@@ -337,16 +335,18 @@
 
                 if (p !== "all") url += "&pref=" + encodeURIComponent(p);
                 
-                // 単一選択の場合でも「それを含む」データがヒットするように、
-                // game.html側が対応している「複数形（comps/lines）」のパラメータに渡す
+                // 選択された「単独名」を含む「全てのデータ上の文字列」をリストアップして渡す
                 if (c !== "all") {
-                    // 「JR」を選んだら「JR東日本,JR西日本」などが全て対象になるようフィルタリング用リストを作る
-                    const matchComps = [...new Set(stations.filter(s => s.company && s.company.includes(c)).map(s => s.company))];
-                    url += "&comps=" + encodeURIComponent(matchComps.join(','));
+                    if (c.startsWith("grp:")) {
+                        url += "&company=" + encodeURIComponent(c);
+                    } else {
+                        const matchComps = [...new Set(stations.filter(s => s.company && s.company.includes(c)).map(s => s.company))];
+                        url += "&comps=" + encodeURIComponent(matchComps.join(','));
+                    }
                 }
                 if (l !== "all") {
-                    // 「堺筋線」を選んだら「堺筋線,千日前線」などが全て対象になるようフィルタリング用リストを作る
                     const matchLines = [...new Set(stations.filter(s => s.line && s.line.includes(l)).map(s => s.line))];
+                    // ゲーム側が lines パラメータに対応していることを前提に、合致する全文字列をカンマ区切りで送る
                     url += "&lines=" + encodeURIComponent(matchLines.join(','));
                 }
             }
