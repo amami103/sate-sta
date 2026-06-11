@@ -339,9 +339,12 @@
                 return Array.from(matches);
             };
 
-            // 路線フィルタ専用：部分一致で別路線まで拾わないよう、選択した路線名だけを渡す
+            // 路線フィルタ専用：選択路線を含むデータ上の全表記を渡す
             const addLineFilterParams = (selectedLines) => {
-                const lines = Array.from(new Set(selectedLines.map(v => v.trim()).filter(Boolean)));
+                let lines = getMatchingFullStrings(selectedLines, 'line');
+                if (lines.length === 0) {
+                    lines = Array.from(new Set(selectedLines.map(v => v.trim()).filter(Boolean)));
+                }
                 if (lines.length === 0) return;
                 const value = encodeURIComponent(lines.join(','));
 
