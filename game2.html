@@ -17,7 +17,7 @@
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
         
-        /* ヘッダーは青色を維持 */
+        /* ヘッダーは青色 */
         .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         
@@ -49,7 +49,7 @@
         .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
         .res-user-ans { font-size: 11px; color: #666; display: block; }
         .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
-        .res-detail-label { font-size: 10px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .res-detail-label { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
         .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
 
         .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
@@ -87,15 +87,9 @@
         <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
         <div class="ui-content" id="ui-content">
             
-            <!-- 広告枠: コンテンツ最上部 -->
             <div class="ad-container">
                 <span class="ad-label">Sponsor</span>
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-6887981844690617"
-                     data-ad-slot="6887981844690617"
-                     data-ad-format="horizontal"
-                     data-full-width-responsive="true"></ins>
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
             </div>
 
             <h2 id="question-title">準備中...</h2>
@@ -114,15 +108,9 @@
                 <div id="hint-area"></div>
                 <div id="result"></div>
                 
-                <!-- 広告枠: ゲームUIの下 -->
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle"
-                         style="display:block"
-                         data-ad-client="ca-pub-6887981844690617"
-                         data-ad-slot="6887981844690617"
-                         data-ad-format="rectangle"
-                         data-full-width-responsive="true"></ins>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="rectangle" data-full-width-responsive="true"></ins>
                 </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
@@ -136,7 +124,6 @@
     </div>
 
     <script>
-        // 広告更新
         function refreshAds() { try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }
 
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
@@ -159,9 +146,7 @@
         function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
 
         function init() {
-            refreshAds();
-            refreshAds();
-
+            refreshAds(); refreshAds();
             const params = new URLSearchParams(window.location.search);
             const resData = params.get('res');
             isLocked = params.get('lock') === 'true';
@@ -182,8 +167,7 @@
             stations.forEach(s => {
                 const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
                 if (stationMap.has(key)) {
-                    const existing = stationMap.get(key);
-                    if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                    const ex = stationMap.get(key); if (!ex.line.includes(s.line)) ex.line += `・${s.line}`;
                 } else {
                     const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
                 }
@@ -193,8 +177,7 @@
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             allStationLabels = allUniqueStations.map(s => {
                 const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
-                s.fullLabel = label;
-                return label;
+                s.fullLabel = label; return label;
             }).sort();
 
             const inputEl = document.getElementById('station-input');
@@ -204,21 +187,15 @@
             inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
 
             let filtered = [...allUniqueStations];
-            const mPrefs = params.get('prefs') ? params.get('prefs').split(',') : null, sPref = params.get('pref');
-            if (mPrefs) filtered = filtered.filter(s => mPrefs.includes(s.pref));
-            else if (sPref && sPref !== "all") {
-                if (sPref.startsWith("reg:")) { const reg = REGION_PREFS[sPref.replace("reg:", "")] || []; filtered = filtered.filter(s => reg.includes(s.pref)); }
+            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
+            if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
+            else if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) { const gr = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => gr.includes(s.company)); }
+                else filtered = filtered.filter(s => s.company === sComp);
+            } else if (sPref && sPref !== "all") {
+                if (sPref.startsWith("reg:")) { const rg = REGION_PREFS[sPref.replace("reg:", "")] || []; filtered = filtered.filter(s => rg.includes(s.pref)); }
                 else filtered = filtered.filter(s => s.pref === sPref);
             }
-            const mComps = params.get('comps') ? params.get('comps').split(',') : null, sComp = params.get('company');
-            if (mComps) filtered = filtered.filter(s => mComps.includes(s.company));
-            else if (sComp && sComp !== "all") {
-                if (sComp.startsWith("grp:")) { const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => grp.includes(s.company)); }
-                else filtered = filtered.filter(s => s.company === sComp);
-            }
-            const mLines = params.get('lines') ? params.get('lines').split(',') : null, sLine = params.get('line');
-            if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
-            else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
             for(let i=filtered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filtered[i],filtered[j]]=[filtered[j],filtered[i]]}
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
@@ -230,15 +207,14 @@
         function updateDatalist() {
             const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
             if (val.length < 1) { dl.innerHTML = ""; return; }
-            const fragment = document.createDocumentFragment(); let count = 0;
+            const frag = document.createDocumentFragment(); let count = 0;
             for (const label of allStationLabels) {
-                const namePart = label.split(' (')[0].toLowerCase();
-                if (namePart.startsWith(val)) {
-                    const o = document.createElement('option'); o.value = label; fragment.appendChild(o);
+                if (label.split(' (')[0].toLowerCase().startsWith(val)) {
+                    const o = document.createElement('option'); o.value = label; frag.appendChild(o);
                     if (++count >= 100) break;
                 }
             }
-            dl.innerHTML = ""; dl.appendChild(fragment);
+            dl.innerHTML = ""; dl.appendChild(frag);
         }
 
         function nextQuestion() {
@@ -266,8 +242,10 @@
             if (!userStation && userRaw !== "") userStation = allUniqueStations.find(s => s.name === user);
             if (userStation) dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
 
-            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>`; score++; }
-            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>`; }
+            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userRaw ? '-' : (dist ? dist.toFixed(2) + 'km' : '0.00km')} / ${time.toFixed(1)}秒</div>`;
+
+            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + distDisplay; score++; }
+            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>` + distDisplay; }
             
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist: dist });
             finishOne();
@@ -283,7 +261,7 @@
 
         function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
         function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
-        function copyToClipboard(text) { const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！"); }
+        function copyToClipboard(text) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); alert("文章をコピーしました！"); }
 
         function showFinalResult(isViewMode = false) {
             expandPanel(); document.getElementById('game-ui').style.display = "none";
@@ -342,7 +320,7 @@
 
         async function generateResultCard(autoShow = false) {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            canvas.width = 800; canvas.height = 1300;
+            canvas.width = 800; canvas.height = 1400;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#007AFF"; ctx.fillRect(0, 0, canvas.width, 120);
             ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
@@ -350,14 +328,14 @@
             ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
             let y = 380;
             playHistory.slice(0, 10).forEach((h, i) => {
-                const mark = h.isCorrect ? '●' : '×', markColor = h.isCorrect ? '#D33' : '#007AFF';
-                ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
+                const mark = h.isCorrect ? '●' : '×', mc = h.isCorrect ? '#D33' : '#007AFF';
+                ctx.textAlign = "left"; ctx.fillStyle = mc; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
                 ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
                 ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
                 ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; 
                 const d = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
                 ctx.fillText(`${d} / ${h.time.toFixed(1)}s`, 750, y + 15);
-                y += 88;
+                y += 92;
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
