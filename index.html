@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/id=G-RVMQ4R05XJ"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVMQ4R05XJ"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -320,12 +320,12 @@
             const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
             let url = targetHtml + "?num=" + num;
 
-            // 共通処理: 選択した名称（キーワード）が含まれる全「駅データ文字列」を抽出する関数
-            const getMatchingFullStrings = (selectedItems, fieldName) => {
+            // キーワードを含むデータ上の全文字列（カンマ区切り含む）を取得する関数
+            const getMatchingFullStrings = (selectedKeywords, fieldName) => {
                 let matches = new Set();
-                selectedItems.forEach(keyword => {
+                selectedKeywords.forEach(word => {
                     stations.forEach(s => {
-                        if (s[fieldName] && s[fieldName].includes(keyword)) {
+                        if (s[fieldName] && s[fieldName].includes(word)) {
                             matches.add(s[fieldName]);
                         }
                     });
@@ -338,7 +338,7 @@
                 const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
                 const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
                 
-                if (selPrefs.length > 0) url += "&pref=" + encodeURIComponent(selPrefs.join(','));
+                if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
                 if (selComps.length > 0) url += "&comps=" + encodeURIComponent(getMatchingFullStrings(selComps, 'company').join(','));
                 if (selLines.length > 0) url += "&lines=" + encodeURIComponent(getMatchingFullStrings(selLines, 'line').join(','));
             } else {
@@ -346,18 +346,24 @@
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
                 const l = document.getElementById(`line-select-${modeSuffix}`).value;
 
-                if (p !== "all") url += "&pref=" + encodeURIComponent(p);
+                if (p !== "all") {
+                    // 単一選択は「pref」パラメータ
+                    url += "&pref=" + encodeURIComponent(p);
+                }
                 
                 if (c !== "all") {
                     if (c.startsWith("grp:")) {
                         url += "&company=" + encodeURIComponent(c);
                     } else {
-                        url += "&comps=" + encodeURIComponent(getMatchingFullStrings([c], 'company').join(','));
+                        // その会社名を含む「データ上の全文字列」をリストアップして送る
+                        const fullComps = getMatchingFullStrings([c], 'company');
+                        url += "&company=" + encodeURIComponent(fullComps.join(','));
                     }
                 }
                 if (l !== "all") {
-                    // 単一選択時も、その文字を含む「すべての路線の組み合わせ」を送る
-                    url += "&lines=" + encodeURIComponent(getMatchingFullStrings([l], 'line').join(','));
+                    // その路線名を含む「データ上の全文字列」をリストアップして送る
+                    const fullLines = getMatchingFullStrings([l], 'line');
+                    url += "&line=" + encodeURIComponent(fullLines.join(','));
                 }
             }
             if (lock) url += "&lock=true";
