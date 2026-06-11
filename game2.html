@@ -164,23 +164,61 @@
             inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
 
             let filtered = [...allUniqueStations];
-            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line'), sLines = params.get('lines');
-            const selectedLines = [sLine, sLines].filter(v => v && v !== "all").flatMap(v => v.split(',')).map(v => v.trim()).filter(Boolean);
-            const matchLine = (stationLine, selectedLine) => {
-                if (!stationLine || !selectedLine) return false;
-                return stationLine === selectedLine || stationLine.includes(selectedLine) || selectedLine.includes(stationLine);
+            const sPref = params.get('pref'), sComp = params.get('company'), sComps = params.get('comps'), sLine = params.get('line'), sLines = params.get('lines');
+            const splitParam = (value) => {
+                if (!value || value === "all") return [];
+                return value.split(',').map(v => v.trim()).filter(Boolean);
             };
-            if (selectedLines.length > 0) filtered = filtered.filter(s => selectedLines.some(line => matchLine(s.line, line)));
-            else if (sComp && sComp !== "all") {
-                if (sComp.startsWith("grp:")) { const gr = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => gr.includes(s.company)); }
-                else filtered = filtered.filter(s => s.company === sComp);
-            } else if (sPref && sPref !== "all") {
-                if (sPref.startsWith("reg:")) { const rg = REGION_PREFS[sPref.replace("reg:", "")] || []; filtered = filtered.filter(s => rg.includes(s.pref)); }
-                else filtered = filtered.filter(s => s.pref === sPref);
+            const stationKey = (s) => `${s.name}_${Number(s.lat).toFixed(3)}_${Number(s.lng).toFixed(3)}`;
+            const matchValue = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
+            };
+
+            let rawFiltered = stations.slice();
+
+            const selectedPrefs = splitParam(sPref);
+            if (selectedPrefs.length > 0) {
+                let prefNames = [];
+                selectedPrefs.forEach(p => {
+                    if (p.startsWith("reg:")) {
+                        const regName = p.replace("reg:", "");
+                        prefNames.push(...(REGION_PREFS[regName] || []));
+                    } else {
+                        prefNames.push(p);
+                    }
+                });
+                prefNames = Array.from(new Set(prefNames));
+                rawFiltered = rawFiltered.filter(s => prefNames.includes(s.pref));
             }
+
+            if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const groupName = sComp.replace("grp:", "");
+                    const gr = COMPANY_GROUPS[groupName] || [];
+                    rawFiltered = rawFiltered.filter(s => gr.some(c => matchValue(s.company, c)) || matchValue(s.company, groupName));
+                } else {
+                    rawFiltered = rawFiltered.filter(s => matchValue(s.company, sComp));
+                }
+            }
+
+            const selectedComps = splitParam(sComps);
+            if (selectedComps.length > 0) {
+                rawFiltered = rawFiltered.filter(s => selectedComps.some(c => matchValue(s.company, c)));
+            }
+
+            const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
+            if (selectedLines.length > 0) {
+                const uniqueLines = Array.from(new Set(selectedLines));
+                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchValue(s.line, l)));
+            }
+
+            const allowedKeys = new Set(rawFiltered.map(stationKey));
+            filtered = allUniqueStations.filter(s => allowedKeys.has(stationKey(s)));
 
             for(let i=filtered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filtered[i],filtered[j]]=[filtered[j],filtered[i]]}
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
+            if (gameStations.length === 0) { alert("該当する駅がありません。条件を変更してください。"); location.href = "index.html"; return; }
             totalQuestions = gameStations.length;
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
