@@ -257,17 +257,18 @@
 
         window.onload = function() {
             if (typeof stations === 'undefined') return;
+
+            // 都道府県
             const existingPrefs = new Set(stations.map(s => s.pref));
-            
-            // 路線名・会社名を分割して個別に取得
-            let companySet = new Set();
+
+            // 会社名と路線名をバラして収集
+            let compSet = new Set();
             let lineSet = new Set();
             stations.forEach(s => {
-                if (s.company) s.company.split(/[,、・\/]/).forEach(c => companySet.add(c.trim()));
-                if (s.line) s.line.split(/[,、・\/]/).forEach(l => lineSet.add(l.trim()));
+                if(s.company) s.company.split(/[,、・/]/).forEach(v => compSet.add(v.trim()));
+                if(s.line) s.line.split(/[,、・/]/).forEach(v => lineSet.add(v.trim()));
             });
-
-            masterCompanies = Array.from(companySet).filter(Boolean).sort();
+            masterCompanies = Array.from(compSet).filter(Boolean).sort();
             masterLines = Array.from(lineSet).filter(Boolean).sort();
 
             ["c", "f"].forEach(mode => {
@@ -321,6 +322,7 @@
             const num = (modeSuffix === 'c') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
             const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
             let url = targetHtml + "?num=" + num;
+
             if (modeSuffix === 'f' && document.getElementById("custom-area").style.display === "block") {
                 const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
                 const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
@@ -332,9 +334,21 @@
                 const p = document.getElementById(`pref-select-${modeSuffix}`).value;
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
                 const l = document.getElementById(`line-select-${modeSuffix}`).value;
+
                 if (p !== "all") url += "&pref=" + encodeURIComponent(p);
-                if (c !== "all") url += "&company=" + encodeURIComponent(c);
-                if (l !== "all") url += "&line=" + encodeURIComponent(l);
+                
+                // 単一選択の場合でも「それを含む」データがヒットするように、
+                // game.html側が対応している「複数形（comps/lines）」のパラメータに渡す
+                if (c !== "all") {
+                    // 「JR」を選んだら「JR東日本,JR西日本」などが全て対象になるようフィルタリング用リストを作る
+                    const matchComps = [...new Set(stations.filter(s => s.company && s.company.includes(c)).map(s => s.company))];
+                    url += "&comps=" + encodeURIComponent(matchComps.join(','));
+                }
+                if (l !== "all") {
+                    // 「堺筋線」を選んだら「堺筋線,千日前線」などが全て対象になるようフィルタリング用リストを作る
+                    const matchLines = [...new Set(stations.filter(s => s.line && s.line.includes(l)).map(s => s.line))];
+                    url += "&lines=" + encodeURIComponent(matchLines.join(','));
+                }
             }
             if (lock) url += "&lock=true";
             window.location.href = url;
