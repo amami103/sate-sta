@@ -322,11 +322,17 @@
         }
 
         function startGame(targetHtml, modeSuffix) {
+            if (typeof stations === 'undefined') {
+                alert("駅データを読み込めませんでした。");
+                return;
+            }
+
             const num = (modeSuffix === 'c') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
             const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
-            let url = targetHtml + "?num=" + num;
+            let url = targetHtml + "?num=" + encodeURIComponent(num);
 
-            // 選択された名称を含むデータ上の全組み合わせを抽出する関数（会社用）
+            const unique = (arr) => Array.from(new Set(arr.map(v => String(v).trim()).filter(Boolean)));
+
             const getMatchingFullStrings = (selectedKeywords, fieldName) => {
                 let matches = new Set();
                 selectedKeywords.forEach(word => {
@@ -339,51 +345,152 @@
                 return Array.from(matches);
             };
 
-            // 路線フィルタ専用：選択路線を含むデータ上の全表記を渡す
-            const addLineFilterParams = (selectedLines) => {
-                let lines = getMatchingFullStrings(selectedLines, 'line');
-                if (lines.length === 0) {
-                    lines = Array.from(new Set(selectedLines.map(v => v.trim()).filter(Boolean)));
-                }
-                if (lines.length === 0) return;
-                const value = encodeURIComponent(lines.join(','));
-
-                // game.html / game2.html 側の実装差に備え、lines と line の両方を付ける
-                url += "&lines=" + value;
-                url += "&line=" + value;
+            const expandPrefs = (selectedPrefs) => {
+                let prefs = [];
+                selectedPrefs.forEach(p => {
+                    if (p.startsWith("reg:")) {
+                        const regName = p.replace("reg:", "");
+                        prefs.push(...(REGION_PREFS[regName] || []));
+                    } else {
+                        prefs.push(p);
+                    }
+                });
+                return unique(prefs);
             };
+
+            const expandCompanies = (selectedCompanies) => {
+                let companyKeywords = [];
+
+                selectedCompanies.forEach(c => {
+                    if (c === "grp:関西大手私鉄") {
+                        companyKeywords.push(...KANSAI_MAJORS);
+                    } else if (c === "grp:関東大手私鉄") {
+                        companyKeywords.push(...KANTO_MAJORS);
+                    } else if (c === "grp:大手私鉄") {
+                        companyKeywords.push(...KANSAI_MAJORS, ...KANTO_MAJORS);
+                    } else if (c === "grp:JR") {
+                        companyKeywords.push("JR");
+                    } else if (c.startsWith("grp:")) {
+                        companyKeywords.push(c.replace("grp:", ""));
+                    } else {
+                        companyKeywords.push(c);
+                    }
+                });
+
+                const fullCompanies = getMatchingFullStrings(companyKeywords, 'company');
+                return unique(fullCompanies.length > 0 ? fullCompanies : companyKeywords);
+            };
+
+            const expandLines = (selectedLines) => {
+                const fullLines = getMatchingFullStrings(selectedLines, 'line');
+                return unique(fullLines.length > 0 ? fullLines : selectedLines);
+            };
+
+            const matchValue = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
+            };
+
+            let selectedPrefValues = [];
+            let selectedCompanyValues = [];
+            let selectedLineValues = [];
+
+            let urlPrefValues = [];
+            let urlCompanyValues = [];
+            let urlLineValues = [];
+
+            let singleCompanyParam = null;
+            let singleLineParam = null;
 
             if (modeSuffix === 'f' && document.getElementById("custom-area").style.display === "block") {
                 const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
                 const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
                 const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
-                
-                if (selPrefs.length > 0) url += "&pref=" + encodeURIComponent(selPrefs.join(','));
-                if (selComps.length > 0) url += "&comps=" + encodeURIComponent(getMatchingFullStrings(selComps, 'company').join(','));
-                if (selLines.length > 0) addLineFilterParams(selLines);
+
+                selectedPrefValues = expandPrefs(selPrefs);
+                selectedCompanyValues = expandCompanies(selComps);
+                selectedLineValues = expandLines(selLines);
+
+                urlPrefValues = selPrefs;
+                urlCompanyValues = selectedCompanyValues;
+                urlLineValues = selectedLineValues;
+
+                if (selComps.length === 1 && !selComps[0].startsWith("grp:")) singleCompanyParam = selComps[0];
+                if (selLines.length === 1) singleLineParam = selLines[0];
+
             } else {
                 const p = document.getElementById(`pref-select-${modeSuffix}`).value;
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
                 const l = document.getElementById(`line-select-${modeSuffix}`).value;
 
-                if (p !== "all") url += "&pref=" + encodeURIComponent(p);
-                
-                if (c !== "all") {
-                    if (c === "grp:関西大手私鉄") {
-                        url += "&comps=" + encodeURIComponent(getMatchingFullStrings(KANSAI_MAJORS, 'company').join(','));
-                    } else if (c === "grp:関東大手私鉄") {
-                        url += "&comps=" + encodeURIComponent(getMatchingFullStrings(KANTO_MAJORS, 'company').join(','));
-                    } else if (c.startsWith("grp:")) {
-                        url += "&company=" + encodeURIComponent(c);
-                    } else {
-                        url += "&comps=" + encodeURIComponent(getMatchingFullStrings([c], 'company').join(','));
-                    }
+                if (p !== "all") {
+                    selectedPrefValues = expandPrefs([p]);
+                    urlPrefValues = [p];
                 }
+
+                if (c !== "all") {
+                    selectedCompanyValues = expandCompanies([c]);
+                    urlCompanyValues = selectedCompanyValues;
+                    if (!c.startsWith("grp:")) singleCompanyParam = c;
+                }
+
                 if (l !== "all") {
-                    addLineFilterParams([l]);
+                    selectedLineValues = expandLines([l]);
+                    urlLineValues = selectedLineValues;
+                    singleLineParam = l;
                 }
             }
+
+            let candidateStations = stations.slice();
+
+            if (selectedPrefValues.length > 0) {
+                candidateStations = candidateStations.filter(s => selectedPrefValues.includes(s.pref));
+            }
+
+            if (selectedCompanyValues.length > 0) {
+                candidateStations = candidateStations.filter(s => {
+                    return selectedCompanyValues.some(c => matchValue(s.company, c));
+                });
+            }
+
+            if (selectedLineValues.length > 0) {
+                candidateStations = candidateStations.filter(s => {
+                    return selectedLineValues.some(l => matchValue(s.line, l));
+                });
+            }
+
+            const uniqueStationKeys = new Set();
+            candidateStations.forEach(s => {
+                uniqueStationKeys.add(`${s.name}_${Number(s.lat).toFixed(3)}_${Number(s.lng).toFixed(3)}`);
+            });
+
+            if (uniqueStationKeys.size === 0) {
+                alert("該当する駅がありません。条件を変更してください。");
+                return;
+            }
+
+            if (urlPrefValues.length > 0) {
+                url += "&pref=" + encodeURIComponent(unique(urlPrefValues).join(','));
+            }
+
+            if (urlCompanyValues.length > 0) {
+                url += "&comps=" + encodeURIComponent(unique(urlCompanyValues).join(','));
+            }
+
+            if (singleCompanyParam && singleCompanyParam !== "all") {
+                url += "&company=" + encodeURIComponent(singleCompanyParam);
+            }
+
+            if (urlLineValues.length > 0) {
+                url += "&lines=" + encodeURIComponent(unique(urlLineValues).join(','));
+            }
+
+            if (singleLineParam && singleLineParam !== "all") {
+                url += "&line=" + encodeURIComponent(singleLineParam);
+            }
+
             if (lock) url += "&lock=true";
+
             window.location.href = url;
         }
     </script>
