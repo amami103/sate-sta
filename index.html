@@ -326,22 +326,8 @@
                 const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
                 
                 if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
-                
-                // チェックボックス（カスタム）時も、各名称を含む全データを送る
-                if (selComps.length > 0) {
-                    let allCompMatches = new Set();
-                    selComps.forEach(target => {
-                        stations.forEach(s => { if(s.company && s.company.includes(target)) allCompMatches.add(s.company); });
-                    });
-                    url += "&comps=" + encodeURIComponent(Array.from(allCompMatches).join(','));
-                }
-                if (selLines.length > 0) {
-                    let allLineMatches = new Set();
-                    selLines.forEach(target => {
-                        stations.forEach(s => { if(s.line && s.line.includes(target)) allLineMatches.add(s.line); });
-                    });
-                    url += "&lines=" + encodeURIComponent(Array.from(allLineMatches).join(','));
-                }
+                if (selComps.length > 0) url += "&comps=" + encodeURIComponent(selComps.join(','));
+                if (selLines.length > 0) url += "&lines=" + encodeURIComponent(selLines.join(','));
             } else {
                 const p = document.getElementById(`pref-select-${modeSuffix}`).value;
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
@@ -349,18 +335,17 @@
 
                 if (p !== "all") url += "&pref=" + encodeURIComponent(p);
                 
-                // プルダウン選択時：その名称を含むすべてのデータ上の組み合わせをリストアップして送る
                 if (c !== "all") {
                     if (c.startsWith("grp:")) {
                         url += "&company=" + encodeURIComponent(c);
                     } else {
-                        const matchComps = [...new Set(stations.filter(s => s.company && s.company.includes(c)).map(s => s.company))];
-                        url += "&comps=" + encodeURIComponent(matchComps.join(','));
+                        // 会社名単体で送信することで受け取り側の部分一致・複数検索を有効にする
+                        url += "&comps=" + encodeURIComponent(c);
                     }
                 }
                 if (l !== "all") {
-                    const matchLines = [...new Set(stations.filter(s => s.line && s.line.includes(l)).map(s => s.line))];
-                    url += "&lines=" + encodeURIComponent(matchLines.join(','));
+                    // 路線名単体で送信することで受け取り側の部分一致・複数検索を有効にする
+                    url += "&lines=" + encodeURIComponent(l);
                 }
             }
             if (lock) url += "&lock=true";
