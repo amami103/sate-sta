@@ -1,4 +1,3 @@
---- START OF FILE ---
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -210,8 +209,13 @@
             });
 
             let filtered = [...allUniqueStations];
-            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
-            if (sLine && sLine !== "all") { maxDistancePenalty = 10; activeFilters = "路線: "+sLine; filtered = filtered.filter(s => s.line === sLine); }
+            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line'), sLines = params.get('lines');
+            const selectedLines = [sLine, sLines].filter(v => v && v !== "all").flatMap(v => v.split(',')).map(v => v.trim()).filter(Boolean);
+            const matchLine = (stationLine, selectedLine) => {
+                if (!stationLine || !selectedLine) return false;
+                return stationLine === selectedLine || stationLine.includes(selectedLine) || selectedLine.includes(stationLine);
+            };
+            if (selectedLines.length > 0) { maxDistancePenalty = 10; activeFilters = "路線: "+Array.from(new Set(selectedLines)).join('・'); filtered = filtered.filter(s => selectedLines.some(line => matchLine(s.line, line))); }
             else if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) { maxDistancePenalty = 35; activeFilters = "会社: "+sComp.replace("grp:",""); const grp = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => grp.includes(s.company)); }
                 else { maxDistancePenalty = 20; activeFilters = "会社: "+sComp; filtered = filtered.filter(s => s.company === sComp); }
