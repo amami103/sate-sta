@@ -16,8 +16,11 @@
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        
+        /* ヘッダーは青色を維持 */
         .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
+        
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
         /* 広告用スタイル */
@@ -35,35 +38,39 @@
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
         
-        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
+
+        /* リザルトリスト(game.htmlスタイル) */
+        .result-list { list-style: none; padding: 0; margin: 10px 0; }
+        .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
+        .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
+        .res-user-ans { font-size: 11px; color: #666; display: block; }
+        .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
+        .res-detail-label { font-size: 10px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
+
+        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
+        .total-time-display { font-size: 16px; color: #444; text-align: center; font-weight: bold; margin-bottom: 15px; }
+
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
         .btn-x { background: #000; }
         .btn-line { background: #06C755; }
         .btn-threads { background: #000; border: 1px solid #333; }
-        .btn-fb { background: #555; } /* コピー用 */
+        .btn-fb { background: #555; }
         .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
         .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
-
-        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
-        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
-        .result-list { list-style: none; padding: 0; margin: 10px 0; }
-        .result-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
-        .res-name { font-weight: bold; color: #333; display: block; font-size: 13px; }
-        .res-user-ans { font-size: 11px; color: #555; display: block; margin-top: 2px; }
-        .res-sub { font-size: 10px; color: #777; display: block; }
-        .res-time-label { font-size: 10px; color: #007AFF; font-weight: bold; }
-        .res-status { width: 25px; text-align: center; font-size: 16px; flex-shrink: 0; }
-        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; }
-        .final-score { font-size: 24px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
-        .total-time-display { font-size: 14px; color: #333; text-align: center; margin-bottom: 15px; padding: 5px; border-bottom: 1px solid #eee; }
-        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
-        .result-footer-buttons button { flex: 1; padding: 15px 5px; }
 
         #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
         #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
         #share-image-container img { width: 100%; height: auto; display: block; }
         .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
         @media (max-width: 600px) {
             .btn-fullscreen { display: none; }
@@ -129,10 +136,8 @@
     </div>
 
     <script>
-        // 広告更新用関数
-        function refreshAds() {
-            try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
-        }
+        // 広告更新
+        function refreshAds() { try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }
 
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
@@ -149,29 +154,9 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else if (document.exitFullscreen) document.exitFullscreen();
-        }
-
-        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); }
         function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
         function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
-
-        function updateDatalist() {
-            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
-            if (val.length < 1) { dl.innerHTML = ""; return; }
-            const fragment = document.createDocumentFragment(); let count = 0;
-            for (const label of allStationLabels) {
-                const namePart = label.split(' (')[0].toLowerCase();
-                if (namePart.startsWith(val)) {
-                    const o = document.createElement('option'); o.value = label; fragment.appendChild(o);
-                    if (++count >= 100) break;
-                }
-            }
-            dl.innerHTML = ""; dl.appendChild(fragment);
-        }
 
         function init() {
             refreshAds();
@@ -235,11 +220,25 @@
             if (mLines) filtered = filtered.filter(s => mLines.includes(s.line));
             else if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
 
-            shuffle(filtered);
+            for(let i=filtered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filtered[i],filtered[j]]=[filtered[j],filtered[i]]}
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
             totalQuestions = gameStations.length;
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
+        }
+
+        function updateDatalist() {
+            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            if (val.length < 1) { dl.innerHTML = ""; return; }
+            const fragment = document.createDocumentFragment(); let count = 0;
+            for (const label of allStationLabels) {
+                const namePart = label.split(' (')[0].toLowerCase();
+                if (namePart.startsWith(val)) {
+                    const o = document.createElement('option'); o.value = label; fragment.appendChild(o);
+                    if (++count >= 100) break;
+                }
+            }
+            dl.innerHTML = ""; dl.appendChild(fragment);
         }
 
         function nextQuestion() {
@@ -264,18 +263,11 @@
             
             let dist = null;
             let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
-            if (!userStation && userRaw !== "") {
-                userStation = allUniqueStations.find(s => s.name === user);
-            }
-            if (userStation) {
-                dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
-            }
+            if (!userStation && userRaw !== "") userStation = allUniqueStations.find(s => s.name === user);
+            if (userStation) dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
 
-            const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
-            const distDisplay = `<div style="font-size: 12px; color: #666; margin-bottom: 5px;">誤差: ${!userRaw ? '-' : dist.toFixed(2) + 'km'}</div>`;
-
-            if (isCorrect) { res.innerHTML = userAnsDisplay + distDisplay + "<span style='color:#D33;'>正解！</span>"; score++; }
-            else { res.innerHTML = userAnsDisplay + distDisplay + "<span style='color:#007AFF;'>残念！ 正解は「" + currentStation.name + "」</span>"; }
+            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>`; score++; }
+            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>`; }
             
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist: dist });
             finishOne();
@@ -284,9 +276,8 @@
         function showAnswer() {
             if (answered) return; expandPanel();
             const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim();
-            const userAnsDisplay = `<div style="font-size: 12px; color: #444; margin-bottom: 5px;">あなたの解答: ${userRaw || "(未入力)"}</div>`;
-            document.getElementById('result').innerHTML = userAnsDisplay + "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time, userAns: userRaw || "(未入力)", dist: null });
+            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time, userAns: userRaw || "ギブアップ", dist: null });
             finishOne();
         }
 
@@ -299,12 +290,25 @@
             document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
             const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
             let totalT = 0, listH = '<ul class="result-list">';
+            
             playHistory.forEach((h) => {
                 totalT += h.time;
-                const m = h.isCorrect ? '<span style="color:red;">●</span>' : '<span style="color:blue;">×</span>';
-                const distStr = (h.userAns === "(未入力)" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
-                listH += `<li class="result-item"><div class="res-status">${m}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-time-label">誤差:${distStr} | ${h.time.toFixed(1)}秒</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+                const mark = h.isCorrect ? '●' : '×';
+                const markColor = h.isCorrect ? '#D33' : '#007AFF';
+                const distStr = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
+                listH += `
+                <li class="result-item">
+                    <div class="res-status" style="color:${markColor}">${mark}</div>
+                    <div class="res-info">
+                        <span class="res-name">${h.name}</span>
+                        <span class="res-user-ans">解答: ${h.userAns}</span>
+                        <span class="res-sub">${h.pref} / ${h.line}</span>
+                        <span class="res-detail-label">誤差: ${distStr} | ${h.time.toFixed(1)}秒</span>
+                    </div>
+                    <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
+                </li>`;
             });
+            
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1), timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
             
@@ -312,71 +316,57 @@
                 <div class="final-score">${totalQuestions}問中 ${score}問正解！</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
 
-                <!-- リザルト広告1 -->
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins>
-                </div>
-
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
                     <button class="btn-sns btn-fb" onclick="copyToClipboard('${shareText}')">文章コピー</button>
                     <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用</button>
-                    <button class="btn-sns btn-card" onclick="generateResultCard()">画像で詳細結果をシェア！</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard()">画像で結果をシェア！</button>
                 </div>
-                ${listH + '</ul>'}
 
-                <!-- リザルト広告2 -->
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="rectangle"></ins>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins>
                 </div>
+
+                ${listH + '</ul>'}
 
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
             
-            setTimeout(() => {
-                const ads = finalUi.querySelectorAll('.adsbygoogle');
-                ads.forEach(() => refreshAds());
-            }, 100);
+            setTimeout(() => { finalUi.querySelectorAll('.adsbygoogle').forEach(() => refreshAds()); }, 100);
         }
 
         async function generateResultCard(autoShow = false) {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            canvas.width = 800; canvas.height = 1350;
+            canvas.width = 800; canvas.height = 1300;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#007AFF"; ctx.fillRect(0, 0, canvas.width, 120);
             ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
-            ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText("通常モード", 400, 170);
-            ctx.fillStyle = "#D33"; ctx.font = "bold 80px sans-serif"; ctx.fillText(`${totalQuestions}問中 ${score}問正解！`, 400, 300);
-            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 360); ctx.lineTo(750, 360); ctx.stroke();
-            let y = 420;
+            ctx.fillStyle = "#D33"; ctx.font = "bold 80px sans-serif"; ctx.fillText(`${totalQuestions}問中 ${score}問正解！`, 400, 260);
+            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
+            let y = 380;
             playHistory.slice(0, 10).forEach((h, i) => {
                 const mark = h.isCorrect ? '●' : '×', markColor = h.isCorrect ? '#D33' : '#007AFF';
                 ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
-                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; 
-                ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
-                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; 
-                ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
                 ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; 
-                const distStr = (h.userAns === "(未入力)" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
-                ctx.fillText(`${distStr} / ${h.time.toFixed(1)}s`, 750, y + 15);
-                y += 85;
+                const d = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
+                ctx.fillText(`${d} / ${h.time.toFixed(1)}s`, 750, y + 15);
+                y += 88;
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
             ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
             const dataUrl = canvas.toDataURL("image/png");
-            const container = document.getElementById('share-image-container');
-            container.innerHTML = `<img src="${dataUrl}">`;
+            document.getElementById('share-image-container').innerHTML = `<img src="${dataUrl}">`;
             if (!autoShow) document.getElementById('image-overlay').style.display = "flex";
         }
 
         function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
-
         function makeDraggable(el) {
             if (window.innerWidth <= 600) return;
             const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0;
