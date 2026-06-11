@@ -164,8 +164,13 @@
             inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
 
             let filtered = [...allUniqueStations];
-            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line');
-            if (sLine && sLine !== "all") filtered = filtered.filter(s => s.line === sLine);
+            const sPref = params.get('pref'), sComp = params.get('company'), sLine = params.get('line'), sLines = params.get('lines');
+            const selectedLines = [sLine, sLines].filter(v => v && v !== "all").flatMap(v => v.split(',')).map(v => v.trim()).filter(Boolean);
+            const matchLine = (stationLine, selectedLine) => {
+                if (!stationLine || !selectedLine) return false;
+                return stationLine === selectedLine || stationLine.includes(selectedLine) || selectedLine.includes(stationLine);
+            };
+            if (selectedLines.length > 0) filtered = filtered.filter(s => selectedLines.some(line => matchLine(s.line, line)));
             else if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) { const gr = COMPANY_GROUPS[sComp.replace("grp:", "")] || []; filtered = filtered.filter(s => gr.includes(s.company)); }
                 else filtered = filtered.filter(s => s.company === sComp);
