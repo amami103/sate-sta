@@ -29,18 +29,19 @@
         
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
         
-        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
-        .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
-        .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
+        .article-section h2 { font-size: 22px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
+        .article-section h3 { font-size: 18px; color: #333; margin-top: 30px; border-left: 5px solid #007AFF; padding-left: 10px; background: #f8f9fa; padding: 8px 10px; }
+        .article-section h4 { font-size: 16px; color: #007AFF; margin: 20px 0 10px; display: flex; align-items: center; }
+        .article-section h4::before { content: '●'; margin-right: 8px; font-size: 12px; }
+        .article-section p { line-height: 1.8; color: #444; font-size: 15px; margin-bottom: 15px; }
         .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
-        .article-section li { margin-bottom: 12px; }
-        .article-section strong { color: #333; }
+        .article-section li { margin-bottom: 8px; }
+        
+        .guide-img { width: 100%; max-width: 500px; border-radius: 10px; border: 1px solid #ddd; margin: 15px 0; display: block; }
 
-        .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .rank-table th, .rank-table td { border: 1px solid #eee; padding: 8px; text-align: center; }
+        .rank-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+        .rank-table th, .rank-table td { border: 1px solid #eee; padding: 10px; text-align: center; }
         .rank-table th { background: #f9f9f9; color: #666; }
-        .rank-sss { color: #FFD700; font-weight: bold; }
-        .rank-s { color: #FF3B30; font-weight: bold; }
 
         .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
         .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -66,49 +67,92 @@
     </header>
 
     <main>
+        <!-- セクション：遊び方の基本 -->
         <div class="card article-section">
             <h2>サテステの遊び方</h2>
             
             <h3>1. モードを選択する</h3>
-            <p>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。チャレンジモードでは複数の条件を組み合わせるカスタム機能は制限されています。</p>
+            <p>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。</p>
 
             <h3>2. 出題範囲を設定する</h3>
-            <p>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。また、地図の移動や拡大・縮小を一切禁止する難易度の高い「ハードモード」も選択できます。</p>
+            <p>都道府県や鉄道会社、路線などで絞り込めます。地図の操作を制限する「ハードモード」も選択可能です。</p>
 
-            <h3>3. 航空写真から駅名を推測</h3>
-            <p>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。候補がリスト表示されるので、正しい駅名を選択します。</p>
-
-            <h3>4. チャレンジモードのルール</h3>
-            <p>チャレンジモードでは、以下のルールに基づいて1問最大 <strong>2,000点</strong>（10問合計 <strong>20,000点</strong>）のスコアが算出されます。</p>
-            <ul>
-                <li><strong>出題数:</strong> 10問固定です（絞り込み条件により駅数が10駅に満たない場合は、対象駅をすべて出題します）。</li>
-                <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解駅に近い駅を答えれば、距離に応じて最大 1,000点 が与えられます。</li>
-                <li><strong>タイムボーナス（最大 500点）:</strong> 正解（完全一致）時のみ加算されます。10秒以内に正解すると満点。それ以降は1秒ごとに 10点 ずつ減点され、60秒で 0点 となります。</li>
-                <li><strong>ヒント使用のペナルティ:</strong> ヒントを使うと、合計点に大幅な倍率ペナルティが掛かります。（県名のヒント：0.5倍、路線名のヒント：0.25倍）</li>
-                <li><strong>ランク判定:</strong> 全問終了時の合計スコア（得点率）によって判定されます。
-                    <table class="rank-table">
-                        <tr><th>ランク</th><th>得点率</th><th>スコア目安（10問時）</th></tr>
-                        <tr><td class="rank-sss">SSS</td><td>90% 以上</td><td>18,000点 〜</td></tr>
-                        <tr><td class="rank-sss">SS</td><td>80% 以上</td><td>16,000点 〜</td></tr>
-                        <tr><td class="rank-s">S</td><td>70% 以上</td><td>14,000点 〜</td></tr>
-                        <tr><td>A</td><td>50% 以上</td><td>10,000点 〜</td></tr>
-                        <tr><td>B</td><td>30% 以上</td><td>6,000点 〜</td></tr>
-                        <tr><td>C</td><td>10% 以上</td><td>2,000点 〜</td></tr>
-                        <tr><td>D</td><td>10% 未満</td><td>0点 〜</td></tr>
-                    </table>
-                </li>
-            </ul>
+            <h3>3. チャレンジモードの採点</h3>
+            <p>1問最大2,000点（10問合計20,000点）で、正確性と解答スピード、ヒントの使用有無で判定されます。</p>
+            <table class="rank-table">
+                <tr><th>ランク</th><th>得点率</th><th>スコア目安</th></tr>
+                <tr><td style="color:gold;font-weight:bold;">SSS</td><td>90%以上</td><td>18,000点〜</td></tr>
+                <tr><td style="color:orange;font-weight:bold;">SS</td><td>80%以上</td><td>16,000点〜</td></tr>
+                <tr><td style="color:red;font-weight:bold;">S</td><td>70%以上</td><td>14,000点〜</td></tr>
+                <tr><td>A〜D</td><td>70%未満</td><td>14,000点未満</td></tr>
+            </table>
         </div>
 
+        <!-- セクション：高度な攻略法 -->
         <div class="card article-section">
-            <h2>航空写真攻略のヒント</h2>
-            <p>駅を特定するためには、駅そのものだけでなく周囲の環境に目を向けるのがポイントです。</p>
+            <h2>ハイスコアのための攻略テクニック</h2>
+            <p>「サテステ」は、地理的知識、駅の構造、そして街並みからの想像力が試される非常に奥の深いゲームです。ここでは高得点を目指すための攻略ヒントを詳しく解説します。</p>
+
+            <h3>1. マップを広く見る</h3>
+            <p>まずはマップを広く見ることです。駅の構造はもちろんのこと、まわりに他の鉄道路線が写っていないかどうか、都会か田舎なのか...など見るべきポイントは多々あります。</p>
+            <h4>見るべきポイントの例</h4>
             <ul>
-                <li><strong>ホームの形状:</strong> 新幹線停車駅はホームが非常に長く、都市部では島式ホームが整然と並んでいます。</li>
-                <li><strong>線路の配線:</strong> 線路が複数に分かれている場所は、車両基地や大きなターミナル駅の合図です。</li>
-                <li><strong>周辺の街並み:</strong> 駅前のロータリー、バス停、特徴的な形の駅舎などは大きなヒントになります。</li>
-                <li><strong>地形の特徴:</strong> 山間部であれば線路の曲線（カーブ）が強くなり、海岸沿いであれば防波堤や砂浜が見えることがあります。</li>
+                <li>海や山、川などの地形と駅との位置関係</li>
+                <li>他の鉄道路線の有無</li>
+                <li>周りの道路の形状</li>
+                <li>建物の種類や数</li>
             </ul>
+            <p>眺めているとそれだけで「あの駅かも！」とピンとくることもありますよ。</p>
+
+            <h3>2. 駅の構造を見る</h3>
+            <p>次にみるのは駅の構造です。商業施設併設の駅？駅舎はある？など駅の規模を見てみましょう。駅舎の形もヒントになります。</p>
+            <ul>
+                <li><strong>橋上駅：</strong>線路をまたぐように駅舎があるタイプ。近年、再開発された郊外の駅に多いです。</li>
+                <li><strong>高架駅：</strong>高架区間にあり、その下に改札があるタイプ。都市部や新幹線駅に多いですが、地方でも連続立体交差事業が進んだ場所にも見られます。</li>
+                <li><strong>地下駅：</strong>航空写真では見えませんが、地下駅がある都市はある程度絞り込まれます。</li>
+                <li><strong>貨物ターミナル併設：</strong>膨大な数のコンテナが並ぶエリアが隣接していれば、それは付近に貨物拠点がある駅ですね。例えば吹田、稲沢、五稜郭などです。</li>
+            </ul>
+            <p>また、ホームの数や「複線か単線か」も重要です。線路が1本ならローカル線や支線、複々線ならJR中央線、小田急小田原線、JR京都線などの主要幹線が候補に挙がります。</p>
+            
+            <h4>電化・非電化の判別</h4>
+            <p>線路をよく見ると、連続して小さな線（架線柱）が見えることがあります。これがあれば電化区間です。</p>
+            <img src="image1.png" alt="電化区間の特徴" class="guide-img">
+            
+            <h4>ホームの形状</h4>
+            <ul>
+                <li><strong>島式・相対式：</strong>標準的な形状。大手私鉄やJRの多くの駅で見られます。</li>
+                <li><strong>2面3線：</strong>ホーム2つ、線路3本。折り返し設備がある主要駅や、東海道・山陽本線などの主要幹線に多いです。</li>
+                <li><strong>新幹線駅：</strong>非常にホームが長く、通過線を持つ独特の形状が多いです。</li>
+            </ul>
+
+            <h3>3. 地形と方角を読み解く</h3>
+            <ul>
+                <li><strong>川と橋：</strong>大きな川を渡る直前・直後の駅は特定しやすくなります。</li>
+                <li><strong>海岸線：</strong>海が見える場合、その方角やリアス式か直線的かという形状が大きなヒントになります。</li>
+                <li><strong>山の迫り方：</strong>トンネルの出入り口が近い駅は山間部であることが分かります。</li>
+                <li><strong>線路の方向：</strong>サテステは<strong>上が北に固定</strong>されています。路線の向きと周辺の雰囲気から駅を絞り込めます。</li>
+            </ul>
+
+            <h3>4. 車両の両数と色</h3>
+            <p>写り込んでいる車両の長さや色から町や路線の規模を絞り込めます。派手な色の車両は決定打になることもあります。</p>
+            <img src="image2.png" alt="大宮駅の新幹線" class="guide-img">
+            <p>例えば青緑色の車両（E5系/H5系）が見えれば、東北・北海道新幹線の駅であることが分かります（画像は大宮駅）。</p>
+
+            <h3>地域特有の特徴</h3>
+            <ul>
+                <li><strong>北海道：</strong>主要都市は碁盤の目状の街並みが多く、家の屋根は赤や青が目立ちます。また、板1枚のような極めて小さな駅が存在するのも特徴です。</li>
+                <li><strong>山陰地方：</strong>オレンジ色の「石州瓦」を利用した屋根の家が多く見られます。</li>
+                <li><strong>海岸線：</strong>西側に海がある場合、内房線（君津〜館山）、紀勢本線（和歌山〜紀伊田辺）、大村線などを想定し、電化や複線の有無で絞り込みます。</li>
+            </ul>
+
+            <h3>駅の中心からのズレ</h3>
+            <p>表示されたとき中心からずれている場合、近くに別の駅（地下駅など）が隠れている可能性があります。</p>
+            <img src="image3.png" alt="中心からのズレ" class="guide-img">
+            <p>例えば、地下に動物園前駅があり、地上の新今宮駅と混同しやすいケースなど、注意深く観察してみましょう。</p>
+
+            <p style="margin-top: 30px; font-weight: bold; text-align: center; color: #007AFF;">
+                「なぜここに駅があるのか？」という視点で街を眺めることが、クイズ攻略の最大の近道です。
+            </p>
         </div>
 
         <a href="index.html" class="btn-back">ゲームをプレイする</a>
@@ -117,7 +161,7 @@
     <footer>
         <div class="footer-links">
             <a href="index.html">ホーム</a>
-            <a href="about.html">サテステについて（自己紹介）</a>
+            <a href="about.html">サテステについて</a>
             <a href="guide.html">攻略ガイド</a>
             <a href="terms.html">利用規約</a>
             <a href="privacy.html">プライバシーポリシー</a>
@@ -125,7 +169,7 @@
         </div>
         <div class="copyright">
             &copy; 2026 サテステ -From Satellite to Station- 制作委員会<br>
-            <a href="https://x.com/Amami103_" target="_blank" style="color: #666; font-size: 11px;">Admin: @Amami103_</a>
+            Admin: @Amami103_
         </div>
     </footer>
 
