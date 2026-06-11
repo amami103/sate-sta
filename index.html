@@ -261,7 +261,6 @@
             const existingPrefs = new Set(stations.map(s => s.pref));
             let compSet = new Set(), lineSet = new Set();
             
-            // データをバラしてプルダウン用のマスターを作成
             stations.forEach(s => {
                 if(s.company) s.company.split(/[,、・/]/).forEach(v => compSet.add(v.trim()));
                 if(s.line) s.line.split(/[,、・/]/).forEach(v => lineSet.add(v.trim()));
@@ -325,9 +324,24 @@
                 const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
                 const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
                 const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
+                
                 if (selPrefs.length > 0) url += "&prefs=" + encodeURIComponent(selPrefs.join(','));
-                if (selComps.length > 0) url += "&comps=" + encodeURIComponent(selComps.join(','));
-                if (selLines.length > 0) url += "&lines=" + encodeURIComponent(selLines.join(','));
+                
+                // チェックボックス（カスタム）時も、各名称を含む全データを送る
+                if (selComps.length > 0) {
+                    let allCompMatches = new Set();
+                    selComps.forEach(target => {
+                        stations.forEach(s => { if(s.company && s.company.includes(target)) allCompMatches.add(s.company); });
+                    });
+                    url += "&comps=" + encodeURIComponent(Array.from(allCompMatches).join(','));
+                }
+                if (selLines.length > 0) {
+                    let allLineMatches = new Set();
+                    selLines.forEach(target => {
+                        stations.forEach(s => { if(s.line && s.line.includes(target)) allLineMatches.add(s.line); });
+                    });
+                    url += "&lines=" + encodeURIComponent(Array.from(allLineMatches).join(','));
+                }
             } else {
                 const p = document.getElementById(`pref-select-${modeSuffix}`).value;
                 const c = document.getElementById(`company-select-${modeSuffix}`).value;
@@ -335,7 +349,7 @@
 
                 if (p !== "all") url += "&pref=" + encodeURIComponent(p);
                 
-                // 選択された「単独名」を含む「全てのデータ上の文字列」をリストアップして渡す
+                // プルダウン選択時：その名称を含むすべてのデータ上の組み合わせをリストアップして送る
                 if (c !== "all") {
                     if (c.startsWith("grp:")) {
                         url += "&company=" + encodeURIComponent(c);
@@ -346,7 +360,6 @@
                 }
                 if (l !== "all") {
                     const matchLines = [...new Set(stations.filter(s => s.line && s.line.includes(l)).map(s => s.line))];
-                    // ゲーム側が lines パラメータに対応していることを前提に、合致する全文字列をカンマ区切りで送る
                     url += "&lines=" + encodeURIComponent(matchLines.join(','));
                 }
             }
