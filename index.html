@@ -258,8 +258,10 @@
         window.onload = function() {
             if (typeof stations === 'undefined') return;
             const existingPrefs = new Set(stations.map(s => s.pref));
-            masterCompanies = [...new Set(stations.map(s => s.company))].filter(Boolean).sort();
-            masterLines = [...new Set(stations.map(s => s.line))].filter(Boolean).sort();
+            
+            // 修正箇所：カンマや中黒で区切られた会社・路線名を個別に分割してマスタリストを作成する
+            masterCompanies = [...new Set(stations.flatMap(s => s.company ? s.company.split(/[,、・]/) : []))].filter(Boolean).sort();
+            masterLines = [...new Set(stations.flatMap(s => s.line ? s.line.split(/[,、・]/) : []))].filter(Boolean).sort();
 
             ["c", "f"].forEach(mode => {
                 const ps = document.getElementById(`pref-select-${mode}`);
