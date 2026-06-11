@@ -17,7 +17,7 @@
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
         
-        /* ヘッダーは青色 */
+        /* ヘッダー色：青 */
         .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         
@@ -77,7 +77,6 @@
             .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; }
             .ui-header { cursor: pointer; padding: 14px; }
             .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
-            .ui-header::after { content: ' (タップで開閉)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         }
     </style>
 </head>
@@ -86,12 +85,6 @@
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
         <div class="ui-content" id="ui-content">
-            
-            <div class="ad-container">
-                <span class="ad-label">Sponsor</span>
-                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-            </div>
-
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
@@ -107,11 +100,6 @@
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
-                
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="rectangle" data-full-width-responsive="true"></ins>
-                </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
         </div>
@@ -146,21 +134,10 @@
         function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
 
         function init() {
-            refreshAds(); refreshAds();
             const params = new URLSearchParams(window.location.search);
-            const resData = params.get('res');
             isLocked = params.get('lock') === 'true';
             map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
-
-            if (resData) {
-                try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
-                    playHistory = decoded.history; score = decoded.score; totalQuestions = decoded.total;
-                    setTimeout(() => { showFinalResult(true); generateResultCard(true); }, 200);
-                    return;
-                } catch(e) { console.error("Data error"); }
-            }
 
             if (typeof stations === 'undefined') return;
             const stationMap = new Map();
@@ -242,10 +219,12 @@
             if (!userStation && userRaw !== "") userStation = allUniqueStations.find(s => s.name === user);
             if (userStation) dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
 
+            // 回答直後の表示（正解駅の県名・路線名を表示）
+            const infoDisplay = `<div style="font-size:11px; color:#666;">正解駅: ${currentStation.pref} / ${currentStation.line}</div>`;
             const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userRaw ? '-' : (dist ? dist.toFixed(2) + 'km' : '0.00km')} / ${time.toFixed(1)}秒</div>`;
 
-            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + distDisplay; score++; }
-            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>` + distDisplay; }
+            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + infoDisplay + distDisplay; score++; }
+            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>` + infoDisplay + distDisplay; }
             
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist: dist });
             finishOne();
@@ -254,7 +233,7 @@
         function showAnswer() {
             if (answered) return; expandPanel();
             const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim();
-            document.getElementById('result').innerHTML = "正解: <span style='color:#E60;'>" + currentStation.name + "</span>";
+            document.getElementById('result').innerHTML = `正解: <span style='color:#E60;'>${currentStation.name}</span><br><div style="font-size:11px; color:#666;">${currentStation.pref} / ${currentStation.line}</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time, userAns: userRaw || "ギブアップ", dist: null });
             finishOne();
         }
@@ -263,20 +242,18 @@
         function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
         function copyToClipboard(text) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); alert("文章をコピーしました！"); }
 
-        function showFinalResult(isViewMode = false) {
+        function showFinalResult() {
             expandPanel(); document.getElementById('game-ui').style.display = "none";
-            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
             const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
             let totalT = 0, listH = '<ul class="result-list">';
             
             playHistory.forEach((h) => {
                 totalT += h.time;
-                const mark = h.isCorrect ? '●' : '×';
-                const markColor = h.isCorrect ? '#D33' : '#007AFF';
+                const mark = h.isCorrect ? '●' : '×', mc = h.isCorrect ? '#D33' : '#007AFF';
                 const distStr = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
                 listH += `
                 <li class="result-item">
-                    <div class="res-status" style="color:${markColor}">${mark}</div>
+                    <div class="res-status" style="color:${mc}">${mark}</div>
                     <div class="res-info">
                         <span class="res-name">${h.name}</span>
                         <span class="res-user-ans">解答: ${h.userAns}</span>
@@ -288,12 +265,11 @@
             });
             
             const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1), timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
-            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const shareText = `「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ https://sate-sta.com`;
             
             finalUi.innerHTML = `
                 <div class="final-score">${totalQuestions}問中 ${score}問正解！</div>
                 <div class="total-time-display">総解答時間: ${timeStr}</div>
-
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
@@ -302,23 +278,16 @@
                     <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用</button>
                     <button class="btn-sns btn-card" onclick="generateResultCard()">画像で結果をシェア！</button>
                 </div>
-
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins>
-                </div>
-
+                <div class="ad-container"><span class="ad-label">Sponsor</span><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins></div>
                 ${listH + '</ul>'}
-
                 <div class="result-footer-buttons">
-                    ${isViewMode ? '' : '<button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
-            
             setTimeout(() => { finalUi.querySelectorAll('.adsbygoogle').forEach(() => refreshAds()); }, 100);
         }
 
-        async function generateResultCard(autoShow = false) {
+        async function generateResultCard() {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
             canvas.width = 800; canvas.height = 1400;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -338,10 +307,9 @@
                 y += 92;
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
-            const dataUrl = canvas.toDataURL("image/png");
-            document.getElementById('share-image-container').innerHTML = `<img src="${dataUrl}">`;
-            if (!autoShow) document.getElementById('image-overlay').style.display = "flex";
+            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | サテステ", 400, canvas.height - 18);
+            document.getElementById('share-image-container').innerHTML = `<img src="${canvas.toDataURL("image/png")}">`;
+            document.getElementById('image-overlay').style.display = "flex";
         }
 
         function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
