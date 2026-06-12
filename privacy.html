@@ -9,206 +9,47 @@
     <title>プライバシーポリシー | サテステ</title>
     <link rel="icon" href="logo2.jpg">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
+        .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        h1 { margin: 0; font-size: 28px; }
+        p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
+
+        .header-nav { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding: 0 150px; box-sizing: border-box; }
+        .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; opacity: 0.95; }
+        .header-nav a:hover { text-decoration: underline; opacity: 1; }
+
+        main { flex: 1; width: 95%; max-width: 700px; padding: 30px 0; text-align: center; }
+
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
+
+        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
+        .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
+        .article-section p { line-height: 1.8; color: #444; font-size: 15px; margin-bottom: 15px; }
+        .article-section a { color: #007AFF; }
+
+        .update-date-small { font-size: 12px; color: #888; margin-top: -5px; }
+
+        .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
+        .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
+        .footer-links { margin-bottom: 15px; }
+        .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .copyright { font-size: 12px; color: #888; }
+
+        @media (max-width: 600px) { 
+            header { min-height: auto; padding: 20px 10px; }
+            .header-logo { position: static; height: 80px; margin-bottom: 10px; }
+            .header-nav { padding: 0; gap: 8px 12px; }
+            .header-nav a { font-size: 12px; }
         }
-
-```
-    header {
-        width: 100%;
-        min-height: 140px;
-        background: linear-gradient(135deg, #007AFF, #00C6FF);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        position: relative;
-        box-sizing: border-box;
-        padding: 10px;
-    }
-
-    .header-logo {
-        position: absolute;
-        top: 14px;
-        left: 20px;
-        height: 112px;
-        background-color: rgba(255, 255, 255, 0.95);
-        padding: 5px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-
-    h1 {
-        margin: 0;
-        font-size: 28px;
-    }
-
-    p.subtitle {
-        margin: 5px 0;
-        opacity: 0.9;
-        font-size: 14px;
-    }
-
-    .header-nav {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px 18px;
-        margin-top: 12px;
-        padding: 0 150px;
-        box-sizing: border-box;
-    }
-
-    .header-nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: bold;
-        opacity: 0.95;
-    }
-
-    .header-nav a:hover {
-        text-decoration: underline;
-        opacity: 1;
-    }
-
-    main {
-        flex: 1;
-        width: 95%;
-        max-width: 700px;
-        padding: 30px 0;
-        text-align: center;
-    }
-
-    .card {
-        background: white;
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        margin-bottom: 30px;
-        text-align: left;
-    }
-
-    .article-section h2 {
-        font-size: 20px;
-        color: #007AFF;
-        border-bottom: 2px solid #007AFF;
-        padding-bottom: 5px;
-        margin-top: 10px;
-    }
-
-    .article-section h3 {
-        font-size: 17px;
-        color: #333;
-        margin-top: 25px;
-        border-left: 5px solid #007AFF;
-        padding-left: 10px;
-    }
-
-    .article-section p {
-        line-height: 1.8;
-        color: #444;
-        font-size: 15px;
-        margin-bottom: 15px;
-    }
-
-    .article-section a {
-        color: #007AFF;
-        word-break: break-word;
-    }
-
-    .policy-date {
-        background: #f4f7f9;
-        padding: 12px 15px;
-        border-radius: 10px;
-        font-size: 14px;
-        margin: 20px 0;
-    }
-
-    .btn-back {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 12px 30px;
-        background: #007AFF;
-        color: white;
-        text-decoration: none;
-        border-radius: 50px;
-        font-weight: bold;
-        transition: 0.3s;
-    }
-
-    .btn-back:hover {
-        background: #0056b3;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    footer {
-        width: 100%;
-        padding: 30px 0;
-        background: #333;
-        color: #fff;
-        text-align: center;
-    }
-
-    .footer-links {
-        margin-bottom: 15px;
-    }
-
-    .footer-links a {
-        color: #ccc;
-        text-decoration: none;
-        margin: 0 15px;
-        font-size: 13px;
-    }
-
-    .footer-links a:hover {
-        color: #fff;
-        text-decoration: underline;
-    }
-
-    .copyright {
-        font-size: 12px;
-        color: #888;
-    }
-
-    @media (max-width: 600px) {
-        header {
-            min-height: auto;
-            padding: 20px 10px;
-        }
-
-        .header-logo {
-            position: static;
-            height: 80px;
-            margin-bottom: 10px;
-        }
-
-        .header-nav {
-            padding: 0;
-            gap: 8px 12px;
-        }
-
-        .header-nav a {
-            font-size: 12px;
-        }
-    }
-</style>
-```
-
+    </style>
 </head>
 <body>
-
-```
 <header>
     <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
     <h1>サテステ</h1>
@@ -226,13 +67,9 @@
 <main>
     <div class="card article-section">
         <h2>プライバシーポリシー</h2>
+            <p class="update-date-small">最終更新日：2026年6月12日</p>
 
-        <p>「サテステ」（以下、「当サイト」といいます。）は、当サイトが提供するサービスにおける利用者の個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。</p>
-
-        <div class="policy-date">
-           
-            <strong>最終更新日：2026年6月12日</strong>
-        </div>
+            <p>「サテステ」（以下、「当サイト」といいます。）は、当サイトが提供するサービスにおける利用者の個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。</p>
 
         <h3>1. 個人情報の利用目的</h3>
         <p>当サイトでは、お問い合わせの際に、名前、メールアドレス等の個人情報をご入力いただく場合があります。</p>
@@ -291,7 +128,5 @@
         <a href="https://x.com/Amami103_" target="_blank" rel="noopener noreferrer" style="color: #666; font-size: 11px;">Admin: @Amami103_</a>
     </div>
 </footer>
-```
-
 </body>
 </html>
