@@ -36,18 +36,24 @@
         
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
         
-        .article-section h2 { font-size: 22px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
-        .article-section h3 { font-size: 19px; color: #333; margin-top: 35px; border-left: 5px solid #007AFF; padding-left: 10px; background: #f8f9fa; padding: 10px; }
-        .article-section p { line-height: 1.8; color: #444; font-size: 15px; margin-bottom: 18px; }
-        .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
+        .article-section h2 { font-size: 22px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 8px; margin-top: 10px; margin-bottom: 18px; line-height: 1.4; }
+        .article-section h3 { font-size: 19px; color: #333; margin-top: 42px; margin-bottom: 18px; border-left: 5px solid #007AFF; background: #f8f9fa; padding: 12px 14px; line-height: 1.45; border-radius: 0 8px 8px 0; }
+        .article-section p { line-height: 1.95; color: #444; font-size: 15.5px; margin: 0 0 20px; letter-spacing: 0.01em; }
+        .article-section ul { padding-left: 22px; color: #444; font-size: 15.5px; line-height: 1.9; margin-top: 12px; margin-bottom: 20px; }
+        .article-section li { margin-bottom: 10px; }
         .article-section strong { color: #000; }
         .article-section em { color: #007AFF; font-style: normal; font-weight: bold; }
+        .article-section br { line-height: 1.9; }
 
-        .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .rank-table th, .rank-table td { border: 1px solid #eee; padding: 8px; text-align: center; }
+        .rank-table { width: 100%; border-collapse: collapse; margin-top: 14px; margin-bottom: 8px; font-size: 14px; }
+        .rank-table th, .rank-table td { border: 1px solid #eee; padding: 10px 8px; text-align: center; }
         .rank-table th { background: #f9f9f9; color: #666; }
 
-        .guide-img { width: 100%; max-width: 550px; border-radius: 10px; border: 1px solid #ddd; margin: 15px auto; display: block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .guide-img { width: 100%; max-width: 550px; border-radius: 12px; border: 1px solid #ddd; margin: 18px auto 28px; display: block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .example-text { background: #f6faff; border-left: 4px solid #007AFF; padding: 9px 12px; border-radius: 0 8px 8px 0; margin: 8px 0 12px; font-size: 14.5px; color: #444; }
+        .point-block { background: #fbfcfe; border: 1px solid #e8eef7; border-radius: 12px; padding: 16px 18px; margin: 18px 0 24px; }
+        .point-block p:last-child { margin-bottom: 0; }
 
         .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
         .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -64,6 +70,12 @@
 
             .header-nav { padding: 0; gap: 8px 12px; }
             .header-nav a { font-size: 12px; }
+            .card { padding: 20px; }
+            .article-section h2 { font-size: 21px; }
+            .article-section h3 { font-size: 17px; margin-top: 34px; }
+            .article-section p, .article-section ul { font-size: 15px; }
+            .rank-table { font-size: 12px; }
+            .rank-table th, .rank-table td { padding: 8px 5px; }
         }
     </style>
 </head>
@@ -131,78 +143,82 @@
             ・建物の種類や数</p>
             <p>眺めているとそれだけで「あの駅かも！」とピンとくることもありますよ。</p>
 
-            <h3>2.駅の構造を見る</h3>
+            <h3>2. 駅の構造を見る</h3>
             <p>次にみるのは駅の構造です。商業施設併設の駅？駅舎はある？など駅の規模を見てみましょう。駅舎の形もヒントになります。</p>
             <p><strong>橋上駅：</strong>線路をまたぐように駅舎があるタイプ。近年、再開発された郊外の駅に多いです。</p>
-             <p> 例：ＪＲ和歌山線、志都美駅（奈良県）</p>
+             <p class="example-text">例：ＪＲ和歌山線、志都美駅（奈良県）</p>
              <img src="image4.png" alt="駅の構造ヒント2" class="guide-img">
             <p><strong>高架駅：</strong>高架区間にあり、その下に改札があるタイプ。都市部や新幹線駅に多いですが、地方でも連続立体交差事業が進んだ場所にも見られます。</p>
-            <p> 例：京急本線、雑色駅（東京都）</p>
+            <p class="example-text">例：京急本線、雑色駅（東京都）</p>
             <img src="image5.png" alt="駅の構造ヒント2" class="guide-img">
             <p><strong>地下駅：</strong>地下駅の場合、もちろん衛星画像では見えませんが、地下駅がある都市はある程度絞り込まれます。</p>
-             <p> 例：福岡市営地下鉄空港線、西新駅（福岡県）</p>
+             <p class="example-text">例：福岡市営地下鉄空港線、西新駅（福岡県）</p>
              <img src="image6.png" alt="駅の構造ヒント2" class="guide-img">
             <p><strong>貨物ターミナル併設：</strong>コンテナが並ぶエリアが隣接していれば、それは付近に貨物拠点がある駅ですね。例えば吹田、稲沢、五稜郭などです。</p>
-             <p> 例：JR京都線、岸辺駅（大阪府）</p>
+             <p class="example-text">例：JR京都線、岸辺駅（大阪府）</p>
             <img src="image7.png" alt="駅の構造ヒント2" class="guide-img">
             <p>また、<em>ホームの数もヒントです。</em>緩急接続ができる駅なのか、通過線がある駅なのかなどです。その路線が複線か単線かどうかもヒントになります。線路が1本（単線）であればローカル線や支線などが中心に、2本（複線）なら幹線、それ以上（複々線など）なら例えばJR中央線、小田急小田原線、JR京都線、JR神戸線、京阪本線などがあります。さらにその路線が電化されているのか、そうでないのかもヒントです。以下の画像をご覧ください。</p>
             <img src="image1.png" alt="駅の構造ヒント1" class="guide-img">
             <p>よく見ると線路に線のようなものがありますね。これが<em>架線柱</em>です。連続してこの線があれば電化区間であるとみていいでしょう。ただ、森が重なっているときなどは架線柱が見えにくいときもありますので注意して観察してみましょう。</p>
             <p>ホームの形状もヒントになることがあります。島式、相対式ホームはもちろんのこと、特徴的なホームの形状もあります。<br>
             <strong>島式ホーム：</strong>線路に挟まれたホーム。<br>
-                  <p> 例：JR南武線、南多摩駅（東京都）</p>
-    　　　　　<img src="image8.png" alt="駅の構造ヒント1" class="guide-img">
+                  <p class="example-text">例：JR南武線、南多摩駅（東京都）</p>
+    　　　　<img src="image8.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>相対式ホーム：</strong>ホームが向かい合っているタイプ。大手私鉄やJRの標準的な駅で見られます。<br>
-            <p> 例：小田急小田原線、鶴巻温泉駅（神奈川県）</p>
-            　<img src="image9.png" alt="駅の構造ヒント1" class="guide-img">
+            <p class="example-text">例：小田急小田原線、鶴巻温泉駅（神奈川県）</p>
+            <img src="image9.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>2面3線：</strong>ホームが2つ、線路が3本あるタイプで、国鉄型配線とも呼ばれることがあります。折り返し設備があるような主要駅に加え、東海道本線、山陽本線などのJRの主要幹線に多く見られます。<br>
-             <p> 例：JR山陽本線、中庄駅（岡山県）</p>
-            　<img src="image10.png" alt="駅の構造ヒント1" class="guide-img">
+             <p class="example-text">例：JR山陽本線、中庄駅（岡山県）</p>
+            <img src="image10.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>新幹線駅：</strong>非常にホームが長く、存在感のある駅が多いです。また、真ん中２本が通過線のいわゆる新幹線型駅も多く見られます。周りに建物が少ないこともあります。</p>
-             <p> 例：上越新幹線、本庄早稲田駅（埼玉県）</p>
-            　<img src="image11.png" alt="駅の構造ヒント1" class="guide-img">
+             <p class="example-text">例：上越新幹線、本庄早稲田駅（埼玉県）</p>
+            <img src="image11.png" alt="駅の構造ヒント1" class="guide-img">
 
             <h3>3. 地形と方角を読み解く</h3>
             <p><strong>川と橋：</strong>線路が大きな川を渡る直前、あるいは直後に駅がある場合、大きなヒントになります。<br>
-                  <p> 例：阪神本線、淀川駅（大阪府）</p>
-            　<img src="image12.png" alt="駅の構造ヒント1" class="guide-img">
+                  <p class="example-text">例：阪神本線、淀川駅（大阪府）</p>
+            <img src="image12.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>海岸線：</strong>海が近くに見える場合、海の方向もヒントになります。三陸海岸のようなリアス式海岸か、九十九里のような直線的な海岸かもヒントになることがあります。<br>
-            <p> 例：えちごトキめき鉄道日本海ひすいライン、有間川駅（新潟県）</p>
-            　<img src="image13.png" alt="駅の構造ヒント1" class="guide-img">
+            <p class="example-text">例：えちごトキめき鉄道日本海ひすいライン、有間川駅（新潟県）</p>
+            <img src="image13.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>山の迫り方：</strong>トンネルの出入り口がすぐ近くにある駅は、山間部や地形の険しい場所であることがわかります。<br>
-             <p> 例：近鉄吉野線、大和上市駅（奈良県）</p>
+             <p class="example-text">例：近鉄吉野線、大和上市駅（奈良県）</p>
             <img src="image14.png" alt="駅の構造ヒント1" class="guide-img">
             <strong>線路の方向：</strong>サテステでは<em>画面の上側が北になるように固定</em>されています。そのため、路線の方向だけでもある程度ヒントになることがります。逆に言えばまわりの雰囲気から駅を推測しても路線の方角的に違うと気付くこともあります。</p>
 
-            <h3>4.車両の両数</h3>
+            <h3>4. 車両の両数</h3>
             <p>たまに航空写真中に鉄道車両が写りこんでいることがあります。その両数でも町の規模をある程度絞り込むことができます。</p>
-                  <p> 例：東海道本線、根府川駅（神奈川県）</p>
+                  <p class="example-text">例：東海道本線、根府川駅（神奈川県）</p>
                   <img src="image15.png" alt="駅の構造ヒント1" class="guide-img">
             <p>この画像には15両もの長い列車が写っていますね。15両の列車が走行しているのは首都圏ですので、ある程度の絞り込みができますね。</p>
-                さらに派手な色の鉄道車両であればそれだけで路線が分かることもあります。例えば下の画像をご覧下さい。</p>
+            <p>さらに派手な色の鉄道車両であればそれだけで路線が分かることもあります。例えば下の画像をご覧下さい。</p>
             <img src="image2.png" alt="駅の構造ヒント2" class="guide-img">
             <p>青緑色の車両が見えますね。これはE5系（H5系かも？）ですね。であれば東北新幹線か北海道新幹線であることが分かりますね。この絞り込みができる場合はかなり限られますが使えると強いです。ちなみにこの画像の駅は<em>大宮駅</em>ですね。</p>
 
             <p>ここまで大まかな解き方の解説をしてきましたが、9000以上もある駅の中から正解を出すのは至難の業です。分からなくてもある程度の点数を出すことがハイスコアへの近道です。全国版では正解の駅から50km以内であれば少し点数が入ります。以下に僕が絞り込むときのヒントを載せますので諦めずに解答してみてください。</p>
 
+            <div class="point-block">
             <p><strong>・町の特徴で判断</strong><br>
             分かりやすいのが<em>北海道</em>です。街が碁盤の目状になっていることがあります。
-                 <p> 例：宗谷本線、永山駅（北海道）</p>
+                 <p class="example-text">例：宗谷本線、永山駅（北海道）</p>
                   <img src="image16.png" alt="駅の構造ヒント1" class="guide-img">
             田舎であっても建物の間隔がかなり空いていたり、家の屋根の色が赤、青が多かったりと特徴があります。
-             <p> 例：石北本線、愛別駅（北海道）</p>
+             <p class="example-text">例：石北本線、愛別駅（北海道）</p>
                   <img src="image17.png" alt="駅の構造ヒント1" class="guide-img">
             また、北海道の駅は非常に小さいことが多いです。駅舎がなく木の板1枚で1両分しかホームがないような駅もあります。
-             <p> 例：宗谷本線、日進駅（北海道）</p>
+             <p class="example-text">例：宗谷本線、日進駅（北海道）</p>
                   <img src="image18.png" alt="駅の構造ヒント1" class="guide-img">
             慣れてくるとこれは北海道と分かるようになってくると思います。ただし、北東北の駅でも同じような駅がみられることがあるので注意してください。<br>
-             <p> 例：青い森鉄道線、上北町駅（青森県）</p>
+             <p class="example-text">例：青い森鉄道線、上北町駅（青森県）</p>
                   <img src="image19.png" alt="駅の構造ヒント1" class="guide-img">
             
             さらに<em>山陰地方</em>も分かりやすいことがあります。山陰地方では屋根がオレンジ色の家が多いです。これは特産品の石州瓦を利用した家が多いためです。</p>
-            <p> 例：JR山口線、青野山駅（島根県）</p>
+            <p class="example-text">例：JR山口線、青野山駅（島根県）</p>
                   <img src="image20.png" alt="駅の構造ヒント1" class="guide-img">
 
+            </div>
+
+            <div class="point-block">
             <p><strong>・地形で判断</strong><br>
             最も分かりやすいのが海岸線の方角でしょう。地図の移動ができないハードモードでは決定打にはなりにくいですが、例えば左側、つまり西側に海がある駅が出たとします。
                  <img src="image21.png" alt="駅の構造ヒント1" class="guide-img">
@@ -212,21 +228,26 @@
                 結果370点獲得できました。少ないとはいえ0点よりマシですね。
                 <br>
             また海の荒さで絞り込むことも出来ることができるかもしれません。荒そうであれば日本海、静かなら太平洋や湾などといった感じです。
-                  <p> 例：JR五能線、大戸瀬駅（青森県）</p>
+                  <p class="example-text">例：JR五能線、大戸瀬駅（青森県）</p>
                   <img src="image24.png" alt="駅の構造ヒント1" class="guide-img">
-              <p> 例：JR予讃線、伊予寒川駅（愛媛県）</p>
+              <p class="example-text">例：JR予讃線、伊予寒川駅（愛媛県）</p>
                   <img src="image25.png" alt="駅の構造ヒント1" class="guide-img">
             
                 ただ、気を付けた方がいいのは海のように見えても大きな川であったり湖であったりする場合です。
                 東側に海のようなものが見えていますが、実はそれが琵琶湖で、湖西線である可能性もあるのでお気を付けください。</p>
-            <p> 例：JR湖西線、志賀駅（滋賀県）</p>
+            <p class="example-text">例：JR湖西線、志賀駅（滋賀県）</p>
                   <img src="image23.png" alt="駅の構造ヒント1" class="guide-img">
             
 
+            </div>
+
+            <div class="point-block">
             <p><strong>・駅からずれている</strong><br>
             駅が表示されたとき、中心からちょっとずれてるなあと感じることがあると思います。例えば以下の画像。</p>
             <img src="image3.png" alt="駅の構造ヒント3" class="guide-img">
             <p>この画像では明らかに中心からずれていますよね。ということは他の駅があるかも？と考えます。この場合は地下に<em>動物園前駅</em>があり、新今宮駅と解答すると誤答になってしまいますのでご注意ください。ただし、データは駅データ.jp様のデータを参照しているため他の駅が無くても少しずれている場合もありますので悪しからず。</p>
+
+            </div>
 
             <h3>まとめ</h3>
             <p>これらを意識することで、ある程度は得点しやすくなるはずです。航空写真は情報の宝庫です。<strong>「なぜここに駅があるのか？」</strong>という視点で街を眺めることが、クイズ攻略の最大の近道といえるでしょう。</p>
