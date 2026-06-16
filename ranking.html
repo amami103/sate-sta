@@ -106,6 +106,18 @@
         .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
         .footer-links a:hover { color: #fff; text-decoration: underline; }
         .copyright { font-size: 12px; color: #888; }
+
+        .btn-detail { background: #007AFF; color: white; border: none; border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.62); z-index: 3000; align-items: center; justify-content: center; padding: 18px; }
+        .detail-modal { width: min(760px, 96vw); max-height: 86vh; overflow: auto; background: white; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.35); padding: 20px; }
+        .detail-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid #e8eef5; padding-bottom: 12px; margin-bottom: 12px; }
+        .detail-header h3 { margin: 0; color: #007AFF; font-size: 18px; }
+        .detail-close { background: #8E8E93; color: white; border: none; border-radius: 999px; padding: 9px 14px; font-weight: bold; cursor: pointer; }
+        .detail-summary { font-size: 12px; color: #666; line-height: 1.7; margin-bottom: 12px; }
+        .detail-table-wrap { overflow-x: auto; }
+        .detail-table { min-width: 720px; font-size: 12px; }
+        .detail-ok { color: #d33; font-weight: bold; }
+        .detail-ng { color: #007AFF; font-weight: bold; }
         @media (max-width: 600px) {
             header { min-height: auto; padding: 20px 10px; }
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
@@ -143,7 +155,7 @@
     <main>
         <section class="card" style="border: 2px solid #FF9500;">
             <div class="card-title" style="color:#FF9500;">🥇 全国ランキング</div>
-            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同じプレイヤーが同じ条件で複数回挑戦した場合は、自己ベストのみを表示します。同点の場合は合計時間が短い記録を上位として表示します。</div>
+            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同点の場合は合計時間が短い記録を上位として表示します。</div>
             <div class="hero-actions">
                 <a href="index.html" class="btn-start btn-challenge">ランキングに挑戦する</a>
                 <a href="index.html" class="btn-start btn-free">タイトルへ戻る</a>
@@ -180,13 +192,28 @@
             <h2>ランキングについて</h2>
             <ul>
                 <li>スコアはランキング挑戦モードの結果画面から送信されたものだけ反映されます。</li>
-                <li>同じプレイヤーが同じ条件に再挑戦した場合は、最高スコアのみがランキングに残ります。同点の場合は合計時間が短い記録を優先します。</li>
                 <li>都道府県・会社・路線・ハードモードの有無・問題数が同じ記録同士でランキング化されます。</li>
                 <li>名前は最大16文字です。個人情報や不適切な名前は使わないでください。</li>
                 <li>公開直後は記録が少ないため、ランキングが空になることがあります。</li>
+                <li>「詳細」ボタンから、その記録の各問題の正解駅・解答・得点・誤差・時間を確認できます。</li>
             </ul>
         </section>
     </main>
+
+
+
+    <div id="detail-overlay" class="detail-overlay" onclick="closeScoreDetail(event)">
+        <div class="detail-modal" onclick="event.stopPropagation()">
+            <div class="detail-header">
+                <div>
+                    <h3 id="detail-title">回答詳細</h3>
+                    <div id="detail-summary" class="detail-summary"></div>
+                </div>
+                <button class="detail-close" onclick="closeScoreDetail()">閉じる</button>
+            </div>
+            <div id="detail-body">読み込み中...</div>
+        </div>
+    </div>
 
     <footer>
         <div class="footer-links">
@@ -206,7 +233,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
@@ -274,24 +301,6 @@
       }
     }
 
-    function dedupeBestByPlayer(items) {
-      const map = new Map();
-      items.forEach(item => {
-        const key = item.playerId || item.id || item.name || Math.random().toString(36);
-        const prev = map.get(key);
-        if (!prev) {
-          map.set(key, item);
-          return;
-        }
-        const itemScore = Number(item.score || 0);
-        const prevScore = Number(prev.score || 0);
-        if (itemScore > prevScore || (itemScore === prevScore && Number(item.totalTime || 999999) < Number(prev.totalTime || 999999))) {
-          map.set(key, item);
-        }
-      });
-      return Array.from(map.values());
-    }
-
     function renderPodium(items) {
       const podium = document.getElementById('podium');
       const top3 = items.slice(0, 3);
@@ -319,13 +328,73 @@
           <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}</td>
           <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
           <td>${escapeHtml(formatDate(item.createdAt || item.playedAt))}</td>
+          <td><button class="btn-detail" onclick="showScoreDetail('${escapeHtml(item.id)}')">詳細</button></td>
         </tr>`;
       }).join('');
       return `<div class="table-wrap"><table>
-        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th><th>日付</th></tr></thead>
+        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th><th>日付</th><th>詳細</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>`;
     }
+
+    function renderScoreHistoryTable(history) {
+      if (!Array.isArray(history) || history.length === 0) {
+        return '<div class="empty">この記録には回答詳細が保存されていません。古い記録の場合、再送信後に表示されます。</div>';
+      }
+      const rows = history.map((h, i) => {
+        const userAns = h.userAns || '(未入力)';
+        const distText = (userAns === '(未入力)' || userAns === 'ギブアップ') ? '-' : `${Number(h.dist || 0).toFixed(1)}km`;
+        const mark = h.isCorrect ? '<span class="detail-ok">正解</span>' : '<span class="detail-ng">不正解</span>';
+        return `<tr>
+          <td>${Number(h.no || i + 1)}</td>
+          <td>${mark}</td>
+          <td>${escapeHtml(h.name || '')}</td>
+          <td>${escapeHtml(userAns)}</td>
+          <td>${Number(h.score || 0).toLocaleString()}</td>
+          <td>${escapeHtml(distText)}</td>
+          <td>${Number(h.time || 0).toFixed(1)}秒</td>
+          <td>${escapeHtml(h.pref || '')} / ${escapeHtml(h.line || '')}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="detail-table-wrap"><table class="detail-table">
+        <thead><tr><th>#</th><th>判定</th><th>正解駅</th><th>解答</th><th>点</th><th>誤差</th><th>時間</th><th>路線</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    }
+
+    window.showScoreDetail = async function(scoreId) {
+      const overlay = document.getElementById('detail-overlay');
+      const title = document.getElementById('detail-title');
+      const summary = document.getElementById('detail-summary');
+      const body = document.getElementById('detail-body');
+      if (!overlay || !scoreId || !currentConditionId) return;
+      overlay.style.display = 'flex';
+      title.textContent = '回答詳細を読み込み中...';
+      summary.textContent = '';
+      body.innerHTML = '読み込み中...';
+      try {
+        const ref = doc(db, 'rankings', currentConditionId, 'scores', scoreId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          body.innerHTML = '<div class="error">記録が見つかりませんでした。</div>';
+          return;
+        }
+        const item = { id: snap.id, ...snap.data() };
+        title.textContent = `${item.name || 'ゲスト'} さんの回答詳細`;
+        summary.innerHTML = `スコア：<strong>${Number(item.score || 0).toLocaleString()}点</strong> / ランク：${escapeHtml(item.rank || '-')} / 正答：${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 0)}問 / 合計時間：${Number(item.totalTime || 0).toFixed(1)}秒<br>${escapeHtml(item.conditionLabel || '')}`;
+        body.innerHTML = renderScoreHistoryTable(item.history);
+      } catch (e) {
+        console.error(e);
+        title.textContent = '回答詳細';
+        body.innerHTML = '<div class="error">回答詳細を読み込めませんでした。Firestoreルールの読み取り許可を確認してください。</div>';
+      }
+    };
+
+    window.closeScoreDetail = function(event) {
+      if (event && event.target && event.target.id !== 'detail-overlay') return;
+      const overlay = document.getElementById('detail-overlay');
+      if (overlay) overlay.style.display = 'none';
+    };
 
     function dedupeConditions(list) {
       const map = new Map();
@@ -389,14 +458,14 @@
         const snap = await getDocs(q);
         const items = [];
         snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
-        const bestItems = dedupeBestByPlayer(items).sort((a, b) => {
+        items.sort((a, b) => {
           if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
           return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
         });
-        status.textContent = `${bestItems.length}人分の自己ベスト`;
-        renderPodium(bestItems);
+        status.textContent = `${items.length}件取得`;
+        renderPodium(items);
         area.className = '';
-        area.innerHTML = renderRows(bestItems);
+        area.innerHTML = renderRows(items);
       } catch (e) {
         console.error(e);
         status.textContent = '読み込み失敗';
