@@ -768,77 +768,112 @@
         }
 
         function showFinalResult(isViewMode = false) {
-            document.getElementById('game-ui').style.display = "none"; const modeName = isLocked ? "ハード" : "通常";
-            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
-            const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
-            const totalMax = playHistory.length * 2000; let rank = "D"; const ratio = totalScore / (totalMax || 1);
-            if (ratio >= 0.9) rank = "SSS"; else if (ratio >= 0.8) rank = "SS"; else if (ratio >= 0.7) rank = "S"; else if (ratio >= 0.5) rank = "A"; else if (ratio >= 0.3) rank = "B"; else if (ratio >= 0.1) rank = "C";
+            const gameUi = document.getElementById('game-ui');
+            const titleEl = document.getElementById('question-title');
+            const finalUi = document.getElementById('final-ui');
+            if (gameUi) gameUi.style.display = "none";
+            if (titleEl) titleEl.innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            if (!finalUi) return;
+            finalUi.style.display = "block";
 
-            let scoreRecordHtml = "";
-            let rankingHtml = "";
-            if (!isViewMode) {
-                if (!localScoreSaved) {
-                    lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
-                    localScoreSaved = true;
-                }
-                if (lastScoreRecordState) {
-                    scoreRecordHtml = createScoreRecordHtml(lastScoreRecordState);
-                }
-                if (!localRankingSaved) {
-                    lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
-                    localRankingSaved = true;
-                }
-                if (lastRankingState) {
-                    rankingHtml = createRankingHtml(lastRankingState);
-                }
-            }
+            const modeName = isLocked ? "ハード" : "通常";
+            const totalMax = playHistory.length * 2000;
+            const ratio = totalScore / (totalMax || 1);
+            let rank = "D";
+            if (ratio >= 0.9) rank = "SSS";
+            else if (ratio >= 0.8) rank = "SS";
+            else if (ratio >= 0.7) rank = "S";
+            else if (ratio >= 0.5) rank = "A";
+            else if (ratio >= 0.3) rank = "B";
+            else if (ratio >= 0.1) rank = "C";
 
-            let listH = '<ul class="result-list">';
-            playHistory.forEach((h) => {
-                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
-                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
-                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
-            });
+            const safeNum = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+            const resultItems = playHistory.map((h) => {
+                const dist = safeNum(h.dist, 999);
+                const time = safeNum(h.time, 0);
+                const score = safeNum(h.score, 0);
+                const closeMark = dist < (maxDistancePenalty * 0.1);
+                const mark = h.isCorrect ? '●' : (closeMark ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (closeMark ? 'orange' : 'blue');
+                const userAns = h.userAns || "(未入力)";
+                const distText = (userAns === "(未入力)" || userAns === "ギブアップ") ? '-' : `${dist.toFixed(1)}km`;
+                return `<li class="result-item">
+                    <div class="res-status" style="color:${markColor}">${mark}</div>
+                    <div class="res-info">
+                        <span class="res-name">${escapeHtml(h.name || "不明")}</span>
+                        <span class="res-user-ans">解答: ${escapeHtml(userAns)}</span>
+                        <span class="res-sub">${escapeHtml(h.pref || "")} / ${escapeHtml(h.line || "")}</span>
+                        <span class="res-score-detail">${score.toLocaleString()}pt | 誤差:${escapeHtml(distText)} | ${time.toFixed(1)}s</span>
+                    </div>
+                    <button class="btn-view" onclick="jumpToStation(${safeNum(h.lat)}, ${safeNum(h.lng)})">確認</button>
+                </li>`;
+            }).join("");
 
-            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！
-#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
-            
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const shareTextAttr = escapeHtml(shareText.replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
+
+            // まず最低限のリザルトを必ず表示する。ランキングや広告で失敗しても答え一覧を消さない。
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
-                <div class="final-rank">ランク: ${rank}</div>
-                ${scoreRecordHtml}
-                ${rankingHtml}
-                
-                <!-- リザルト広告1: スコアの下 -->
+                <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
+                <div id="score-record-mount"></div>
+                <div id="ranking-mount"></div>
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
                     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
                 </div>
-
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
-                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareText}')">文章をコピー</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用コピー</button>
-                    <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareTextAttr}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareTextAttr}')">Insta用コピー</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
                 </div>
-                ${listH}</ul>
-
-                <!-- リザルト広告2: リストの下 -->
+                <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
                     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
                 </div>
-
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
-            
+
+            // 自己記録とランキングは後から差し込む。失敗してもリザルト本体は維持。
+            try {
+                if (!isViewMode) {
+                    if (!localScoreSaved) {
+                        lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
+                        localScoreSaved = true;
+                    }
+                    const mount = document.getElementById("score-record-mount");
+                    if (mount && lastScoreRecordState) mount.innerHTML = createScoreRecordHtml(lastScoreRecordState);
+                }
+            } catch (e) {
+                console.error("score record error", e);
+            }
+
+            try {
+                if (!isViewMode) {
+                    if (!localRankingSaved) {
+                        lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
+                        localRankingSaved = true;
+                    }
+                    const mount = document.getElementById("ranking-mount");
+                    if (mount && lastRankingState) mount.innerHTML = createRankingHtml(lastRankingState);
+                }
+            } catch (e) {
+                console.error("ranking html error", e);
+                const mount = document.getElementById("ranking-mount");
+                if (mount) mount.innerHTML = '<div class="ranking-box">全国ランキングの表示準備に失敗しました。</div>';
+            }
+
             setTimeout(() => {
-                const ads = finalUi.querySelectorAll('.adsbygoogle');
-                ads.forEach(() => refreshAds());
+                try {
+                    const ads = finalUi.querySelectorAll('.adsbygoogle');
+                    ads.forEach(() => refreshAds());
+                } catch (e) {}
                 if (!isViewMode && lastRankingState) loadGlobalRanking();
             }, 100);
         }
