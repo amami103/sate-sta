@@ -135,7 +135,7 @@
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
@@ -150,7 +150,7 @@
         const app = initializeApp(firebaseConfig);
         try { getAnalytics(app); } catch (e) {}
         const db = getFirestore(app);
-        window.sateStaFirebase = { db, collection, addDoc, updateDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
+        window.sateStaFirebase = { db, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, serverTimestamp };
         window.sateStaFirebaseReady = true;
         window.dispatchEvent(new Event("sateStaFirebaseReady"));
     </script>
@@ -171,6 +171,7 @@
         let localRankingSaved = false, lastRankingState = null;
         let globalRankingSubmitting = false;
         const RANKING_NAME_KEY = "sateStaRankingName:v1";
+        const RANKING_PLAYER_ID_KEY = "sateStaRankingPlayerId:v1";
         let inputTimer; 
         let isComposing = false;
 
@@ -595,10 +596,33 @@
             return cleaned || "ゲスト";
         }
 
+        function getOrCreateRankingPlayerId() {
+            let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
+            if (!playerId) {
+                if (crypto && crypto.randomUUID) {
+                    playerId = crypto.randomUUID();
+                } else {
+                    playerId = "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+                }
+                localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
+            }
+            return playerId;
+        }
+
+        function isBetterRankingScore(newEntry, oldEntry) {
+            if (!oldEntry) return true;
+            const newScore = Number(newEntry.score || 0);
+            const oldScore = Number(oldEntry.score || 0);
+            if (newScore > oldScore) return true;
+            if (newScore < oldScore) return false;
+            return Number(newEntry.totalTime || 999999) < Number(oldEntry.totalTime || 999999);
+        }
+
         function createCurrentRankingEntry(rank, modeName, nameOverride = null) {
             const rankingName = normalizeRankingName(nameOverride || localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
             return {
                 name: rankingName,
+                playerId: getOrCreateRankingPlayerId(),
                 score: totalScore,
                 rank,
                 correctCount: getCorrectCount(),
@@ -627,7 +651,7 @@
                     </div>
                     <div id="ranking-current" class="ranking-current">
                         今回：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br>
-                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件のランキングに登録されます。</span>
+                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件の自己ベストとして登録されます。同じ人の同条件ランキングは最高記録のみ表示されます。</span>
                     </div>
                     <table class="ranking-table">
                         <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th></tr></thead>
@@ -646,7 +670,7 @@
             const tbody = document.getElementById("ranking-tbody");
             if (!tbody) return;
             const rows = ranking.slice(0, 10).map((item, index) => {
-                const isCurrent = currentDocId && item.id === currentDocId;
+                const isCurrent = currentDocId && (item.id === currentDocId || item.playerId === currentDocId);
                 const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`;
                 return `
                     <tr class="${isCurrent ? 'ranking-highlight' : ''}">
@@ -709,29 +733,54 @@
 
             try {
                 const fb = await waitForFirebaseReady();
-                const current = { ...lastRankingState.current, name };
+                const current = { ...lastRankingState.current, name, playerId: getOrCreateRankingPlayerId() };
                 const rankingDocId = getRankingDocId(current.conditionKey);
-                const scoresRef = fb.collection(fb.db, "rankings", rankingDocId, "scores");
+                const playerDocId = current.playerId;
+                const scoreDoc = fb.doc(fb.db, "rankings", rankingDocId, "scores", playerDocId);
+                const indexDoc = fb.doc(fb.db, "rankingIndexes", rankingDocId);
+                const oldSnap = await fb.getDoc(scoreDoc);
+                const oldData = oldSnap.exists() ? oldSnap.data() : null;
+                const shouldUpdateBest = isBetterRankingScore(current, oldData);
 
-                if (lastRankingState.docId) {
-                    await fb.updateDoc(fb.doc(fb.db, "rankings", rankingDocId, "scores", lastRankingState.docId), { name });
-                } else {
-                    const docRef = await fb.addDoc(scoresRef, {
+                await fb.setDoc(indexDoc, {
+                    conditionKey: current.conditionKey,
+                    conditionLabel: current.conditionLabel,
+                    modeKey: isLocked ? "hard" : "normal",
+                    modeName: current.modeName,
+                    filters: current.filters,
+                    totalQuestions: current.totalQuestions,
+                    maxDistancePenalty: maxDistancePenalty,
+                    updatedAt: fb.serverTimestamp()
+                }, { merge: true });
+
+                if (shouldUpdateBest) {
+                    await fb.setDoc(scoreDoc, {
                         ...current,
-                        createdAt: fb.serverTimestamp(),
-                        userAgent: navigator.userAgent.slice(0, 120)
-                    });
-                    lastRankingState.docId = docRef.id;
+                        userAgent: navigator.userAgent.slice(0, 120),
+                        createdAt: oldData?.createdAt || fb.serverTimestamp(),
+                        updatedAt: fb.serverTimestamp()
+                    }, { merge: true });
+                    lastRankingState.current = current;
+                    if (currentBox) {
+                        currentBox.innerHTML = `自己ベスト更新：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒`;
+                    }
+                } else {
+                    await fb.setDoc(scoreDoc, {
+                        name,
+                        playerId: playerDocId,
+                        updatedAt: fb.serverTimestamp()
+                    }, { merge: true });
+                    if (currentBox) {
+                        currentBox.innerHTML = `今回は自己ベスト未更新です。<br>現在の自己ベスト：<strong>${Number(oldData.score || 0).toLocaleString()}点</strong> / ${escapeHtml(oldData.rank || "-")} / ${Number(oldData.correctCount || 0)}/${Number(oldData.totalQuestions || current.totalQuestions)}問正解 / ${Number(oldData.totalTime || 0).toFixed(1)}秒`;
+                    }
                 }
-                lastRankingState.current = current;
-                if (currentBox) {
-                    currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒`;
-                }
-                if (button) button.textContent = "名前を更新";
+
+                lastRankingState.docId = playerDocId;
+                if (button) button.textContent = "名前を更新 / 再送信";
                 await loadGlobalRanking();
             } catch (e) {
                 console.error(e);
-                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが書き込み許可になっているか確認してください。");
+                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが正しいか確認してください。");
                 if (button) button.textContent = "全国に送信";
             } finally {
                 globalRankingSubmitting = false;
@@ -795,6 +844,10 @@
                 <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
                 <div id="score-record-mount"></div>
                 <div id="ranking-mount"></div>
+                <div class="ad-container">
+                    <span class="ad-label">Sponsor</span>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
+                </div>
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
@@ -804,6 +857,10 @@
                     <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
                 </div>
                 <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
+                <div class="ad-container">
+                    <span class="ad-label">Sponsor</span>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
+                </div>
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
