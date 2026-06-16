@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-<!-- Google AdSense 共通スクリプト -->
-<script async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"></script>
-<link href="logo2.png" rel="icon"/>
-<link href="logo2.png" rel="apple-touch-icon"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-<title>ランキングチャレンジ | サテステ</title>
-<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="stations.js"></script>
-<style>
+    <!-- Google AdSense 共通スクリプト -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617" crossorigin="anonymous"></script>
+    
+    <link rel="icon" href="logo2.png">
+    <link rel="apple-touch-icon" href="logo2.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ランキングチャレンジ | サテステ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="stations.js"></script>
+    <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
@@ -97,45 +97,65 @@
 
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
     </style>
-</link></head>
+</head>
 <body onload="init()">
-<div id="map"></div>
-<div class="ui-container" id="ui-panel">
-<div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
-<div class="ui-content" id="ui-content">
-<!-- 広告枠1: コンテンツ最上部（常設） -->
+    <div id="map"></div>
+    <div class="ui-container" id="ui-panel">
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-content" id="ui-content">
+            
+            <!-- 広告枠1: コンテンツ最上部（常設） -->
+            <div class="ad-container">
+                                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-6887981844690617"
+                     data-ad-slot="ca-pub-6887981844690617"
+                     data-ad-format="horizontal"
+                     data-full-width-responsive="true"></ins>
+            </div>
 
-<h2 id="question-title">準備中...</h2>
-<div id="game-ui">
-<input autocomplete="off" id="station-input" list="station-list" placeholder="駅名を入力..."/>
-<datalist id="station-list"></datalist>
-<div class="button-group">
-<button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
-<button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
-<button class="btn-reset" onclick="resetView()">場所を戻す</button>
-<button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
-<button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
-<button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
-<button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
-<button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
-</div>
-<div id="hint-area"></div>
-<div id="result"></div>
-<!-- 広告枠2: ゲームUIの下 -->
+            <h2 id="question-title">準備中...</h2>
+            <div id="game-ui">
+                <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
+                <datalist id="station-list"></datalist>
+                <div class="button-group">
+                    <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
+                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+                    <button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
+                </div>
+                <div id="hint-area"></div>
+                <div id="result"></div>
 
-</div>
-<div id="final-ui" style="display:none;"></div>
-</div>
-</div>
-<div id="image-overlay">
-<div id="share-image-container"></div>
-<p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
-<button class="overlay-close" onclick="closeOverlay()">閉じる</button>
-</div>
-<script type="module">
+                <!-- 広告枠2: ゲームUIの下 -->
+                <div class="ad-container">
+                                        <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-6887981844690617"
+                         data-ad-slot="ca-pub-6887981844690617"
+                         data-ad-format="rectangle"
+                         data-full-width-responsive="true"></ins>
+                </div>
+            </div>
+            <div id="final-ui" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div id="image-overlay">
+        <div id="share-image-container"></div>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
+        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
+    </div>
+
+
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
@@ -150,11 +170,12 @@
         const app = initializeApp(firebaseConfig);
         try { getAnalytics(app); } catch (e) {}
         const db = getFirestore(app);
-        window.sateStaFirebase = { db, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, serverTimestamp };
+        window.sateStaFirebase = { db, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
         window.sateStaFirebaseReady = true;
         window.dispatchEvent(new Event("sateStaFirebaseReady"));
     </script>
-<script>
+
+    <script>
         // 広告読み込み用
         function refreshAds() {
             try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
@@ -171,7 +192,7 @@
         let localRankingSaved = false, lastRankingState = null;
         let globalRankingSubmitting = false;
         const RANKING_NAME_KEY = "sateStaRankingName:v1";
-        const RANKING_PLAYER_ID_KEY = "sateStaRankingPlayerId:v1";
+        const RANKING_PLAYER_ID_KEY = "sateStaPlayerId:v1";
         let inputTimer; 
         let isComposing = false;
 
@@ -596,42 +617,53 @@
             return cleaned || "ゲスト";
         }
 
-        function getOrCreateRankingPlayerId() {
+        function getOrCreatePlayerId() {
             let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
             if (!playerId) {
-                if (crypto && crypto.randomUUID) {
-                    playerId = crypto.randomUUID();
-                } else {
-                    playerId = "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
-                }
+                const randomPart = Math.random().toString(36).slice(2);
+                const timePart = Date.now().toString(36);
+                playerId = `player_${timePart}_${randomPart}`;
                 localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
             }
             return playerId;
         }
 
-        function isBetterRankingScore(newEntry, oldEntry) {
-            if (!oldEntry) return true;
-            const newScore = Number(newEntry.score || 0);
-            const oldScore = Number(oldEntry.score || 0);
-            if (newScore > oldScore) return true;
-            if (newScore < oldScore) return false;
-            return Number(newEntry.totalTime || 999999) < Number(oldEntry.totalTime || 999999);
+        function getRankingModeKey() {
+            return isLocked ? "hard" : "normal";
+        }
+
+        function getRankingHistoryForSave() {
+            return playHistory.map((h, index) => ({
+                no: index + 1,
+                name: String(h.name || ""),
+                pref: String(h.pref || ""),
+                line: String(h.line || ""),
+                userAns: String(h.userAns || "(未入力)"),
+                isCorrect: !!h.isCorrect,
+                dist: Math.round((Number(h.dist) || 0) * 100) / 100,
+                score: Math.round(Number(h.score) || 0),
+                time: Math.round((Number(h.time) || 0) * 10) / 10,
+                lat: Number(h.lat) || 0,
+                lng: Number(h.lng) || 0
+            }));
         }
 
         function createCurrentRankingEntry(rank, modeName, nameOverride = null) {
             const rankingName = normalizeRankingName(nameOverride || localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
             return {
                 name: rankingName,
-                playerId: getOrCreateRankingPlayerId(),
-                score: totalScore,
+                playerId: getOrCreatePlayerId(),
+                score: Math.round(Number(totalScore) || 0),
                 rank,
                 correctCount: getCorrectCount(),
                 totalQuestions: playHistory.length,
                 totalTime: getTotalTimeSeconds(),
+                modeKey: getRankingModeKey(),
                 modeName,
                 filters: activeFilters || "全国",
                 conditionKey: getRankingKey(),
                 conditionLabel: getCurrentConditionLabel(modeName),
+                history: getRankingHistoryForSave(),
                 playedAt: new Date().toISOString()
             };
         }
@@ -651,11 +683,11 @@
                     </div>
                     <div id="ranking-current" class="ranking-current">
                         今回：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br>
-                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件の自己ベストとして登録されます。同じ人の同条件ランキングは最高記録のみ表示されます。</span>
+                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件のランキングに登録されます。</span>
                     </div>
                     <table class="ranking-table">
-                        <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th></tr></thead>
-                        <tbody id="ranking-tbody"><tr><td colspan="5">ランキングを読み込み中...</td></tr></tbody>
+                        <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th><th>詳細</th></tr></thead>
+                        <tbody id="ranking-tbody"><tr><td colspan="6">ランキングを読み込み中...</td></tr></tbody>
                     </table>
                 </div>`;
         }
@@ -670,7 +702,7 @@
             const tbody = document.getElementById("ranking-tbody");
             if (!tbody) return;
             const rows = ranking.slice(0, 10).map((item, index) => {
-                const isCurrent = currentDocId && (item.id === currentDocId || item.playerId === currentDocId);
+                const isCurrent = currentDocId && item.id === currentDocId;
                 const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`;
                 return `
                     <tr class="${isCurrent ? 'ranking-highlight' : ''}">
@@ -679,9 +711,10 @@
                         <td>${Number(item.score || 0).toLocaleString()}</td>
                         <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 0)}</td>
                         <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
+                        <td><button class="btn-view" onclick="window.open('ranking.html', '_blank')">詳細</button></td>
                     </tr>`;
             }).join("");
-            tbody.innerHTML = rows || '<tr><td colspan="5">まだ記録がありません</td></tr>';
+            tbody.innerHTML = rows || '<tr><td colspan="6">まだ記録がありません</td></tr>'; 
         }
 
         async function fetchGlobalRanking(rankingKey) {
@@ -719,6 +752,20 @@
             }
         }
 
+        async function saveRankingIndex(fb, rankingDocId, current) {
+            const indexRef = fb.doc(fb.db, "rankingIndexes", rankingDocId);
+            await fb.setDoc(indexRef, {
+                conditionKey: current.conditionKey,
+                conditionLabel: current.conditionLabel,
+                modeKey: current.modeKey || (current.modeName === "ハード" ? "hard" : "normal"),
+                modeName: current.modeName,
+                filters: current.filters || "全国",
+                totalQuestions: current.totalQuestions,
+                maxDistancePenalty: maxDistancePenalty,
+                updatedAt: fb.serverTimestamp()
+            }, { merge: true });
+        }
+
         async function saveRankingNameFromInput() {
             if (!lastRankingState || globalRankingSubmitting) return;
             const input = document.getElementById("ranking-name-input");
@@ -733,54 +780,44 @@
 
             try {
                 const fb = await waitForFirebaseReady();
-                const current = { ...lastRankingState.current, name, playerId: getOrCreateRankingPlayerId() };
+                const current = { ...lastRankingState.current, name, playerId: getOrCreatePlayerId(), history: getRankingHistoryForSave() };
                 const rankingDocId = getRankingDocId(current.conditionKey);
                 const playerDocId = current.playerId;
-                const scoreDoc = fb.doc(fb.db, "rankings", rankingDocId, "scores", playerDocId);
-                const indexDoc = fb.doc(fb.db, "rankingIndexes", rankingDocId);
-                const oldSnap = await fb.getDoc(scoreDoc);
-                const oldData = oldSnap.exists() ? oldSnap.data() : null;
-                const shouldUpdateBest = isBetterRankingScore(current, oldData);
+                const scoreRef = fb.doc(fb.db, "rankings", rankingDocId, "scores", playerDocId);
 
-                await fb.setDoc(indexDoc, {
-                    conditionKey: current.conditionKey,
-                    conditionLabel: current.conditionLabel,
-                    modeKey: isLocked ? "hard" : "normal",
-                    modeName: current.modeName,
-                    filters: current.filters,
-                    totalQuestions: current.totalQuestions,
-                    maxDistancePenalty: maxDistancePenalty,
-                    updatedAt: fb.serverTimestamp()
-                }, { merge: true });
+                await saveRankingIndex(fb, rankingDocId, current);
 
-                if (shouldUpdateBest) {
-                    await fb.setDoc(scoreDoc, {
+                const oldSnap = await fb.getDoc(scoreRef);
+                const old = oldSnap.exists() ? oldSnap.data() : null;
+                const isBetter = !old || Number(current.score) > Number(old.score || -1) ||
+                    (Number(current.score) === Number(old.score || -1) && Number(current.totalTime) <= Number(old.totalTime || 999999));
+
+                if (isBetter) {
+                    await fb.setDoc(scoreRef, {
                         ...current,
-                        userAgent: navigator.userAgent.slice(0, 120),
-                        createdAt: oldData?.createdAt || fb.serverTimestamp(),
-                        updatedAt: fb.serverTimestamp()
+                        updatedAt: fb.serverTimestamp(),
+                        createdAt: old?.createdAt || fb.serverTimestamp(),
+                        userAgent: navigator.userAgent.slice(0, 120)
                     }, { merge: true });
-                    lastRankingState.current = current;
+                    lastRankingState.docId = playerDocId;
                     if (currentBox) {
-                        currentBox.innerHTML = `自己ベスト更新：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒`;
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br><span style="font-size:10px;color:#666;">この条件の自己ベストを更新しました。ランキングページで回答詳細を見られます。</span>`;
                     }
                 } else {
-                    await fb.setDoc(scoreDoc, {
-                        name,
-                        playerId: playerDocId,
-                        updatedAt: fb.serverTimestamp()
-                    }, { merge: true });
+                    // 自己ベスト未更新でも名前だけは更新します。回答履歴はベスト記録のものを残します。
+                    await fb.setDoc(scoreRef, { name, updatedAt: fb.serverTimestamp() }, { merge: true });
+                    lastRankingState.docId = playerDocId;
                     if (currentBox) {
-                        currentBox.innerHTML = `今回は自己ベスト未更新です。<br>現在の自己ベスト：<strong>${Number(oldData.score || 0).toLocaleString()}点</strong> / ${escapeHtml(oldData.rank || "-")} / ${Number(oldData.correctCount || 0)}/${Number(oldData.totalQuestions || current.totalQuestions)}問正解 / ${Number(oldData.totalTime || 0).toFixed(1)}秒`;
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong><br><span style="font-size:10px;color:#666;">今回は自己ベスト未更新のため、ランキング上の詳細は現在のベスト記録のままです。</span>`;
                     }
                 }
 
-                lastRankingState.docId = playerDocId;
-                if (button) button.textContent = "名前を更新 / 再送信";
+                lastRankingState.current = current;
+                if (button) button.textContent = "名前を更新";
                 await loadGlobalRanking();
             } catch (e) {
                 console.error(e);
-                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが正しいか確認してください。");
+                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが書き込み許可になっているか確認してください。");
                 if (button) button.textContent = "全国に送信";
             } finally {
                 globalRankingSubmitting = false;
@@ -845,8 +882,7 @@
                 <div id="score-record-mount"></div>
                 <div id="ranking-mount"></div>
                 <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
+                                        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
                 </div>
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
@@ -858,8 +894,7 @@
                 </div>
                 <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
                 <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
+                                        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
                 </div>
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
