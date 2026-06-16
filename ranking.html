@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全国ランキング | サテステ</title>
+  <link rel="icon" href="logo2.png">
+  <style>
+    body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f7f9; color: #333; }
+    header { background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; text-align: center; padding: 28px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+    h1 { margin: 0; font-size: 26px; }
+    .subtitle { margin: 6px 0 0; opacity: .92; font-size: 13px; }
+    main { width: 94%; max-width: 760px; margin: 24px auto 40px; }
+    .card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 18px; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    button { border: none; border-radius: 999px; padding: 12px; font-weight: bold; cursor: pointer; }
+    .tab { background: #e9eef5; color: #333; }
+    .tab.active { background: #007AFF; color: white; }
+    .btn-back { display: block; text-align: center; text-decoration: none; color: white; background: #8E8E93; border-radius: 999px; padding: 13px; font-weight: bold; }
+    .ranking-title { font-size: 20px; font-weight: bold; color: #007AFF; margin-bottom: 4px; }
+    .ranking-note { font-size: 12px; color: #666; line-height: 1.6; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; overflow: hidden; border-radius: 10px; }
+    th, td { padding: 10px 6px; border-bottom: 1px solid #eee; text-align: center; }
+    th { background: #e8f3ff; color: #0059b8; font-size: 12px; }
+    td:nth-child(2), th:nth-child(2) { text-align: left; }
+    .loading, .error, .empty { padding: 20px; text-align: center; color: #666; background: #fafafa; border-radius: 12px; }
+    .rank-1 { font-weight: bold; background: #fff7d6; }
+    .rank-2 { font-weight: bold; background: #f5f5f5; }
+    .rank-3 { font-weight: bold; background: #fff0e2; }
+    footer { text-align: center; color: #777; font-size: 12px; padding: 24px; }
+    @media (max-width: 560px) { th, td { font-size: 11px; padding: 8px 3px; } .card { padding: 14px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>サテステ 全国ランキング</h1>
+    <p class="subtitle">ランキング挑戦モードの上位スコア</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="tabs">
+        <button id="tab-normal" class="tab active" onclick="switchRanking('normal')">通常モード</button>
+        <button id="tab-hard" class="tab" onclick="switchRanking('hard')">ハードモード</button>
+      </div>
+      <div class="ranking-title" id="ranking-title">通常モード / 全国</div>
+      <div class="ranking-note">対象：出題範囲「全国」、10問固定。同点の場合は合計時間が短い順で表示します。</div>
+      <div id="ranking-area" class="loading">ランキングを読み込み中...</div>
+    </div>
+    <a href="index.html" class="btn-back">タイトルへ戻る</a>
+  </main>
+
+  <footer>&copy; 2026 サテステ -From Satellite to Station-</footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
+      authDomain: "sate-sta-ranking.firebaseapp.com",
+      projectId: "sate-sta-ranking",
+      storageBucket: "sate-sta-ranking.firebasestorage.app",
+      messagingSenderId: "533003449600",
+      appId: "1:533003449600:web:d0b7bebe087178e034efe5",
+      measurementId: "G-BZ63E1NHC3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let currentMode = 'normal';
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    function getRankingDocId(mode) {
+      const key = `${mode}|全国|penalty:50`;
+      return encodeURIComponent(key).replace(/\./g, "%2E");
+    }
+
+    function renderRows(items) {
+      if (!items.length) return '<div class="empty">まだランキングがありません。</div>';
+      const rows = items.slice(0, 10).map((item, i) => {
+        const cls = i < 3 ? `rank-${i + 1}` : '';
+        return `<tr class="${cls}">
+          <td>${i + 1}</td>
+          <td>${escapeHtml(item.name || 'ゲスト')}</td>
+          <td>${Number(item.score || 0).toLocaleString()}</td>
+          <td>${escapeHtml(item.rank || '-')}</td>
+          <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}</td>
+          <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
+        </tr>`;
+      }).join('');
+      return `<table>
+        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+
+    async function loadRanking(mode) {
+      const area = document.getElementById('ranking-area');
+      area.className = 'loading';
+      area.innerHTML = 'ランキングを読み込み中...';
+      document.getElementById('ranking-title').textContent = `${mode === 'hard' ? 'ハードモード' : '通常モード'} / 全国`;
+      try {
+        const scoresRef = collection(db, 'rankings', getRankingDocId(mode), 'scores');
+        const q = query(scoresRef, orderBy('score', 'desc'), limit(50));
+        const snap = await getDocs(q);
+        const items = [];
+        snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        items.sort((a, b) => {
+          if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
+          return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
+        });
+        area.className = '';
+        area.innerHTML = renderRows(items);
+      } catch (e) {
+        console.error(e);
+        area.className = 'error';
+        area.innerHTML = 'ランキングを読み込めませんでした。Firestoreのルールを確認してください。';
+      }
+    }
+
+    window.switchRanking = function(mode) {
+      currentMode = mode;
+      document.getElementById('tab-normal').classList.toggle('active', mode === 'normal');
+      document.getElementById('tab-hard').classList.toggle('active', mode === 'hard');
+      loadRanking(mode);
+    };
+
+    loadRanking(currentMode);
+  </script>
+</body>
+</html>
