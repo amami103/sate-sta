@@ -103,6 +103,7 @@
             <a href="/">ホーム</a>
             <a href="about.html">サテステについて（自己紹介）</a>
             <a href="guide.html">攻略ガイド</a>
+            <a href="ranking.html">ランキング</a>
             <a href="terms.html">利用規約</a>
             <a href="privacy.html">プライバシーポリシー</a>
             <a href="contact.html">お問い合わせ</a>
@@ -202,9 +203,48 @@
             </label>
             <div style="margin-top: 20px; text-align: center;">
                 <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
-                <button onclick="startGame('game3.html', 'c')" class="btn-start btn-ranking">ランキングに挑戦</button>
-                <button onclick="location.href='ranking.html'" class="btn-start btn-ranking-view">ランキングを表示</button>
                 <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、</strong> <a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a></li>・</strong> <a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a></li>に同意したものとみなします</p>
+            </div>
+        </div>
+
+        <!-- ランキングモードのボックス -->
+        <div class="card" style="border: 2px solid #FF9500;">
+            <div class="card-title" style="color: #FF9500;">🌐 ランキングモード</div>
+            <div class="card-desc">全国のプレイヤーとスコアを競うモードです。チャレンジモードと同じ10問固定ルールで遊び、結果は条件別ランキングに記録されます。都道府県・会社・路線で絞り込むと、その条件専用のランキングとして集計されます。</div>
+
+            <div class="setting-item">
+                <label>都道府県・地方</label>
+                <select id="pref-select-r"><option value="all">全国（指定なし）</option></select>
+            </div>
+            <div class="setting-item">
+                <label>鉄道会社</label>
+                <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-r', this.value, 'r')">
+                <select id="company-select-r"><option value="all">すべての会社</option></select>
+            </div>
+            <div class="setting-item">
+                <label>路線名</label>
+                <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-r', this.value, 'r')">
+                <select id="line-select-r"><option value="all">すべての路線</option></select>
+            </div>
+            <div class="setting-item" style="text-align: center; padding: 10px; background: #fff8ed; border-radius: 10px; border: 1px dashed #FF9500;">
+                <span style="font-weight: bold; color: #FF9500; font-size: 16px;">出題数: 10問固定 / 全国ランキング対応</span>
+            </div>
+            <label class="lock-option" style="background:#fff8ed; border-color:#FF9500;">
+                <input type="checkbox" id="map-lock-r">
+                <span>地図の移動・拡大を禁止（ハードモード）</span>
+            </label>
+
+            <div style="margin-top: 18px; padding: 14px; background:#fafafa; border-radius: 12px; border:1px solid #eee; font-size:13px; color:#555; line-height:1.7;">
+                <strong style="color:#333;">ランキングモードの特徴</strong><br>
+                ・初回のみニックネーム登録。次回から同じ名前で記録されます。<br>
+                ・同じ条件で遊んだ人同士のランキングが表示されます。<br>
+                ・同点の場合は、合計解答時間が短い記録を上位として扱います。
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="startGame('game3.html', 'r')" class="btn-start btn-ranking">ランキングに挑戦</button>
+                <button onclick="location.href='ranking.html'" class="btn-start btn-ranking-view">ランキングを表示</button>
+                <p style="font-size: 11px; color: #666; margin-top: 10px;">ランキング機能では、ニックネーム・スコア・出題条件が保存されます。ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします。</p>
             </div>
         </div>
 
@@ -214,10 +254,10 @@
             
             <h3>サテステの遊び方</h3>
             <ul>
-                <li><strong>1. モードを選択する</strong><br>本気でスコアを競う「チャレンジモード」か、自由に設定して遊べる「フリーモード」を選んでください。</li>
+                <li><strong>1. モードを選択する</strong><br>本気でスコアを競う「チャレンジモード」、全国ランキングに記録する「ランキングモード」、自由に設定して遊べる「フリーモード」から選んでください。</li>
                 <li><strong>2. 出題範囲を設定する</strong><br>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。</li>
                 <li><strong>3. 航空写真から駅名を推測</strong><br>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。</li>
-                <li><strong>4. チャレンジモードのルール</strong><br>チャレンジモードでは、正確性と解答スピードに基づいて1問最大 2,000点 のスコアが算出されます。
+                <li><strong>4. チャレンジ・ランキングモードのルール</strong><br>チャレンジモードとランキングモードでは、正確性と解答スピードに基づいて1問最大 2,000点 のスコアが算出されます。
                     <ul>
                         <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解に近い駅を答えれば、距離に応じて加点されます。</li>
                         <li><strong>タイムボーナス（最大 500点）:</strong> 早く正解するほど高得点となります。</li>
@@ -258,6 +298,7 @@
             <a href="/">ホーム</a>
             <a href="about.html">サテステについて（自己紹介）</a>
             <a href="guide.html">攻略ガイド</a>
+            <a href="ranking.html">ランキング</a>
             <a href="terms.html">利用規約</a>
             <a href="privacy.html">プライバシーポリシー</a>
             <a href="contact.html">お問い合わせ</a>
@@ -292,7 +333,7 @@
             masterCompanies = Array.from(compSet).filter(Boolean).sort();
             masterLines = Array.from(lineSet).filter(Boolean).sort();
 
-            ["c", "f"].forEach(mode => {
+            ["c", "f", "r"].forEach(mode => {
                 const ps = document.getElementById(`pref-select-${mode}`);
                 ps.innerHTML += `<option disabled>---------- 地方 ----------</option>`;
                 Object.keys(REGION_PREFS).forEach(reg => ps.add(new Option("・" + reg, "reg:" + reg)));
@@ -345,7 +386,7 @@
                 return;
             }
 
-            const num = (modeSuffix === 'c') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
+            const num = (modeSuffix === 'c' || modeSuffix === 'r') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
             const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
             let url = targetHtml + "?num=" + encodeURIComponent(num);
 
