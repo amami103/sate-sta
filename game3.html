@@ -157,7 +157,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
@@ -172,7 +172,7 @@
         const app = initializeApp(firebaseConfig);
         try { getAnalytics(app); } catch (e) {}
         const db = getFirestore(app);
-        window.sateStaFirebase = { db, collection, addDoc, updateDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
+        window.sateStaFirebase = { db, collection, addDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
         window.sateStaFirebaseReady = true;
         window.dispatchEvent(new Event("sateStaFirebaseReady"));
     </script>
@@ -628,11 +628,30 @@
                 totalQuestions: playHistory.length,
                 totalTime: getTotalTimeSeconds(),
                 modeName,
+                modeKey: isLocked ? "hard" : "normal",
                 filters: activeFilters || "全国",
+                maxDistancePenalty,
                 conditionKey: getRankingKey(),
                 conditionLabel: getCurrentConditionLabel(modeName),
                 playedAt: new Date().toISOString()
             };
+        }
+
+        async function saveRankingIndex(fb, rankingDocId, current) {
+            try {
+                await fb.setDoc(fb.doc(fb.db, "rankingIndexes", rankingDocId), {
+                    conditionKey: current.conditionKey,
+                    conditionLabel: current.conditionLabel,
+                    modeName: current.modeName,
+                    modeKey: current.modeKey || (current.modeName === "ハード" ? "hard" : "normal"),
+                    filters: current.filters || "全国",
+                    totalQuestions: Number(current.totalQuestions || 10),
+                    maxDistancePenalty: Number(current.maxDistancePenalty || maxDistancePenalty || 50),
+                    updatedAt: fb.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.warn("ranking index save failed", e);
+            }
         }
 
         function createRankingHtml(state) {
@@ -735,6 +754,8 @@
                 const current = { ...lastRankingState.current, name };
                 const rankingDocId = getRankingDocId(current.conditionKey);
                 const scoresRef = fb.collection(fb.db, "rankings", rankingDocId, "scores");
+
+                await saveRankingIndex(fb, rankingDocId, current);
 
                 if (lastRankingState.docId) {
                     await fb.updateDoc(fb.doc(fb.db, "rankings", rankingDocId, "scores", lastRankingState.docId), { name });
