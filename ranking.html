@@ -1,112 +1,208 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ランキング | サテステ</title>
-  <link rel="icon" href="logo2.png">
-  <style>
-    body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
-    .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255,255,255,0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    .header-nav { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding: 0 150px; box-sizing: border-box; }
-    .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; opacity: 0.95; }
-    .header-nav a:hover { text-decoration: underline; opacity: 1; }
-    h1 { margin: 0; font-size: 28px; }
-    p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-    main { flex: 1; width: 95%; max-width: 760px; padding: 30px 0; text-align: center; }
-    .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px; text-align: left; }
-    .card-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #007AFF; display:flex; justify-content:space-between; gap:12px; align-items:center; }
-    .card-desc { font-size: 13px; color: #666; margin-bottom: 18px; line-height: 1.6; }
-    .player-box { background:#f0f7ff; border:1px solid #b7dcff; border-radius:12px; padding:12px; margin-bottom:16px; font-size:13px; line-height:1.6; }
-    .player-row { display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; }
-    button, .btn { border: none; border-radius: 999px; padding: 11px 16px; font-weight: bold; cursor: pointer; text-decoration:none; display:inline-block; }
-    .btn-primary { background:#007AFF; color:white; }
-    .btn-secondary { background:#8E8E93; color:white; }
-    .btn-soft { background:#e8f3ff; color:#0059b8; }
-    select { width:100%; padding:12px; border:2px solid #ddd; border-radius:10px; background:#fff; font-size:14px; box-sizing:border-box; margin-bottom:12px; }
-    .ranking-meta { font-size:12px; color:#666; line-height:1.6; margin:10px 0 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background:white; border-radius:12px; overflow:hidden; }
-    th, td { padding: 10px 6px; border-bottom: 1px solid #eee; text-align: center; }
-    th { background: #e8f3ff; color: #0059b8; font-size: 12px; }
-    td:nth-child(2), th:nth-child(2) { text-align: left; }
-    .loading, .error, .empty { padding: 22px; text-align: center; color: #666; background: #fafafa; border-radius: 12px; }
-    .rank-1 { font-weight: bold; background: #fff7d6; }
-    .rank-2 { font-weight: bold; background: #f5f5f5; }
-    .rank-3 { font-weight: bold; background: #fff0e2; }
-    .footer-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
-    .footer-links { margin-bottom: 15px; }
-    .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
-    .footer-links a:hover { color: #fff; text-decoration: underline; }
-    .copyright { font-size: 12px; color: #888; }
-    @media (max-width: 600px) {
-      header { min-height:auto; padding:20px 10px; }
-      .header-logo { position:static; height:80px; margin-bottom:10px; }
-      .header-nav { padding:0; gap:8px 12px; }
-      .header-nav a { font-size:12px; }
-      .card { padding:16px; }
-      th, td { font-size:11px; padding:8px 3px; }
-      .footer-actions { grid-template-columns:1fr; }
-    }
-  </style>
+    <!-- Google AdSense 共通スクリプト -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVMQ4R05XJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RVMQ4R05XJ');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全国ランキング | サテステ</title>
+    <link rel="icon" href="logo2.jpg">
+    <link rel="apple-touch-icon" href="logo2.jpg">
+    <meta name="description" content="航空写真から駅名を当てるクイズゲーム『サテステ』の全国ランキングです。ランキング挑戦モードの上位スコアを掲載しています。">
+    <meta property="og:url" content="https://sate-sta.com/ranking.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="全国ランキング | サテステ" />
+    <meta property="og:description" content="サテステの全国ランキング。航空写真から駅を当てて高得点を目指そう！" />
+    <meta property="og:site_name" content="サテステ" />
+    <meta property="og:image" content="https://github.com/amami103/sate-sta/blob/main/logo.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Amami103_" />
+
+    <style>
+        :root {
+            --blue: #007AFF;
+            --sky: #00C6FF;
+            --red: #FF3B30;
+            --orange: #FF9500;
+            --green: #34C759;
+            --purple: #5856D6;
+            --text: #333;
+            --muted: #666;
+            --line: #e8eef5;
+            --bg: #f4f7f9;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
+        .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .header-nav { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding: 0 150px; box-sizing: border-box; }
+        .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; opacity: 0.95; }
+        .header-nav a:hover { text-decoration: underline; opacity: 1; }
+        h1 { margin: 0; font-size: 28px; }
+        p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
+        main { flex: 1; width: 95%; max-width: 820px; padding: 30px 0; text-align: center; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .card-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.7; }
+        .btn-start { display: inline-block; color: white; width: 100%; font-size: 18px; font-weight: bold; padding: 14px 0; border-radius: 50px; border: none; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-challenge { background: #FF3B30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
+        .btn-free { background: #007AFF; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
+        .btn-ranking { background: #FF9500; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.35); }
+        .btn-purple { background: #5856D6; box-shadow: 0 4px 15px rgba(88, 86, 214, 0.3); }
+        .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+        .ranking-card { border: 2px solid #FF9500; padding: 0; overflow: hidden; }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 18px 10px; background: #fffaf2; border-bottom: 1px solid #ffe2b8; }
+        .tab { border: none; border-radius: 50px; padding: 12px 10px; font-weight: bold; cursor: pointer; background: #eee; color: #555; }
+        .tab.active.normal { background: #007AFF; color: white; box-shadow: 0 4px 12px rgba(0,122,255,.25); }
+        .tab.active.hard { background: #FF3B30; color: white; box-shadow: 0 4px 12px rgba(255,59,48,.25); }
+        .filter-panel { padding: 0 18px 18px; background: #fffaf2; display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .filter-label { font-size: 12px; color: #7a4b00; font-weight: bold; }
+        .filter-select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ffe2b8; background: white; font-size: 13px; }
+        .filter-hint { font-size: 11px; color: #777; line-height: 1.5; }
+        .ranking-head { padding: 22px 25px 12px; display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+        .ranking-title { margin: 0 0 6px; color: #FF9500; font-size: 22px; }
+        .ranking-title.hard { color: #FF3B30; }
+        .ranking-note { margin: 0; color: #666; font-size: 12px; line-height: 1.6; }
+        .btn-refresh { flex-shrink: 0; width: auto; padding: 10px 14px; border-radius: 999px; border: none; background: #5856D6; color: white; font-weight: bold; cursor: pointer; }
+        .status-pill { display: inline-flex; margin: 0 25px 14px; padding: 7px 12px; border-radius: 999px; background: #eef6ff; color: #0059b8; font-size: 11px; font-weight: bold; }
+        .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 25px 16px; }
+        .podium-card { border: 1px solid #e8eef5; border-radius: 16px; padding: 14px 10px; text-align: center; background: #fbfdff; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .podium-card.first { background: linear-gradient(180deg, #fff7d6, #fff); border-color: #ffe58a; transform: translateY(-4px); }
+        .podium-card.second { background: linear-gradient(180deg, #f4f4f5, #fff); }
+        .podium-card.third { background: linear-gradient(180deg, #fff0e2, #fff); }
+        .medal { font-size: 25px; line-height: 1; margin-bottom: 6px; }
+        .podium-name { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .podium-score { color: #FF3B30; font-size: 18px; font-weight: bold; margin-top: 5px; }
+        .podium-sub { font-size: 10px; color: #777; margin-top: 4px; }
+        .table-wrap { padding: 0 25px 25px; overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 650px; border: 1px solid #e8eef5; border-radius: 14px; overflow: hidden; font-size: 13px; }
+        th, td { padding: 12px 8px; border-bottom: 1px solid #e8eef5; text-align: center; background: white; }
+        th { background: #fff4df; color: #9a5a00; font-size: 12px; font-weight: bold; }
+        td:nth-child(2), th:nth-child(2) { text-align: left; }
+        tbody tr:last-child td { border-bottom: none; }
+        .rank-1 td { background: #fffaf0; font-weight: bold; }
+        .rank-2 td { background: #fafafa; font-weight: bold; }
+        .rank-3 td { background: #fff7ef; font-weight: bold; }
+        .rank-num { font-size: 16px; font-weight: bold; }
+        .player-name { font-weight: bold; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .score { font-weight: bold; color: #FF3B30; }
+        .rank-badge { display: inline-block; min-width: 36px; border-radius: 999px; padding: 4px 8px; background: #f1f5f9; font-weight: bold; }
+        .loading, .error, .empty { margin: 0 25px 25px; padding: 28px 16px; text-align: center; color: #666; background: #fafcff; border: 1px dashed #cfe0f2; border-radius: 16px; line-height: 1.7; font-size: 13px; }
+        .error { color: #b42318; background: #fff5f5; border-color: #ffc9c9; }
+        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 0; }
+        .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
+        .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
+        .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
+        .article-section li { margin-bottom: 8px; }
+        footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
+        .footer-links { margin-bottom: 15px; }
+        .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .copyright { font-size: 12px; color: #888; }
+        @media (max-width: 600px) {
+            header { min-height: auto; padding: 20px 10px; }
+            .header-logo { position: static; height: 80px; margin-bottom: 10px; }
+            .header-nav { padding: 0; gap: 8px 12px; }
+            .header-nav a { font-size: 12px; }
+            main { width: 95%; padding: 20px 0; }
+            .card { padding: 20px; border-radius: 18px; }
+            .hero-actions { grid-template-columns: 1fr; }
+            .ranking-head { display: block; padding: 18px 20px 10px; }
+            .btn-refresh { margin-top: 10px; width: 100%; }
+            .status-pill { margin-left: 20px; }
+            .podium { grid-template-columns: 1fr; padding: 0 20px 14px; }
+            .podium-card.first { transform: none; order: -1; }
+            .table-wrap { padding: 0 20px 20px; }
+            .loading, .error, .empty { margin: 0 20px 20px; }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
-    <h1>サテステ ランキング</h1>
-    <p class="subtitle">条件別ランキングに対応</p>
-    <nav class="header-nav" aria-label="ヘッダーナビゲーション">
-      <a href="index.html">ホーム</a>
-      <a href="about.html">サテステについて（自己紹介）</a>
-      <a href="guide.html">攻略ガイド</a>
-      <a href="ranking.html">ランキング</a>
-      <a href="terms.html">利用規約</a>
-      <a href="privacy.html">プライバシーポリシー</a>
-      <a href="contact.html">お問い合わせ</a>
-    </nav>
-  </header>
+    <header>
+        <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo" onerror="this.style.display='none'">
+        <h1>全国ランキング</h1>
+        <p class="subtitle">サテステの上位スコアをチェック</p>
+        <nav class="header-nav" aria-label="ヘッダーナビゲーション">
+            <a href="/">ホーム</a>
+            <a href="about.html">サテステについて（自己紹介）</a>
+            <a href="guide.html">攻略ガイド</a>
+            <a href="ranking.html">ランキング</a>
+            <a href="terms.html">利用規約</a>
+            <a href="privacy.html">プライバシーポリシー</a>
+            <a href="contact.html">お問い合わせ</a>
+        </nav>
+    </header>
 
-  <main>
-    <div class="card">
-      <div class="card-title"><span>👤 プレイヤー</span></div>
-      <div class="player-box">
-        <div class="player-row">
-          <div>現在の名前：<strong id="player-name">ゲスト</strong><br><span style="font-size:11px;color:#666;">この名前はこの端末に保存され、ランキング挑戦時に自動で使われます。</span></div>
-          <button class="btn-primary" onclick="changePlayerName()">名前変更</button>
+    <main>
+        <section class="card" style="border: 2px solid #FF9500;">
+            <div class="card-title" style="color:#FF9500;">🥇 全国ランキング</div>
+            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同じプレイヤーが同じ条件で複数回挑戦した場合は、自己ベストのみを表示します。同点の場合は合計時間が短い記録を上位として表示します。</div>
+            <div class="hero-actions">
+                <a href="index.html" class="btn-start btn-challenge">ランキングに挑戦する</a>
+                <a href="index.html" class="btn-start btn-free">タイトルへ戻る</a>
+            </div>
+        </section>
+
+        <section class="card ranking-card">
+            <div class="tabs">
+                <button id="tab-normal" class="tab active normal" onclick="switchMode('normal')">通常モード</button>
+                <button id="tab-hard" class="tab" onclick="switchMode('hard')">ハードモード</button>
+            </div>
+            <div class="filter-panel">
+                <label class="filter-label" for="condition-select">ランキング条件</label>
+                <select id="condition-select" class="filter-select" onchange="selectCondition(this.value)">
+                    <option value="">条件を読み込み中...</option>
+                </select>
+                <div class="filter-hint">同じ条件で送信されたスコアだけが表示されます。新しい絞り込み条件は、誰かが結果画面から初回送信すると選択肢に追加されます。</div>
+            </div>
+
+            <div class="ranking-head">
+                <div>
+                    <h2 class="ranking-title" id="ranking-title">通常モード / 全国 / 10問</h2>
+                    <p class="ranking-note">Firestoreから選択中の条件の上位50件を取得し、スコア順・同点は時間順で上位10件を表示します。</p>
+                </div>
+                <button class="btn-refresh" onclick="reloadCurrentRanking()">再読み込み</button>
+            </div>
+
+            <div id="status" class="status-pill">読み込み中</div>
+            <div id="podium" class="podium"></div>
+            <div id="ranking-area" class="loading">ランキングを読み込み中...</div>
+        </section>
+
+        <section class="card article-section">
+            <h2>ランキングについて</h2>
+            <ul>
+                <li>スコアはランキング挑戦モードの結果画面から送信されたものだけ反映されます。</li>
+                <li>同じプレイヤーが同じ条件に再挑戦した場合は、最高スコアのみがランキングに残ります。同点の場合は合計時間が短い記録を優先します。</li>
+                <li>都道府県・会社・路線・ハードモードの有無・問題数が同じ記録同士でランキング化されます。</li>
+                <li>名前は最大16文字です。個人情報や不適切な名前は使わないでください。</li>
+                <li>公開直後は記録が少ないため、ランキングが空になることがあります。</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">ホーム</a>
+            <a href="about.html">サテステについて（自己紹介）</a>
+            <a href="guide.html">攻略ガイド</a>
+            <a href="ranking.html">ランキング</a>
+            <a href="terms.html">利用規約</a>
+            <a href="privacy.html">プライバシーポリシー</a>
+            <a href="contact.html">お問い合わせ</a>
         </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><span>🏆 ランキング</span><button class="btn-soft" onclick="loadRankingIndexes(true)">更新</button></div>
-      <div class="card-desc">ランキング挑戦モードで送信された記録を、出題範囲・通常/ハード・問題数ごとに表示します。</div>
-      <label style="font-weight:bold; font-size:14px; display:block; margin-bottom:6px;">表示するランキング</label>
-      <select id="ranking-select" onchange="loadSelectedRanking()">
-        <option value="">読み込み中...</option>
-      </select>
-      <div id="ranking-meta" class="ranking-meta"></div>
-      <div id="ranking-area" class="loading">ランキングを読み込み中...</div>
-    </div>
-
-    <div class="footer-actions">
-      <a href="index.html" class="btn btn-secondary">タイトルへ戻る</a>
-      <a href="index.html" class="btn btn-primary">ランキングに挑戦</a>
-    </div>
-  </main>
-
-  <footer>
-    <div class="footer-links">
-      <a href="index.html">ホーム</a>
-      <a href="about.html">サテステについて（自己紹介）</a>
-      <a href="guide.html">攻略ガイド</a>
-      <a href="ranking.html">ランキング</a>
-      <a href="terms.html">利用規約</a>
-      <a href="privacy.html">プライバシーポリシー</a>
-      <a href="contact.html">お問い合わせ</a>
-    </div>
-    <div class="copyright">&copy; 2026 サテステ -From Satellite to Station- 制作委員会</div>
-  </footer>
+        <div class="copyright">
+            &copy; 2026 サテステ -From Satellite to Station- 制作委員会<br>
+            <a href="https://x.com/Amami103_" target="_blank" style="color: #666; font-size: 11px;">Admin: @Amami103_</a>
+        </div>
+    </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
@@ -124,132 +220,214 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const RANKING_NAME_KEY = "sateStaRankingName:v1";
-    const RANKING_PLAYER_ID_KEY = "sateStaPlayerId:v1";
-    let rankingIndexes = [];
+
+    let currentMode = 'normal';
+    let allConditions = [];
+    let currentConditionId = '';
+
+    const defaultConditions = [
+      makeFallbackCondition('normal', '全国', 10, 50),
+      makeFallbackCondition('hard', '全国', 10, 50)
+    ];
 
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    function normalizeRankingName(name) {
-      const cleaned = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 16);
-      return cleaned || 'ゲスト';
+    function getRankingDocIdFromKey(key) {
+      return encodeURIComponent(key).replace(/\./g, "%2E");
     }
 
-    function getOrCreatePlayerId() {
-      let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
-      if (!playerId) {
-        playerId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `player_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
+    function makeConditionKey(modeKey, filters, totalQuestions, penalty) {
+      return `${modeKey}|${filters || '全国'}|penalty:${Number(penalty || 50)}|questions:${Number(totalQuestions || 10)}`;
+    }
+
+    function makeFallbackCondition(modeKey, filters, totalQuestions, penalty) {
+      const modeName = modeKey === 'hard' ? 'ハード' : '通常';
+      const conditionKey = makeConditionKey(modeKey, filters, totalQuestions, penalty);
+      return {
+        id: getRankingDocIdFromKey(conditionKey),
+        conditionKey,
+        conditionLabel: `${modeName} / ${filters}`,
+        modeKey,
+        modeName,
+        filters,
+        totalQuestions,
+        maxDistancePenalty: penalty,
+        isFallback: true
+      };
+    }
+
+    function conditionText(c) {
+      const q = Number(c.totalQuestions || 10);
+      const label = c.conditionLabel || `${c.modeName || (c.modeKey === 'hard' ? 'ハード' : '通常')} / ${c.filters || '全国'}`;
+      return `${label} / ${q}問`;
+    }
+
+    function formatDate(value) {
+      try {
+        const date = value?.toDate ? value.toDate() : new Date(value);
+        if (Number.isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
+      } catch (e) {
+        return '-';
       }
-      return playerId;
     }
 
-    function updatePlayerNameDisplay() {
-      getOrCreatePlayerId();
-      document.getElementById('player-name').textContent = normalizeRankingName(localStorage.getItem(RANKING_NAME_KEY) || 'ゲスト');
-    }
-
-    window.changePlayerName = function() {
-      const current = normalizeRankingName(localStorage.getItem(RANKING_NAME_KEY) || 'ゲスト');
-      const next = prompt('ランキング名を入力してください（16文字まで）', current);
-      if (next === null) return;
-      localStorage.setItem(RANKING_NAME_KEY, normalizeRankingName(next));
-      updatePlayerNameDisplay();
-    };
-
-    function getDefaultRankingIndexes() {
-      const keys = [
-        { conditionKey: 'normal|全国|penalty:50|questions:10', conditionLabel: '通常 / 全国', modeName: '通常', totalQuestions: 10 },
-        { conditionKey: 'hard|全国|penalty:50|questions:10', conditionLabel: 'ハード / 全国', modeName: 'ハード', totalQuestions: 10 }
-      ];
-      return keys.map(item => ({ id: encodeURIComponent(item.conditionKey).replace(/\./g, '%2E'), ...item }));
-    }
-
-    function renderRankingSelect() {
-      const select = document.getElementById('ranking-select');
-      const merged = [...rankingIndexes];
-      getDefaultRankingIndexes().forEach(def => {
-        if (!merged.some(item => item.id === def.id)) merged.push(def);
+    function dedupeBestByPlayer(items) {
+      const map = new Map();
+      items.forEach(item => {
+        const key = item.playerId || item.id || item.name || Math.random().toString(36);
+        const prev = map.get(key);
+        if (!prev) {
+          map.set(key, item);
+          return;
+        }
+        const itemScore = Number(item.score || 0);
+        const prevScore = Number(prev.score || 0);
+        if (itemScore > prevScore || (itemScore === prevScore && Number(item.totalTime || 999999) < Number(prev.totalTime || 999999))) {
+          map.set(key, item);
+        }
       });
-      merged.sort((a,b) => String(a.conditionLabel || '').localeCompare(String(b.conditionLabel || ''), 'ja'));
-      rankingIndexes = merged;
-      select.innerHTML = rankingIndexes.map((item, index) => {
-        const label = `${item.conditionLabel || item.conditionKey || item.id} / ${Number(item.totalQuestions || 10)}問`;
-        return `<option value="${escapeHtml(item.id)}" ${index === 0 ? 'selected' : ''}>${escapeHtml(label)}</option>`;
-      }).join('');
+      return Array.from(map.values());
     }
 
-    window.loadRankingIndexes = async function(showAlert = false) {
-      const select = document.getElementById('ranking-select');
-      select.innerHTML = '<option value="">読み込み中...</option>';
+    function renderPodium(items) {
+      const podium = document.getElementById('podium');
+      const top3 = items.slice(0, 3);
+      if (!top3.length) { podium.innerHTML = ''; return; }
+      const classes = ['first', 'second', 'third'];
+      const medals = ['🥇', '🥈', '🥉'];
+      podium.innerHTML = top3.map((item, i) => `<div class="podium-card ${classes[i]}">
+        <div class="medal">${medals[i]}</div>
+        <div class="podium-name">${escapeHtml(item.name || 'ゲスト')}</div>
+        <div class="podium-score">${Number(item.score || 0).toLocaleString()}点</div>
+        <div class="podium-sub">${escapeHtml(item.rank || '-')} / ${Number(item.totalTime || 0).toFixed(1)}秒</div>
+      </div>`).join('');
+    }
+
+    function renderRows(items) {
+      if (!items.length) return '<div class="empty">まだランキングがありません。<br>この条件でランキング挑戦モードを遊んで、結果画面からスコアを送信すると表示されます。</div>';
+      const rows = items.slice(0, 10).map((item, i) => {
+        const cls = i < 3 ? `rank-${i + 1}` : '';
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
+        return `<tr class="${cls}">
+          <td class="rank-num">${medal}</td>
+          <td><div class="player-name">${escapeHtml(item.name || 'ゲスト')}</div></td>
+          <td class="score">${Number(item.score || 0).toLocaleString()}</td>
+          <td><span class="rank-badge">${escapeHtml(item.rank || '-')}</span></td>
+          <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}</td>
+          <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
+          <td>${escapeHtml(formatDate(item.createdAt || item.playedAt))}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="table-wrap"><table>
+        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th><th>日付</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+    }
+
+    function dedupeConditions(list) {
+      const map = new Map();
+      [...list, ...defaultConditions].forEach(c => {
+        if (!c || !c.id) return;
+        if (!map.has(c.id) || map.get(c.id).isFallback) map.set(c.id, c);
+      });
+      return Array.from(map.values()).sort((a, b) => {
+        if ((a.filters || '全国') === '全国' && (b.filters || '全国') !== '全国') return -1;
+        if ((b.filters || '全国') === '全国' && (a.filters || '全国') !== '全国') return 1;
+        return conditionText(a).localeCompare(conditionText(b), 'ja');
+      });
+    }
+
+    async function loadConditions() {
+      const select = document.getElementById('condition-select');
       try {
         const snap = await getDocs(collection(db, 'rankingIndexes'));
-        rankingIndexes = [];
-        snap.forEach(doc => rankingIndexes.push({ id: doc.id, ...doc.data() }));
-        renderRankingSelect();
-        await loadSelectedRanking();
-        if (showAlert) alert('ランキング一覧を更新しました。');
+        const fromDb = [];
+        snap.forEach(d => fromDb.push({ id: d.id, ...d.data() }));
+        allConditions = dedupeConditions(fromDb);
       } catch (e) {
-        console.error(e);
-        rankingIndexes = getDefaultRankingIndexes();
-        renderRankingSelect();
-        document.getElementById('ranking-area').className = 'error';
-        document.getElementById('ranking-area').innerHTML = 'ランキング条件一覧を読み込めませんでした。Firestoreのルールを確認してください。';
+        console.warn('rankingIndexesを読み込めませんでした。fallbackだけ表示します。', e);
+        allConditions = dedupeConditions([]);
       }
-    };
+      renderConditionSelect();
+      const first = allConditions.find(c => c.modeKey === currentMode) || allConditions[0];
+      currentConditionId = first?.id || '';
+      if (select) select.value = currentConditionId;
+      loadRanking(currentConditionId);
+    }
 
-    window.loadSelectedRanking = async function() {
-      const select = document.getElementById('ranking-select');
-      const rankingDocId = select.value;
+    function renderConditionSelect() {
+      const select = document.getElementById('condition-select');
+      const filtered = allConditions.filter(c => c.modeKey === currentMode);
+      select.innerHTML = filtered.length
+        ? filtered.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(conditionText(c))}</option>`).join('')
+        : '<option value="">このモードの条件はまだありません</option>';
+    }
+
+    async function loadRanking(conditionId) {
       const area = document.getElementById('ranking-area');
-      const meta = document.getElementById('ranking-meta');
-      const index = rankingIndexes.find(item => item.id === rankingDocId);
-      if (!rankingDocId) return;
-      meta.innerHTML = index ? `対象：<strong>${escapeHtml(index.conditionLabel || '')}</strong> / ${Number(index.totalQuestions || 10)}問<br>同点の場合は合計時間が短い順で表示します。` : '';
+      const status = document.getElementById('status');
+      const title = document.getElementById('ranking-title');
+      const condition = allConditions.find(c => c.id === conditionId) || allConditions.find(c => c.modeKey === currentMode) || defaultConditions[0];
+      currentConditionId = condition?.id || '';
+      const isHard = condition?.modeKey === 'hard';
+      title.textContent = condition ? conditionText(condition) : 'ランキング';
+      title.classList.toggle('hard', isHard);
+      status.textContent = '読み込み中';
+      status.style.background = isHard ? '#fff1f0' : '#eef6ff';
+      status.style.color = isHard ? '#b42318' : '#0059b8';
+      document.getElementById('podium').innerHTML = '';
       area.className = 'loading';
       area.innerHTML = 'ランキングを読み込み中...';
+      if (!condition?.id) { area.innerHTML = '<div class="empty">この条件のランキングはまだありません。</div>'; return; }
+
       try {
-        const scoresRef = collection(db, 'rankings', rankingDocId, 'scores');
+        const scoresRef = collection(db, 'rankings', condition.id, 'scores');
         const q = query(scoresRef, orderBy('score', 'desc'), limit(50));
         const snap = await getDocs(q);
         const items = [];
         snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
-        items.sort((a, b) => {
+        const bestItems = dedupeBestByPlayer(items).sort((a, b) => {
           if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
           return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
         });
+        status.textContent = `${bestItems.length}人分の自己ベスト`;
+        renderPodium(bestItems);
         area.className = '';
-        area.innerHTML = renderRows(items);
+        area.innerHTML = renderRows(bestItems);
       } catch (e) {
         console.error(e);
+        status.textContent = '読み込み失敗';
         area.className = 'error';
-        area.innerHTML = 'ランキングを読み込めませんでした。Firestoreのルールを確認してください。';
+        area.innerHTML = 'ランキングを読み込めませんでした。Firestore Databaseの作成状況、またはFirestoreルールを確認してください。';
       }
-    };
-
-    function renderRows(items) {
-      if (!items.length) return '<div class="empty">まだランキングがありません。</div>';
-      const rows = items.slice(0, 10).map((item, i) => {
-        const cls = i < 3 ? `rank-${i + 1}` : '';
-        return `<tr class="${cls}">
-          <td>${i + 1}</td>
-          <td>${escapeHtml(item.name || 'ゲスト')}</td>
-          <td>${Number(item.score || 0).toLocaleString()}</td>
-          <td>${escapeHtml(item.rank || '-')}</td>
-          <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}</td>
-          <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
-        </tr>`;
-      }).join('');
-      return `<table>
-        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
     }
 
-    updatePlayerNameDisplay();
-    loadRankingIndexes();
+    window.switchMode = function(mode) {
+      currentMode = mode;
+      document.getElementById('tab-normal').classList.toggle('active', mode === 'normal');
+      document.getElementById('tab-normal').classList.toggle('normal', mode === 'normal');
+      document.getElementById('tab-hard').classList.toggle('active', mode === 'hard');
+      document.getElementById('tab-hard').classList.toggle('hard', mode === 'hard');
+      renderConditionSelect();
+      const first = allConditions.find(c => c.modeKey === currentMode);
+      currentConditionId = first?.id || '';
+      const select = document.getElementById('condition-select');
+      if (select) select.value = currentConditionId;
+      loadRanking(currentConditionId);
+    };
+
+    window.selectCondition = function(conditionId) {
+      loadRanking(conditionId);
+    };
+
+    window.reloadCurrentRanking = function() {
+      loadConditions();
+    };
+
+    loadConditions();
   </script>
 </body>
 </html>
