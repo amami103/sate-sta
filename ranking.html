@@ -58,10 +58,14 @@
         .btn-purple { background: #5856D6; box-shadow: 0 4px 15px rgba(88, 86, 214, 0.3); }
         .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
         .ranking-card { border: 2px solid #FF9500; padding: 0; overflow: hidden; }
-        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px; background: #fffaf2; border-bottom: 1px solid #ffe2b8; }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 18px 10px; background: #fffaf2; border-bottom: 1px solid #ffe2b8; }
         .tab { border: none; border-radius: 50px; padding: 12px 10px; font-weight: bold; cursor: pointer; background: #eee; color: #555; }
         .tab.active.normal { background: #007AFF; color: white; box-shadow: 0 4px 12px rgba(0,122,255,.25); }
         .tab.active.hard { background: #FF3B30; color: white; box-shadow: 0 4px 12px rgba(255,59,48,.25); }
+        .filter-panel { padding: 0 18px 18px; background: #fffaf2; display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .filter-label { font-size: 12px; color: #7a4b00; font-weight: bold; }
+        .filter-select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ffe2b8; background: white; font-size: 13px; }
+        .filter-hint { font-size: 11px; color: #777; line-height: 1.5; }
         .ranking-head { padding: 22px 25px 12px; display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
         .ranking-title { margin: 0 0 6px; color: #FF9500; font-size: 22px; }
         .ranking-title.hard { color: #FF3B30; }
@@ -139,7 +143,7 @@
     <main>
         <section class="card" style="border: 2px solid #FF9500;">
             <div class="card-title" style="color:#FF9500;">🥇 全国ランキング</div>
-            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。対象は「全国・10問固定」。同点の場合は、合計時間が短い記録を上位として表示します。</div>
+            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同点の場合は合計時間が短い記録を上位として表示します。</div>
             <div class="hero-actions">
                 <a href="index.html" class="btn-start btn-challenge">ランキングに挑戦する</a>
                 <a href="index.html" class="btn-start btn-free">タイトルへ戻る</a>
@@ -148,14 +152,21 @@
 
         <section class="card ranking-card">
             <div class="tabs">
-                <button id="tab-normal" class="tab active normal" onclick="switchRanking('normal')">通常モード</button>
-                <button id="tab-hard" class="tab" onclick="switchRanking('hard')">ハードモード</button>
+                <button id="tab-normal" class="tab active normal" onclick="switchMode('normal')">通常モード</button>
+                <button id="tab-hard" class="tab" onclick="switchMode('hard')">ハードモード</button>
+            </div>
+            <div class="filter-panel">
+                <label class="filter-label" for="condition-select">ランキング条件</label>
+                <select id="condition-select" class="filter-select" onchange="selectCondition(this.value)">
+                    <option value="">条件を読み込み中...</option>
+                </select>
+                <div class="filter-hint">同じ条件で送信されたスコアだけが表示されます。新しい絞り込み条件は、誰かが結果画面から初回送信すると選択肢に追加されます。</div>
             </div>
 
             <div class="ranking-head">
                 <div>
-                    <h2 class="ranking-title" id="ranking-title">通常モード / 全国</h2>
-                    <p class="ranking-note">Firestoreから最新の上位50件を取得し、スコア順・同点は時間順で上位10件を表示します。</p>
+                    <h2 class="ranking-title" id="ranking-title">通常モード / 全国 / 10問</h2>
+                    <p class="ranking-note">Firestoreから選択中の条件の上位50件を取得し、スコア順・同点は時間順で上位10件を表示します。</p>
                 </div>
                 <button class="btn-refresh" onclick="reloadCurrentRanking()">再読み込み</button>
             </div>
@@ -169,6 +180,7 @@
             <h2>ランキングについて</h2>
             <ul>
                 <li>スコアはランキング挑戦モードの結果画面から送信されたものだけ反映されます。</li>
+                <li>都道府県・会社・路線・ハードモードの有無・問題数が同じ記録同士でランキング化されます。</li>
                 <li>名前は最大16文字です。個人情報や不適切な名前は使わないでください。</li>
                 <li>公開直後は記録が少ないため、ランキングが空になることがあります。</li>
             </ul>
@@ -207,16 +219,48 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
     let currentMode = 'normal';
+    let allConditions = [];
+    let currentConditionId = '';
+
+    const defaultConditions = [
+      makeFallbackCondition('normal', '全国', 10, 50),
+      makeFallbackCondition('hard', '全国', 10, 50)
+    ];
 
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    function getRankingDocId(mode) {
-      // game3.html 側の getRankingKey(): `${mode}|全国|penalty:50|questions:10` に合わせる
-      const key = `${mode}|全国|penalty:50|questions:10`;
+    function getRankingDocIdFromKey(key) {
       return encodeURIComponent(key).replace(/\./g, "%2E");
+    }
+
+    function makeConditionKey(modeKey, filters, totalQuestions, penalty) {
+      return `${modeKey}|${filters || '全国'}|penalty:${Number(penalty || 50)}|questions:${Number(totalQuestions || 10)}`;
+    }
+
+    function makeFallbackCondition(modeKey, filters, totalQuestions, penalty) {
+      const modeName = modeKey === 'hard' ? 'ハード' : '通常';
+      const conditionKey = makeConditionKey(modeKey, filters, totalQuestions, penalty);
+      return {
+        id: getRankingDocIdFromKey(conditionKey),
+        conditionKey,
+        conditionLabel: `${modeName} / ${filters}`,
+        modeKey,
+        modeName,
+        filters,
+        totalQuestions,
+        maxDistancePenalty: penalty,
+        isFallback: true
+      };
+    }
+
+    function conditionText(c) {
+      const q = Number(c.totalQuestions || 10);
+      const label = c.conditionLabel || `${c.modeName || (c.modeKey === 'hard' ? 'ハード' : '通常')} / ${c.filters || '全国'}`;
+      return `${label} / ${q}問`;
     }
 
     function formatDate(value) {
@@ -231,23 +275,20 @@
 
     function renderPodium(items) {
       const podium = document.getElementById('podium');
-      if (!items.length) { podium.innerHTML = ''; return; }
-      const top = [items[1], items[0], items[2]];
-      const classes = ['second', 'first', 'third'];
-      const medals = ['🥈', '🥇', '🥉'];
-      podium.innerHTML = top.map((item, idx) => {
-        if (!item) return `<div class="podium-card ${classes[idx]}"><div class="podium-sub">記録待ち</div></div>`;
-        return `<div class="podium-card ${classes[idx]}">
-          <div class="medal">${medals[idx]}</div>
-          <div class="podium-name">${escapeHtml(item.name || 'ゲスト')}</div>
-          <div class="podium-score">${Number(item.score || 0).toLocaleString()}点</div>
-          <div class="podium-sub">${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}問・${Number(item.totalTime || 0).toFixed(1)}秒</div>
-        </div>`;
-      }).join('');
+      const top3 = items.slice(0, 3);
+      if (!top3.length) { podium.innerHTML = ''; return; }
+      const classes = ['first', 'second', 'third'];
+      const medals = ['🥇', '🥈', '🥉'];
+      podium.innerHTML = top3.map((item, i) => `<div class="podium-card ${classes[i]}">
+        <div class="medal">${medals[i]}</div>
+        <div class="podium-name">${escapeHtml(item.name || 'ゲスト')}</div>
+        <div class="podium-score">${Number(item.score || 0).toLocaleString()}点</div>
+        <div class="podium-sub">${escapeHtml(item.rank || '-')} / ${Number(item.totalTime || 0).toFixed(1)}秒</div>
+      </div>`).join('');
     }
 
     function renderRows(items) {
-      if (!items.length) return '<div class="empty">まだランキングがありません。<br>ランキング挑戦モードを遊んで、結果画面からスコアを送信すると表示されます。</div>';
+      if (!items.length) return '<div class="empty">まだランキングがありません。<br>この条件でランキング挑戦モードを遊んで、結果画面からスコアを送信すると表示されます。</div>';
       const rows = items.slice(0, 10).map((item, i) => {
         const cls = i < 3 ? `rank-${i + 1}` : '';
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
@@ -267,12 +308,53 @@
       </table></div>`;
     }
 
-    async function loadRanking(mode) {
+    function dedupeConditions(list) {
+      const map = new Map();
+      [...list, ...defaultConditions].forEach(c => {
+        if (!c || !c.id) return;
+        if (!map.has(c.id) || map.get(c.id).isFallback) map.set(c.id, c);
+      });
+      return Array.from(map.values()).sort((a, b) => {
+        if ((a.filters || '全国') === '全国' && (b.filters || '全国') !== '全国') return -1;
+        if ((b.filters || '全国') === '全国' && (a.filters || '全国') !== '全国') return 1;
+        return conditionText(a).localeCompare(conditionText(b), 'ja');
+      });
+    }
+
+    async function loadConditions() {
+      const select = document.getElementById('condition-select');
+      try {
+        const snap = await getDocs(collection(db, 'rankingIndexes'));
+        const fromDb = [];
+        snap.forEach(d => fromDb.push({ id: d.id, ...d.data() }));
+        allConditions = dedupeConditions(fromDb);
+      } catch (e) {
+        console.warn('rankingIndexesを読み込めませんでした。fallbackだけ表示します。', e);
+        allConditions = dedupeConditions([]);
+      }
+      renderConditionSelect();
+      const first = allConditions.find(c => c.modeKey === currentMode) || allConditions[0];
+      currentConditionId = first?.id || '';
+      if (select) select.value = currentConditionId;
+      loadRanking(currentConditionId);
+    }
+
+    function renderConditionSelect() {
+      const select = document.getElementById('condition-select');
+      const filtered = allConditions.filter(c => c.modeKey === currentMode);
+      select.innerHTML = filtered.length
+        ? filtered.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(conditionText(c))}</option>`).join('')
+        : '<option value="">このモードの条件はまだありません</option>';
+    }
+
+    async function loadRanking(conditionId) {
       const area = document.getElementById('ranking-area');
       const status = document.getElementById('status');
       const title = document.getElementById('ranking-title');
-      const isHard = mode === 'hard';
-      title.textContent = `${isHard ? 'ハードモード' : '通常モード'} / 全国`;
+      const condition = allConditions.find(c => c.id === conditionId) || allConditions.find(c => c.modeKey === currentMode) || defaultConditions[0];
+      currentConditionId = condition?.id || '';
+      const isHard = condition?.modeKey === 'hard';
+      title.textContent = condition ? conditionText(condition) : 'ランキング';
       title.classList.toggle('hard', isHard);
       status.textContent = '読み込み中';
       status.style.background = isHard ? '#fff1f0' : '#eef6ff';
@@ -280,9 +362,10 @@
       document.getElementById('podium').innerHTML = '';
       area.className = 'loading';
       area.innerHTML = 'ランキングを読み込み中...';
+      if (!condition?.id) { area.innerHTML = '<div class="empty">この条件のランキングはまだありません。</div>'; return; }
 
       try {
-        const scoresRef = collection(db, 'rankings', getRankingDocId(mode), 'scores');
+        const scoresRef = collection(db, 'rankings', condition.id, 'scores');
         const q = query(scoresRef, orderBy('score', 'desc'), limit(50));
         const snap = await getDocs(q);
         const items = [];
@@ -303,20 +386,29 @@
       }
     }
 
-    window.switchRanking = function(mode) {
+    window.switchMode = function(mode) {
       currentMode = mode;
       document.getElementById('tab-normal').classList.toggle('active', mode === 'normal');
       document.getElementById('tab-normal').classList.toggle('normal', mode === 'normal');
       document.getElementById('tab-hard').classList.toggle('active', mode === 'hard');
       document.getElementById('tab-hard').classList.toggle('hard', mode === 'hard');
-      loadRanking(mode);
+      renderConditionSelect();
+      const first = allConditions.find(c => c.modeKey === currentMode);
+      currentConditionId = first?.id || '';
+      const select = document.getElementById('condition-select');
+      if (select) select.value = currentConditionId;
+      loadRanking(currentConditionId);
+    };
+
+    window.selectCondition = function(conditionId) {
+      loadRanking(conditionId);
     };
 
     window.reloadCurrentRanking = function() {
-      loadRanking(currentMode);
+      loadConditions();
     };
 
-    loadRanking(currentMode);
+    loadConditions();
   </script>
 </body>
 </html>
