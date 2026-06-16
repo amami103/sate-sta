@@ -65,6 +65,7 @@
         .score-history-list li { margin: 4px 0; line-height: 1.4; }
         .btn-record-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
 
+
         .ranking-box { background: #f0f7ff; border: 1px solid #b7dcff; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
         .ranking-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #0059b8; }
         .ranking-condition { font-size: 10px; color: #666; margin-bottom: 8px; word-break: break-word; }
@@ -77,6 +78,7 @@
         .ranking-table th { background: #e8f3ff; color: #0059b8; font-size: 10px; }
         .ranking-table td:nth-child(2), .ranking-table th:nth-child(2) { text-align: left; }
         .ranking-highlight { background: #fff7d6; font-weight: bold; }
+        .btn-ranking-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
 
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
@@ -101,7 +103,7 @@
 <body onload="init()">
     <div id="map"></div>
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (ランキングチャレンジ)</div>
         <div class="ui-content" id="ui-content">
             
             <!-- 広告枠1: コンテンツ最上部（常設） -->
@@ -153,7 +155,6 @@
         <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
     </div>
 
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
@@ -193,7 +194,6 @@
                 let localScoreSaved = false, lastScoreRecordState = null;
         let localRankingSaved = false, lastRankingState = null;
         let globalRankingSubmitting = false;
-        const RANKING_NAME_KEY = "sateStaRankingName:v1";
         let inputTimer; 
         let isComposing = false;
 
@@ -438,6 +438,10 @@
 
         const SCORE_HISTORY_KEY = "sateStaChallengeScoreHistory:v1";
         const SCORE_BEST_PREFIX = "sateStaChallengeBestScore:v1:";
+        const RANKING_HISTORY_KEY = "sateStaChallengeRankingHistory:v1";
+        const RANKING_NAME_KEY = "sateStaRankingName:v1";
+        const RANKING_PLAYER_ID_KEY = "sateStaPlayerId:v1";
+        const RANKING_PREFIX = "sateStaChallengeRanking:v1:";
 
         function confirmExitToTitle() {
             if (confirm("本当に終了してタイトルに戻りますか？")) {
@@ -604,7 +608,6 @@
         }
 
 
-
         function getRankingKey() {
             return `${getCurrentConditionKey()}|questions:${playHistory.length}`;
         }
@@ -618,40 +621,60 @@
             return cleaned || "ゲスト";
         }
 
-        function createCurrentRankingEntry(rank, modeName, nameOverride = null) {
-            const rankingName = normalizeRankingName(nameOverride || localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
+        function getOrCreatePlayerId() {
+            let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
+            if (!playerId) {
+                if (window.crypto && crypto.randomUUID) {
+                    playerId = crypto.randomUUID();
+                } else {
+                    playerId = `player_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+                }
+                localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
+            }
+            return playerId;
+        }
+
+        function getSavedPlayerName() {
+            return normalizeRankingName(localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
+        }
+
+        function setSavedPlayerName(name) {
+            const normalized = normalizeRankingName(name);
+            localStorage.setItem(RANKING_NAME_KEY, normalized);
+            getOrCreatePlayerId();
+            return normalized;
+        }
+
+        function changeRankingPlayerName() {
+            const currentName = getSavedPlayerName();
+            const nextName = prompt("ランキング名を入力してください（16文字まで）", currentName);
+            if (nextName === null) return;
+            const name = setSavedPlayerName(nextName);
+            if (lastRankingState) {
+                lastRankingState.current = { ...lastRankingState.current, name, playerId: getOrCreatePlayerId() };
+                const area = document.getElementById("ranking-area");
+                if (area) area.outerHTML = createRankingHtml(lastRankingState);
+                if (lastRankingState.docId) saveRankingToFirestore(true);
+                else loadGlobalRanking();
+            }
+        }
+
+        function createCurrentRankingEntry(rank, modeName) {
+            const rankingName = getSavedPlayerName();
             return {
                 name: rankingName,
+                playerId: getOrCreatePlayerId(),
                 score: totalScore,
                 rank,
                 correctCount: getCorrectCount(),
                 totalQuestions: playHistory.length,
                 totalTime: getTotalTimeSeconds(),
                 modeName,
-                modeKey: isLocked ? "hard" : "normal",
                 filters: activeFilters || "全国",
-                maxDistancePenalty,
                 conditionKey: getRankingKey(),
                 conditionLabel: getCurrentConditionLabel(modeName),
                 playedAt: new Date().toISOString()
             };
-        }
-
-        async function saveRankingIndex(fb, rankingDocId, current) {
-            try {
-                await fb.setDoc(fb.doc(fb.db, "rankingIndexes", rankingDocId), {
-                    conditionKey: current.conditionKey,
-                    conditionLabel: current.conditionLabel,
-                    modeName: current.modeName,
-                    modeKey: current.modeKey || (current.modeName === "ハード" ? "hard" : "normal"),
-                    filters: current.filters || "全国",
-                    totalQuestions: Number(current.totalQuestions || 10),
-                    maxDistancePenalty: Number(current.maxDistancePenalty || maxDistancePenalty || 50),
-                    updatedAt: fb.serverTimestamp()
-                }, { merge: true });
-            } catch (e) {
-                console.warn("ranking index save failed", e);
-            }
         }
 
         function createRankingHtml(state) {
@@ -664,13 +687,17 @@
                     </div>
                     <div class="ranking-condition">${escapeHtml(current.conditionLabel)} / ${Number(current.totalQuestions)}問</div>
                     <div class="ranking-user-row">
-                        <input id="ranking-name-input" class="ranking-name-input" value="${escapeHtml(current.name)}" maxlength="16" placeholder="ランキング名">
-                        <button id="ranking-submit-btn" class="btn-ranking-save" onclick="saveRankingNameFromInput()">全国に送信</button>
+                        <div style="font-size:12px; line-height:1.5;">
+                            プレイヤー：<strong id="ranking-player-name">${escapeHtml(current.name)}</strong><br>
+                            <span style="font-size:10px;color:#666;">この端末では次回以降も同じ名前で送信されます。</span>
+                        </div>
+                        <button class="btn-ranking-save" onclick="changeRankingPlayerName()">名前変更</button>
                     </div>
                     <div id="ranking-current" class="ranking-current">
                         今回：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br>
-                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件のランキングに登録されます。</span>
+                        <span style="font-size:10px;color:#666;">「全国に送信」を押すと、同条件のランキングに登録されます。</span>
                     </div>
+                    <button id="ranking-submit-btn" class="btn-ranking-save" style="width:100%; margin-bottom:8px;" onclick="saveRankingToFirestore(false)">全国に送信</button>
                     <table class="ranking-table">
                         <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th></tr></thead>
                         <tbody id="ranking-tbody"><tr><td colspan="5">ランキングを読み込み中...</td></tr></tbody>
@@ -737,28 +764,37 @@
             }
         }
 
-        async function saveRankingNameFromInput() {
+        async function saveRankingToFirestore(updateNameOnly = false) {
             if (!lastRankingState || globalRankingSubmitting) return;
-            const input = document.getElementById("ranking-name-input");
             const button = document.getElementById("ranking-submit-btn");
             const currentBox = document.getElementById("ranking-current");
-            const name = normalizeRankingName(input ? input.value : "ゲスト");
-            if (input) input.value = name;
-            localStorage.setItem(RANKING_NAME_KEY, name);
+            const name = getSavedPlayerName();
+            lastRankingState.current = { ...lastRankingState.current, name, playerId: getOrCreatePlayerId() };
 
             globalRankingSubmitting = true;
-            if (button) { button.disabled = true; button.textContent = "送信中..."; }
+            if (button) { button.disabled = true; button.textContent = updateNameOnly ? "更新中..." : "送信中..."; }
 
             try {
                 const fb = await waitForFirebaseReady();
-                const current = { ...lastRankingState.current, name };
+                const current = lastRankingState.current;
                 const rankingDocId = getRankingDocId(current.conditionKey);
                 const scoresRef = fb.collection(fb.db, "rankings", rankingDocId, "scores");
 
-                await saveRankingIndex(fb, rankingDocId, current);
+                await fb.setDoc(fb.doc(fb.db, "rankingIndexes", rankingDocId), {
+                    conditionKey: current.conditionKey,
+                    conditionLabel: current.conditionLabel,
+                    filters: current.filters,
+                    modeName: current.modeName,
+                    totalQuestions: current.totalQuestions,
+                    updatedAt: fb.serverTimestamp()
+                }, { merge: true });
 
                 if (lastRankingState.docId) {
-                    await fb.updateDoc(fb.doc(fb.db, "rankings", rankingDocId, "scores", lastRankingState.docId), { name });
+                    await fb.updateDoc(fb.doc(fb.db, "rankings", rankingDocId, "scores", lastRankingState.docId), {
+                        name,
+                        playerId: current.playerId,
+                        updatedAt: fb.serverTimestamp()
+                    });
                 } else {
                     const docRef = await fb.addDoc(scoresRef, {
                         ...current,
@@ -767,11 +803,11 @@
                     });
                     lastRankingState.docId = docRef.id;
                 }
-                lastRankingState.current = current;
+
                 if (currentBox) {
                     currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒`;
                 }
-                if (button) button.textContent = "名前を更新";
+                if (button) button.textContent = "送信済み";
                 await loadGlobalRanking();
             } catch (e) {
                 console.error(e);
@@ -789,114 +825,78 @@
         }
 
         function showFinalResult(isViewMode = false) {
-            const gameUi = document.getElementById('game-ui');
-            const titleEl = document.getElementById('question-title');
-            const finalUi = document.getElementById('final-ui');
-            if (gameUi) gameUi.style.display = "none";
-            if (titleEl) titleEl.innerText = isViewMode ? "リザルト閲覧" : "結果発表";
-            if (!finalUi) return;
-            finalUi.style.display = "block";
+            document.getElementById('game-ui').style.display = "none"; const modeName = isLocked ? "ハード" : "通常";
+            document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
+            const totalMax = playHistory.length * 2000; let rank = "D"; const ratio = totalScore / (totalMax || 1);
+            if (ratio >= 0.9) rank = "SSS"; else if (ratio >= 0.8) rank = "SS"; else if (ratio >= 0.7) rank = "S"; else if (ratio >= 0.5) rank = "A"; else if (ratio >= 0.3) rank = "B"; else if (ratio >= 0.1) rank = "C";
 
-            const modeName = isLocked ? "ハード" : "通常";
-            const totalMax = playHistory.length * 2000;
-            const ratio = totalScore / (totalMax || 1);
-            let rank = "D";
-            if (ratio >= 0.9) rank = "SSS";
-            else if (ratio >= 0.8) rank = "SS";
-            else if (ratio >= 0.7) rank = "S";
-            else if (ratio >= 0.5) rank = "A";
-            else if (ratio >= 0.3) rank = "B";
-            else if (ratio >= 0.1) rank = "C";
+            let scoreRecordHtml = "";
+            let rankingHtml = "";
+            if (!isViewMode) {
+                if (!localScoreSaved) {
+                    lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
+                    localScoreSaved = true;
+                }
+                if (lastScoreRecordState) {
+                    scoreRecordHtml = createScoreRecordHtml(lastScoreRecordState);
+                }
+                if (!localRankingSaved) {
+                    lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
+                    localRankingSaved = true;
+                }
+                if (lastRankingState) {
+                    rankingHtml = createRankingHtml(lastRankingState);
+                }
+            }
 
-            const safeNum = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
-            const resultItems = playHistory.map((h) => {
-                const dist = safeNum(h.dist, 999);
-                const time = safeNum(h.time, 0);
-                const score = safeNum(h.score, 0);
-                const closeMark = dist < (maxDistancePenalty * 0.1);
-                const mark = h.isCorrect ? '●' : (closeMark ? '▲' : '×');
-                const markColor = h.isCorrect ? 'red' : (closeMark ? 'orange' : 'blue');
-                const userAns = h.userAns || "(未入力)";
-                const distText = (userAns === "(未入力)" || userAns === "ギブアップ") ? '-' : `${dist.toFixed(1)}km`;
-                return `<li class="result-item">
-                    <div class="res-status" style="color:${markColor}">${mark}</div>
-                    <div class="res-info">
-                        <span class="res-name">${escapeHtml(h.name || "不明")}</span>
-                        <span class="res-user-ans">解答: ${escapeHtml(userAns)}</span>
-                        <span class="res-sub">${escapeHtml(h.pref || "")} / ${escapeHtml(h.line || "")}</span>
-                        <span class="res-score-detail">${score.toLocaleString()}pt | 誤差:${escapeHtml(distText)} | ${time.toFixed(1)}s</span>
-                    </div>
-                    <button class="btn-view" onclick="jumpToStation(${safeNum(h.lat)}, ${safeNum(h.lng)})">確認</button>
-                </li>`;
-            }).join("");
+            let listH = '<ul class="result-list">';
+            playHistory.forEach((h) => {
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (h.dist < (maxDistancePenalty*0.1) ? 'orange' : 'blue');
+                listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
+            });
 
             const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
-            const shareTextAttr = escapeHtml(shareText.replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
-
-            // まず最低限のリザルトを必ず表示する。ランキングや広告で失敗しても答え一覧を消さない。
+            
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
-                <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
-                <div id="score-record-mount"></div>
-                <div id="ranking-mount"></div>
+                <div class="final-rank">ランク: ${rank}</div>
+                ${scoreRecordHtml}
+                ${rankingHtml}
+                
+                <!-- リザルト広告1: スコアの下 -->
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
                     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
                 </div>
+
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
                     <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
-                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareTextAttr}')">文章をコピー</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareTextAttr}')">Insta用コピー</button>
-                    <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareText}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用コピー</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
                 </div>
-                <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
+                ${listH}</ul>
+
+                <!-- リザルト広告2: リストの下 -->
                 <div class="ad-container">
                     <span class="ad-label">Sponsor</span>
                     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
                 </div>
+
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
-
-            // 自己記録とランキングは後から差し込む。失敗してもリザルト本体は維持。
-            try {
-                if (!isViewMode) {
-                    if (!localScoreSaved) {
-                        lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
-                        localScoreSaved = true;
-                    }
-                    const mount = document.getElementById("score-record-mount");
-                    if (mount && lastScoreRecordState) mount.innerHTML = createScoreRecordHtml(lastScoreRecordState);
-                }
-            } catch (e) {
-                console.error("score record error", e);
-            }
-
-            try {
-                if (!isViewMode) {
-                    if (!localRankingSaved) {
-                        lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
-                        localRankingSaved = true;
-                    }
-                    const mount = document.getElementById("ranking-mount");
-                    if (mount && lastRankingState) mount.innerHTML = createRankingHtml(lastRankingState);
-                }
-            } catch (e) {
-                console.error("ranking html error", e);
-                const mount = document.getElementById("ranking-mount");
-                if (mount) mount.innerHTML = '<div class="ranking-box">全国ランキングの表示準備に失敗しました。</div>';
-            }
-
+            
             setTimeout(() => {
-                try {
-                    const ads = finalUi.querySelectorAll('.adsbygoogle');
-                    ads.forEach(() => refreshAds());
-                } catch (e) {}
-                if (!isViewMode && lastRankingState) loadGlobalRanking();
+                const ads = finalUi.querySelectorAll('.adsbygoogle');
+                ads.forEach(() => refreshAds());
             }, 100);
+            if (!isViewMode && lastRankingState) loadGlobalRanking();
         }
 
         async function generateResultCard(rank, modeName, autoShow = false) {
