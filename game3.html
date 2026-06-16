@@ -65,7 +65,6 @@
         .score-history-list li { margin: 4px 0; line-height: 1.4; }
         .btn-record-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
 
-
         .ranking-box { background: #f0f7ff; border: 1px solid #b7dcff; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
         .ranking-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #0059b8; }
         .ranking-condition { font-size: 10px; color: #666; margin-bottom: 8px; word-break: break-word; }
@@ -78,7 +77,6 @@
         .ranking-table th { background: #e8f3ff; color: #0059b8; font-size: 10px; }
         .ranking-table td:nth-child(2), .ranking-table th:nth-child(2) { text-align: left; }
         .ranking-highlight { background: #fff7d6; font-weight: bold; }
-        .btn-ranking-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
 
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
@@ -103,7 +101,7 @@
 <body onload="init()">
     <div id="map"></div>
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (ランキングチャレンジ)</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
         <div class="ui-content" id="ui-content">
             
             <!-- 広告枠1: コンテンツ最上部（常設） -->
@@ -156,7 +154,6 @@
     </div>
 
 
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
@@ -175,19 +172,7 @@
         const app = initializeApp(firebaseConfig);
         try { getAnalytics(app); } catch (e) {}
         const db = getFirestore(app);
-
-        window.sateStaFirebase = {
-            db,
-            collection,
-            addDoc,
-            updateDoc,
-            doc,
-            getDocs,
-            query,
-            orderBy,
-            limit,
-            serverTimestamp
-        };
+        window.sateStaFirebase = { db, collection, addDoc, updateDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
         window.sateStaFirebaseReady = true;
         window.dispatchEvent(new Event("sateStaFirebaseReady"));
     </script>
@@ -207,6 +192,8 @@
         
                 let localScoreSaved = false, lastScoreRecordState = null;
         let localRankingSaved = false, lastRankingState = null;
+        let globalRankingSubmitting = false;
+        const RANKING_NAME_KEY = "sateStaRankingName:v1";
         let inputTimer; 
         let isComposing = false;
 
@@ -451,8 +438,172 @@
 
         const SCORE_HISTORY_KEY = "sateStaChallengeScoreHistory:v1";
         const SCORE_BEST_PREFIX = "sateStaChallengeBestScore:v1:";
-        const RANKING_NAME_KEY = "sateStaRankingName:v1";
-        let globalRankingSubmitting = false;
+
+        function confirmExitToTitle() {
+            if (confirm("本当に終了してタイトルに戻りますか？")) {
+                location.href = "index.html";
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, (match) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[match]));
+        }
+
+        function safeJsonParse(value, fallback) {
+            try {
+                return value ? JSON.parse(value) : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function getCurrentConditionKey() {
+            const mode = isLocked ? "hard" : "normal";
+            const filterKey = activeFilters || "全国";
+            return `${mode}|${filterKey}|penalty:${maxDistancePenalty}`;
+        }
+
+        function getCurrentConditionLabel(modeName) {
+            return `${modeName} / ${activeFilters || "全国"}`;
+        }
+
+        function getCorrectCount() {
+            return playHistory.filter(h => h.isCorrect).length;
+        }
+
+        function getTotalTimeSeconds() {
+            const total = playHistory.reduce((sum, h) => sum + (Number(h.time) || 0), 0);
+            return Math.round(total * 10) / 10;
+        }
+
+        function getBestRecord(conditionKey) {
+            return safeJsonParse(localStorage.getItem(SCORE_BEST_PREFIX + conditionKey), null);
+        }
+
+        function saveLocalScoreRecord(rank, modeName) {
+            const conditionKey = getCurrentConditionKey();
+            const result = {
+                score: totalScore,
+                rank,
+                correctCount: getCorrectCount(),
+                totalQuestions: playHistory.length,
+                totalTime: getTotalTimeSeconds(),
+                modeName,
+                filters: activeFilters || "全国",
+                conditionKey,
+                conditionLabel: getCurrentConditionLabel(modeName),
+                playedAt: new Date().toISOString()
+            };
+
+            const previousBest = getBestRecord(conditionKey);
+            const shouldUpdateBest = !previousBest ||
+                result.score > previousBest.score ||
+                (result.score === previousBest.score && result.totalTime < previousBest.totalTime);
+
+            const conditionBest = shouldUpdateBest ? result : previousBest;
+            if (shouldUpdateBest) {
+                localStorage.setItem(SCORE_BEST_PREFIX + conditionKey, JSON.stringify(result));
+            }
+
+            const history = safeJsonParse(localStorage.getItem(SCORE_HISTORY_KEY), []);
+            history.unshift(result);
+            const limitedHistory = history.slice(0, 10);
+            localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(limitedHistory));
+
+            return {
+                result,
+                previousBest,
+                conditionBest,
+                isNewBest: shouldUpdateBest,
+                history: limitedHistory
+            };
+        }
+
+        function formatRecordDate(isoString) {
+            try {
+                return new Date(isoString).toLocaleString("ja-JP", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function createScoreRecordHtml(state) {
+            const result = state.result;
+            const best = state.conditionBest || result;
+            const previousBestText = state.previousBest
+                ? `${Number(state.previousBest.score).toLocaleString()}点`
+                : "なし";
+            const badge = state.isNewBest ? '<span class="new-best-badge">自己ベスト更新！</span>' : "";
+            const historyHtml = state.history.length
+                ? state.history.map((item) => `
+                    <li>
+                        ${escapeHtml(formatRecordDate(item.playedAt))}：
+                        ${Number(item.score).toLocaleString()}点 / ${escapeHtml(item.rank)}
+                        （${Number(item.correctCount)}/${Number(item.totalQuestions)}問・${escapeHtml(item.modeName)}）
+                    </li>
+                `).join("")
+                : '<li>まだ記録がありません</li>';
+
+            return `
+                <div id="score-record-area" class="score-record-box">
+                    <div class="score-record-title">
+                        <span>自己記録</span>
+                        ${badge}
+                    </div>
+                    <div class="score-record-condition">${escapeHtml(result.conditionLabel)}</div>
+                    <div class="score-record-grid">
+                        <div class="score-record-cell">
+                            <span>今回</span>
+                            <strong>${Number(result.score).toLocaleString()}点</strong>
+                        </div>
+                        <div class="score-record-cell">
+                            <span>条件別ベスト</span>
+                            <strong>${Number(best.score).toLocaleString()}点</strong>
+                        </div>
+                    </div>
+                    <div class="score-record-sub">
+                        正答数：${Number(result.correctCount)}/${Number(result.totalQuestions)}問　
+                        合計時間：${Number(result.totalTime).toFixed(1)}秒<br>
+                        これまでの条件別ベスト：${escapeHtml(previousBestText)}
+                    </div>
+                    <details class="score-history-details">
+                        <summary>最近10回の記録を見る</summary>
+                        <ol class="score-history-list">${historyHtml}</ol>
+                    </details>
+                    <button class="btn-record-reset" onclick="resetScoreRecords()">自己記録をリセット</button>
+                </div>`;
+        }
+
+        function resetScoreRecords() {
+            if (!confirm("自己記録をすべて削除しますか？")) return;
+
+            Object.keys(localStorage).forEach((key) => {
+                if (key.startsWith(SCORE_BEST_PREFIX) || key === SCORE_HISTORY_KEY) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            const area = document.getElementById("score-record-area");
+            if (area) {
+                area.innerHTML = `
+                    <div class="score-record-title">自己記録</div>
+                    <div class="score-record-sub">自己記録を削除しました。</div>
+                `;
+            }
+        }
+
+
 
         function getRankingKey() {
             return `${getCurrentConditionKey()}|questions:${playHistory.length}`;
@@ -649,7 +800,8 @@
                 listH += `<li class="result-item"><div class="res-status" style="color:${markColor}">${mark}</div><div class="res-info"><span class="res-name">${h.name}</span><span class="res-user-ans">解答: ${h.userAns}</span><span class="res-sub">${h.pref} / ${h.line}</span><span class="res-score-detail">${h.score}pt | 誤差:${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(1)+'km'} | ${h.time.toFixed(1)}s</span></div><button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button></li>`;
             });
 
-            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！
+#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
             
             finalUi.innerHTML = `
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
