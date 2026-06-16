@@ -1,18 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
-    <!-- Google AdSense 共通スクリプト -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617" crossorigin="anonymous"></script>
-    
-    <link rel="icon" href="logo2.png">
-    <link rel="apple-touch-icon" href="logo2.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>チャレンジモード | サテステ</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="stations.js"></script>
-    <style>
+<!-- Google AdSense 共通スクリプト -->
+<script async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"></script>
+<link href="logo2.png" rel="icon"/>
+<link href="logo2.png" rel="apple-touch-icon"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>チャレンジモード | サテステ</title>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="stations.js"></script>
+<style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
@@ -84,63 +84,42 @@
 
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
     </style>
-</head>
+</link></head>
 <body onload="init()">
-    <div id="map"></div>
-    <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
-        <div class="ui-content" id="ui-content">
-            
-            <!-- 広告枠1: コンテンツ最上部（常設） -->
-            <div class="ad-container">
-                <span class="ad-label">Sponsor</span>
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-6887981844690617"
-                     data-ad-slot="ca-pub-6887981844690617"
-                     data-ad-format="horizontal"
-                     data-full-width-responsive="true"></ins>
-            </div>
+<div id="map"></div>
+<div class="ui-container" id="ui-panel">
+<div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+<div class="ui-content" id="ui-content">
+<!-- 広告枠1: コンテンツ最上部（常設） -->
 
-            <h2 id="question-title">準備中...</h2>
-            <div id="game-ui">
-                <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
-                <datalist id="station-list"></datalist>
-                <div class="button-group">
-                    <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
-                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
-                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
-                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
-                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
-                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
-                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
-                    <button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
-                </div>
-                <div id="hint-area"></div>
-                <div id="result"></div>
+<h2 id="question-title">準備中...</h2>
+<div id="game-ui">
+<input autocomplete="off" id="station-input" list="station-list" placeholder="駅名を入力..."/>
+<datalist id="station-list"></datalist>
+<div class="button-group">
+<button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
+<button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+<button class="btn-reset" onclick="resetView()">場所を戻す</button>
+<button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+<button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+<button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+<button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+<button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
+</div>
+<div id="hint-area"></div>
+<div id="result"></div>
+<!-- 広告枠2: ゲームUIの下 -->
 
-                <!-- 広告枠2: ゲームUIの下 -->
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle"
-                         style="display:block"
-                         data-ad-client="ca-pub-6887981844690617"
-                         data-ad-slot="ca-pub-6887981844690617"
-                         data-ad-format="rectangle"
-                         data-full-width-responsive="true"></ins>
-                </div>
-            </div>
-            <div id="final-ui" style="display:none;"></div>
-        </div>
-    </div>
-
-    <div id="image-overlay">
-        <div id="share-image-container"></div>
-        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
-        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
-    </div>
-
-    <script>
+</div>
+<div id="final-ui" style="display:none;"></div>
+</div>
+</div>
+<div id="image-overlay">
+<div id="share-image-container"></div>
+<p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
+<button class="overlay-close" onclick="closeOverlay()">閉じる</button>
+</div>
+<script>
         // 広告読み込み用
         function refreshAds() {
             try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
@@ -599,13 +578,6 @@
                 <div class="final-score">${totalScore.toLocaleString()} 点</div>
                 <div class="final-rank">ランク: ${rank}</div>
                 ${scoreRecordHtml}
-                
-                <!-- リザルト広告1: スコアの下 -->
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
-                </div>
-
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
@@ -615,13 +587,6 @@
                     <button class="btn-sns btn-card" onclick="generateResultCard('${rank}', '${modeName}')">画像で詳細結果をシェア！</button>
                 </div>
                 ${listH}</ul>
-
-                <!-- リザルト広告2: リストの下 -->
-                <div class="ad-container">
-                    <span class="ad-label">Sponsor</span>
-                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
-                </div>
-
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
