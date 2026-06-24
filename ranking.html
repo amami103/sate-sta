@@ -3,500 +3,986 @@
 <head>
     <!-- Google AdSense 共通スクリプト -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617" crossorigin="anonymous"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVMQ4R05XJ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RVMQ4R05XJ');
-    </script>
+    
+    <link rel="icon" href="logo2.png">
+    <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全国ランキング | サテステ</title>
-    <link rel="icon" href="logo2.jpg">
-    <link rel="apple-touch-icon" href="logo2.jpg">
-    <meta name="description" content="航空写真から駅名を当てるクイズゲーム『サテステ』の全国ランキングです。ランキング挑戦モードの上位スコアを掲載しています。">
-    <meta property="og:url" content="https://sate-sta.com/ranking.html" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="全国ランキング | サテステ" />
-    <meta property="og:description" content="サテステの全国ランキング。航空写真から駅を当てて高得点を目指そう！" />
-    <meta property="og:site_name" content="サテステ" />
-    <meta property="og:image" content="https://github.com/amami103/sate-sta/blob/main/logo.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Amami103_" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ランキングチャレンジ | サテステ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="stations.js"></script>
     <style>
-        :root {
-            --blue: #007AFF;
-            --sky: #00C6FF;
-            --red: #FF3B30;
-            --orange: #FF9500;
-            --green: #34C759;
-            --purple: #5856D6;
-            --text: #333;
-            --muted: #666;
-            --line: #e8eef5;
-            --bg: #f4f7f9;
-        }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
-        .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .header-nav { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding: 0 150px; box-sizing: border-box; }
-        .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; opacity: 0.95; }
-        .header-nav a:hover { text-decoration: underline; opacity: 1; }
-        h1 { margin: 0; font-size: 28px; }
-        p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-        main { flex: 1; width: 95%; max-width: 820px; padding: 30px 0; text-align: center; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .card-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.7; }
-        .btn-start { display: inline-block; color: white; width: 100%; font-size: 18px; font-weight: bold; padding: 14px 0; border-radius: 50px; border: none; cursor: pointer; text-align: center; text-decoration: none; }
-        .btn-challenge { background: #FF3B30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
-        .btn-free { background: #007AFF; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
-        .btn-ranking { background: #FF9500; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.35); }
-        .btn-purple { background: #5856D6; box-shadow: 0 4px 15px rgba(88, 86, 214, 0.3); }
-        .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
-        .ranking-card { border: 2px solid #FF9500; padding: 0; overflow: hidden; }
-        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 18px 10px; background: #fffaf2; border-bottom: 1px solid #ffe2b8; }
-        .tab { border: none; border-radius: 50px; padding: 12px 10px; font-weight: bold; cursor: pointer; background: #eee; color: #555; }
-        .tab.active.normal { background: #007AFF; color: white; box-shadow: 0 4px 12px rgba(0,122,255,.25); }
-        .tab.active.hard { background: #FF3B30; color: white; box-shadow: 0 4px 12px rgba(255,59,48,.25); }
-        .filter-panel { padding: 0 18px 18px; background: #fffaf2; display: grid; grid-template-columns: 1fr; gap: 8px; }
-        .filter-label { font-size: 12px; color: #7a4b00; font-weight: bold; }
-        .filter-select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ffe2b8; background: white; font-size: 13px; }
-        .filter-hint { font-size: 11px; color: #777; line-height: 1.5; }
-        .ranking-head { padding: 22px 25px 12px; display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
-        .ranking-title { margin: 0 0 6px; color: #FF9500; font-size: 22px; }
-        .ranking-title.hard { color: #FF3B30; }
-        .ranking-note { margin: 0; color: #666; font-size: 12px; line-height: 1.6; }
-        .btn-refresh { flex-shrink: 0; width: auto; padding: 10px 14px; border-radius: 999px; border: none; background: #5856D6; color: white; font-weight: bold; cursor: pointer; }
-        .status-pill { display: inline-flex; margin: 0 25px 14px; padding: 7px 12px; border-radius: 999px; background: #eef6ff; color: #0059b8; font-size: 11px; font-weight: bold; }
-        .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 25px 16px; }
-        .podium-card { border: 1px solid #e8eef5; border-radius: 16px; padding: 14px 10px; text-align: center; background: #fbfdff; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
-        .podium-card.first { background: linear-gradient(180deg, #fff7d6, #fff); border-color: #ffe58a; transform: translateY(-4px); }
-        .podium-card.second { background: linear-gradient(180deg, #f4f4f5, #fff); }
-        .podium-card.third { background: linear-gradient(180deg, #fff0e2, #fff); }
-        .medal { font-size: 25px; line-height: 1; margin-bottom: 6px; }
-        .podium-name { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .podium-score { color: #FF3B30; font-size: 18px; font-weight: bold; margin-top: 5px; }
-        .podium-sub { font-size: 10px; color: #777; margin-top: 4px; }
-        .table-wrap { padding: 0 25px 25px; overflow-x: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 650px; border: 1px solid #e8eef5; border-radius: 14px; overflow: hidden; font-size: 13px; }
-        th, td { padding: 12px 8px; border-bottom: 1px solid #e8eef5; text-align: center; background: white; }
-        th { background: #fff4df; color: #9a5a00; font-size: 12px; font-weight: bold; }
-        td:nth-child(2), th:nth-child(2) { text-align: left; }
-        tbody tr:last-child td { border-bottom: none; }
-        .rank-1 td { background: #fffaf0; font-weight: bold; }
-        .rank-2 td { background: #fafafa; font-weight: bold; }
-        .rank-3 td { background: #fff7ef; font-weight: bold; }
-        .rank-num { font-size: 16px; font-weight: bold; }
-        .player-name { font-weight: bold; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .score { font-weight: bold; color: #FF3B30; }
-        .rank-badge { display: inline-block; min-width: 36px; border-radius: 999px; padding: 4px 8px; background: #f1f5f9; font-weight: bold; }
-        .loading, .error, .empty { margin: 0 25px 25px; padding: 28px 16px; text-align: center; color: #666; background: #fafcff; border: 1px dashed #cfe0f2; border-radius: 16px; line-height: 1.7; font-size: 13px; }
-        .error { color: #b42318; background: #fff5f5; border-color: #ffc9c9; }
-        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 0; }
-        .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
-        .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
-        .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
-        .article-section li { margin-bottom: 8px; }
-        footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
-        .footer-links { margin-bottom: 15px; }
-        .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
-        .footer-links a:hover { color: #fff; text-decoration: underline; }
-        .copyright { font-size: 12px; color: #888; }
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+        .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .ui-header { background: #FF3B30; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
+        .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
+        
+        /* 広告用スタイル */
+        .ad-container { margin: 10px 0; text-align: center; background: #fafafa; border-radius: 4px; overflow: hidden; min-height: 60px; font-size: 10px; color: #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
+        .ad-label { font-size: 8px; color: #999; margin-bottom: 2px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; }
 
-        .btn-detail { background: #007AFF; color: white; border: none; border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.62); z-index: 3000; align-items: center; justify-content: center; padding: 18px; }
-        .detail-modal { width: min(760px, 96vw); max-height: 86vh; overflow: auto; background: white; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.35); padding: 20px; }
-        .detail-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid #e8eef5; padding-bottom: 12px; margin-bottom: 12px; }
-        .detail-header h3 { margin: 0; color: #007AFF; font-size: 18px; }
-        .detail-close { background: #8E8E93; color: white; border: none; border-radius: 999px; padding: 9px 14px; font-weight: bold; cursor: pointer; }
-        .detail-summary { font-size: 12px; color: #666; line-height: 1.7; margin-bottom: 12px; }
-        .detail-table-wrap { overflow-x: auto; }
-        .detail-table { min-width: 720px; font-size: 12px; }
-        .detail-ok { color: #d33; font-weight: bold; }
-        .detail-ng { color: #007AFF; font-weight: bold; }
-        @media (max-width: 600px) {
-            header { min-height: auto; padding: 20px 10px; }
-            .header-logo { position: static; height: 80px; margin-bottom: 10px; }
-            .header-nav { padding: 0; gap: 8px 12px; }
-            .header-nav a { font-size: 12px; }
-            main { width: 95%; padding: 20px 0; }
-            .card { padding: 20px; border-radius: 18px; }
-            .hero-actions { grid-template-columns: 1fr; }
-            .ranking-head { display: block; padding: 18px 20px 10px; }
-            .btn-refresh { margin-top: 10px; width: 100%; }
-            .status-pill { margin-left: 20px; }
-            .podium { grid-template-columns: 1fr; padding: 0 20px 14px; }
-            .podium-card.first { transform: none; order: -1; }
-            .table-wrap { padding: 0 20px 20px; }
-            .loading, .error, .empty { margin: 0 20px 20px; }
-        }
+        h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
+        input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button { padding: 12px 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; color: white; }
+        .btn-answer { background: #007AFF; grid-column: span 2; font-size: 15px; }
+        .btn-reset  { background: #8E8E93; }
+        .btn-giveup { background: #FF9500; }
+        .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
+        .btn-hint   { background: #5856D6; font-size: 10px; }
+        .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
+        .btn-title-exit { background: #FF3B30; grid-column: span 2; margin-top: 5px; font-size: 13px; }
+        #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
+        #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
+        
+        .result-list { list-style: none; padding: 0; margin: 10px 0; }
+        .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
+        .res-info { flex-grow: 1; margin-left: 10px; text-align: left; overflow: hidden; }
+        .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
+        .res-user-ans { font-size: 11px; color: #666; display: block; }
+        .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
+        .res-score-detail { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
+        
+        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
+        .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .score-record-box { background: #fff7ed; border: 1px solid #ffd3a3; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
+        .score-record-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+        .new-best-badge { background: #FF3B30; color: white; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
+        .score-record-condition { font-size: 10px; color: #777; margin-bottom: 8px; word-break: break-word; }
+        .score-record-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+        .score-record-cell { background: rgba(255,255,255,0.8); border-radius: 8px; padding: 7px; text-align: center; }
+        .score-record-cell span { display: block; font-size: 10px; color: #777; margin-bottom: 2px; }
+        .score-record-cell strong { display: block; font-size: 16px; color: #d33; }
+        .score-record-sub { font-size: 11px; color: #555; line-height: 1.5; }
+        .score-history-details { margin-top: 8px; font-size: 11px; }
+        .score-history-details summary { cursor: pointer; font-weight: bold; color: #444; }
+        .score-history-list { margin: 6px 0 0; padding-left: 18px; }
+        .score-history-list li { margin: 4px 0; line-height: 1.4; }
+        .btn-record-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
+
+        .ranking-box { background: #f0f7ff; border: 1px solid #b7dcff; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
+        .ranking-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #0059b8; }
+        .ranking-condition { font-size: 10px; color: #666; margin-bottom: 8px; word-break: break-word; }
+        .ranking-user-row { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .ranking-name-input { margin: 0; padding: 9px; font-size: 13px; border: 1px solid #b7dcff; }
+        .btn-ranking-save { background: #007AFF; color: white; padding: 9px 10px; font-size: 11px; border-radius: 6px; }
+        .ranking-current { background: rgba(255,255,255,0.85); border-radius: 8px; padding: 7px; font-size: 12px; margin-bottom: 8px; line-height: 1.5; }
+        .ranking-table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
+        .ranking-table th, .ranking-table td { padding: 6px 4px; border-bottom: 1px solid #eee; text-align: center; }
+        .ranking-table th { background: #e8f3ff; color: #0059b8; font-size: 10px; }
+        .ranking-table td:nth-child(2), .ranking-table th:nth-child(2) { text-align: left; }
+        .ranking-highlight { background: #fff7d6; font-weight: bold; }
+
+        .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
+        .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
+        .btn-x { background: #000; }
+        .btn-line { background: #06C755; }
+        .btn-threads { background: #000; border: 1px solid #333; }
+        .btn-fb { background: #1877F2; }
+        .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
+        .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
+        
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
+        #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
+        #share-image-container img { width: 100%; height: auto; display: block; }
+        .overlay-close { margin-top: 15px; background: white; color: black; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .result-footer-buttons button { flex: 1; padding: 12px 5px; }
+
+        @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
     </style>
 </head>
-<body>
-    <header>
-        <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo" onerror="this.style.display='none'">
-        <h1>全国ランキング</h1>
-        <p class="subtitle">サテステの上位スコアをチェック</p>
-        <nav class="header-nav" aria-label="ヘッダーナビゲーション">
-            <a href="/">ホーム</a>
-            <a href="about.html">サテステについて（自己紹介）</a>
-            <a href="guide.html">攻略ガイド</a>
-            <a href="ranking.html">ランキング</a>
-            <a href="terms.html">利用規約</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="contact.html">お問い合わせ</a>
-        </nav>
-    </header>
-
-    <main>
-        <section class="card" style="border: 2px solid #FF9500;">
-            <div class="card-title" style="color:#FF9500;">🥇 全国ランキング</div>
-            <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同点の場合は合計時間が短い記録を上位として表示します。</div>
-            <div class="hero-actions">
-                <a href="index.html" class="btn-start btn-challenge">ランキングに挑戦する</a>
-                <a href="index.html" class="btn-start btn-free">タイトルへ戻る</a>
-            </div>
-        </section>
-
-        <section class="card ranking-card">
-            <div class="tabs">
-                <button id="tab-normal" class="tab active normal" onclick="switchMode('normal')">通常モード</button>
-                <button id="tab-hard" class="tab" onclick="switchMode('hard')">ハードモード</button>
-            </div>
-            <div class="filter-panel">
-                <label class="filter-label" for="condition-select">ランキング条件</label>
-                <select id="condition-select" class="filter-select" onchange="selectCondition(this.value)">
-                    <option value="">条件を読み込み中...</option>
-                </select>
-                <div class="filter-hint">同じ条件で送信されたスコアだけが表示されます。新しい絞り込み条件は、誰かが結果画面から初回送信すると選択肢に追加されます。</div>
+<body onload="init()">
+    <div id="map"></div>
+    <div class="ui-container" id="ui-panel">
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-content" id="ui-content">
+            
+            <!-- 広告枠1: コンテンツ最上部（常設） -->
+            <div class="ad-container">
+                                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-6887981844690617"
+                     data-ad-slot="ca-pub-6887981844690617"
+                     data-ad-format="horizontal"
+                     data-full-width-responsive="true"></ins>
             </div>
 
-            <div class="ranking-head">
-                <div>
-                    <h2 class="ranking-title" id="ranking-title">通常モード / 全国 / 10問</h2>
-                    <p class="ranking-note">Firestoreから選択中の条件の上位50件を取得し、スコア順・同点は時間順で上位10件を表示します。</p>
+            <h2 id="question-title">準備中...</h2>
+            <div id="game-ui">
+                <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
+                <datalist id="station-list"></datalist>
+                <div class="button-group">
+                    <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
+                    <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
+                    <button class="btn-reset" onclick="resetView()">場所を戻す</button>
+                    <button class="btn-giveup" onclick="showAnswer()">答えを見る</button>
+                    <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
+                    <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
+                    <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+                    <button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
                 </div>
-                <button class="btn-refresh" onclick="reloadCurrentRanking()">再読み込み</button>
-            </div>
+                <div id="hint-area"></div>
+                <div id="result"></div>
 
-            <div id="status" class="status-pill">読み込み中</div>
-            <div id="podium" class="podium"></div>
-            <div id="ranking-area" class="loading">ランキングを読み込み中...</div>
-        </section>
-
-        <section class="card article-section">
-            <h2>ランキングについて</h2>
-            <ul>
-                <li>スコアはランキング挑戦モードの結果画面から送信されたものだけ反映されます。</li>
-                <li>都道府県・会社・路線・ハードモードの有無・問題数が同じ記録同士でランキング化されます。</li>
-                <li>名前は最大16文字です。個人情報や不適切な名前は使わないでください。</li>
-                <li>公開直後は記録が少ないため、ランキングが空になることがあります。</li>
-                <li>「詳細」ボタンから、その記録の各問題の正解駅・解答・得点・誤差・時間を確認できます。</li>
-            </ul>
-        </section>
-    </main>
-
-
-
-    <div id="detail-overlay" class="detail-overlay" onclick="closeScoreDetail(event)">
-        <div class="detail-modal" onclick="event.stopPropagation()">
-            <div class="detail-header">
-                <div>
-                    <h3 id="detail-title">回答詳細</h3>
-                    <div id="detail-summary" class="detail-summary"></div>
+                <!-- 広告枠2: ゲームUIの下 -->
+                <div class="ad-container">
+                                        <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-6887981844690617"
+                         data-ad-slot="ca-pub-6887981844690617"
+                         data-ad-format="rectangle"
+                         data-full-width-responsive="true"></ins>
                 </div>
-                <button class="detail-close" onclick="closeScoreDetail()">閉じる</button>
             </div>
-            <div id="detail-body">読み込み中...</div>
+            <div id="final-ui" style="display:none;"></div>
         </div>
     </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="/">ホーム</a>
-            <a href="about.html">サテステについて（自己紹介）</a>
-            <a href="guide.html">攻略ガイド</a>
-            <a href="ranking.html">ランキング</a>
-            <a href="terms.html">利用規約</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="contact.html">お問い合わせ</a>
-        </div>
-        <div class="copyright">
-            &copy; 2026 サテステ -From Satellite to Station- 制作委員会<br>
-            <a href="https://x.com/Amami103_" target="_blank" style="color: #666; font-size: 11px;">Admin: @Amami103_</a>
-        </div>
-    </footer>
+    <div id="image-overlay">
+        <div id="share-image-container"></div>
+        <p style="color:white; font-size:12px; margin-top:10px; text-align:center;">画像を保存してシェアしてください</p>
+        <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
+    </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
-      authDomain: "sate-sta-ranking.firebaseapp.com",
-      projectId: "sate-sta-ranking",
-      storageBucket: "sate-sta-ranking.firebasestorage.app",
-      messagingSenderId: "533003449600",
-      appId: "1:533003449600:web:d0b7bebe087178e034efe5",
-      measurementId: "G-BZ63E1NHC3"
-    };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
+            authDomain: "sate-sta-ranking.firebaseapp.com",
+            projectId: "sate-sta-ranking",
+            storageBucket: "sate-sta-ranking.firebasestorage.app",
+            messagingSenderId: "533003449600",
+            appId: "1:533003449600:web:d0b7bebe087178e034efe5",
+            measurementId: "G-BZ63E1NHC3"
+        };
 
-    let currentMode = 'normal';
-    let allConditions = [];
-    let currentConditionId = '';
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch (e) {}
+        const db = getFirestore(app);
+        window.sateStaFirebase = { db, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
+        window.sateStaFirebaseReady = true;
+        window.dispatchEvent(new Event("sateStaFirebaseReady"));
+    </script>
 
-    const defaultConditions = [
-      makeFallbackCondition('normal', '全国', 10, 50),
-      makeFallbackCondition('hard', '全国', 10, 50)
-    ];
-
-    function escapeHtml(str) {
-      return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-    }
-
-    function getRankingDocIdFromKey(key) {
-      return encodeURIComponent(key).replace(/\./g, "%2E");
-    }
-
-    function makeConditionKey(modeKey, filters, totalQuestions, penalty) {
-      return `${modeKey}|${filters || '全国'}|penalty:${Number(penalty || 50)}|questions:${Number(totalQuestions || 10)}`;
-    }
-
-    function makeFallbackCondition(modeKey, filters, totalQuestions, penalty) {
-      const modeName = modeKey === 'hard' ? 'ハード' : '通常';
-      const conditionKey = makeConditionKey(modeKey, filters, totalQuestions, penalty);
-      return {
-        id: getRankingDocIdFromKey(conditionKey),
-        conditionKey,
-        conditionLabel: `${modeName} / ${filters}`,
-        modeKey,
-        modeName,
-        filters,
-        totalQuestions,
-        maxDistancePenalty: penalty,
-        isFallback: true
-      };
-    }
-
-    function conditionText(c) {
-      const q = Number(c.totalQuestions || 10);
-      const label = c.conditionLabel || `${c.modeName || (c.modeKey === 'hard' ? 'ハード' : '通常')} / ${c.filters || '全国'}`;
-      return `${label} / ${q}問`;
-    }
-
-    function formatDate(value) {
-      try {
-        const date = value?.toDate ? value.toDate() : new Date(value);
-        if (Number.isNaN(date.getTime())) return '-';
-        return date.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
-      } catch (e) {
-        return '-';
-      }
-    }
-
-    function renderPodium(items) {
-      const podium = document.getElementById('podium');
-      const top3 = items.slice(0, 3);
-      if (!top3.length) { podium.innerHTML = ''; return; }
-      const classes = ['first', 'second', 'third'];
-      const medals = ['🥇', '🥈', '🥉'];
-      podium.innerHTML = top3.map((item, i) => `<div class="podium-card ${classes[i]}">
-        <div class="medal">${medals[i]}</div>
-        <div class="podium-name">${escapeHtml(item.name || 'ゲスト')}</div>
-        <div class="podium-score">${Number(item.score || 0).toLocaleString()}点</div>
-        <div class="podium-sub">${escapeHtml(item.rank || '-')} / ${Number(item.totalTime || 0).toFixed(1)}秒</div>
-      </div>`).join('');
-    }
-
-    function renderRows(items) {
-      if (!items.length) return '<div class="empty">まだランキングがありません。<br>この条件でランキング挑戦モードを遊んで、結果画面からスコアを送信すると表示されます。</div>';
-      const rows = items.slice(0, 10).map((item, i) => {
-        const cls = i < 3 ? `rank-${i + 1}` : '';
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
-        return `<tr class="${cls}">
-          <td class="rank-num">${medal}</td>
-          <td><div class="player-name">${escapeHtml(item.name || 'ゲスト')}</div></td>
-          <td class="score">${Number(item.score || 0).toLocaleString()}</td>
-          <td><span class="rank-badge">${escapeHtml(item.rank || '-')}</span></td>
-          <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 10)}</td>
-          <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
-          <td>${escapeHtml(formatDate(item.createdAt || item.playedAt))}</td>
-          <td><button class="btn-detail" onclick="showScoreDetail('${escapeHtml(item.id)}')">詳細</button></td>
-        </tr>`;
-      }).join('');
-      return `<div class="table-wrap"><table>
-        <thead><tr><th>順位</th><th>名前</th><th>スコア</th><th>ランク</th><th>正答</th><th>時間</th><th>日付</th><th>詳細</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>`;
-    }
-
-    function renderScoreHistoryTable(history) {
-      if (!Array.isArray(history) || history.length === 0) {
-        return '<div class="empty">この記録には回答詳細が保存されていません。古い記録の場合、再送信後に表示されます。</div>';
-      }
-      const rows = history.map((h, i) => {
-        const userAns = h.userAns || '(未入力)';
-        const distText = (userAns === '(未入力)' || userAns === 'ギブアップ') ? '-' : `${Number(h.dist || 0).toFixed(1)}km`;
-        const mark = h.isCorrect ? '<span class="detail-ok">正解</span>' : '<span class="detail-ng">不正解</span>';
-        return `<tr>
-          <td>${Number(h.no || i + 1)}</td>
-          <td>${mark}</td>
-          <td>${escapeHtml(h.name || '')}</td>
-          <td>${escapeHtml(userAns)}</td>
-          <td>${Number(h.score || 0).toLocaleString()}</td>
-          <td>${escapeHtml(distText)}</td>
-          <td>${Number(h.time || 0).toFixed(1)}秒</td>
-          <td>${escapeHtml(h.pref || '')} / ${escapeHtml(h.line || '')}</td>
-        </tr>`;
-      }).join('');
-      return `<div class="detail-table-wrap"><table class="detail-table">
-        <thead><tr><th>#</th><th>判定</th><th>正解駅</th><th>解答</th><th>点</th><th>誤差</th><th>時間</th><th>路線</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>`;
-    }
-
-    window.showScoreDetail = async function(scoreId) {
-      const overlay = document.getElementById('detail-overlay');
-      const title = document.getElementById('detail-title');
-      const summary = document.getElementById('detail-summary');
-      const body = document.getElementById('detail-body');
-      if (!overlay || !scoreId || !currentConditionId) return;
-      overlay.style.display = 'flex';
-      title.textContent = '回答詳細を読み込み中...';
-      summary.textContent = '';
-      body.innerHTML = '読み込み中...';
-      try {
-        const ref = doc(db, 'rankings', currentConditionId, 'scores', scoreId);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          body.innerHTML = '<div class="error">記録が見つかりませんでした。</div>';
-          return;
+    <script>
+        // 広告読み込み用
+        function refreshAds() {
+            try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
         }
-        const item = { id: snap.id, ...snap.data() };
-        title.textContent = `${item.name || 'ゲスト'} さんの回答詳細`;
-        summary.innerHTML = `スコア：<strong>${Number(item.score || 0).toLocaleString()}点</strong> / ランク：${escapeHtml(item.rank || '-')} / 正答：${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 0)}問 / 合計時間：${Number(item.totalTime || 0).toFixed(1)}秒<br>${escapeHtml(item.conditionLabel || '')}`;
-        body.innerHTML = renderScoreHistoryTable(item.history);
-      } catch (e) {
-        console.error(e);
-        title.textContent = '回答詳細';
-        body.innerHTML = '<div class="error">回答詳細を読み込めませんでした。Firestoreルールの読み取り許可を確認してください。</div>';
-      }
-    };
 
-    window.closeScoreDetail = function(event) {
-      if (event && event.target && event.target.id !== 'detail-overlay') return;
-      const overlay = document.getElementById('detail-overlay');
-      if (overlay) overlay.style.display = 'none';
-    };
+        const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
+        const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
-    function dedupeConditions(list) {
-      const map = new Map();
-      [...list, ...defaultConditions].forEach(c => {
-        if (!c || !c.id) return;
-        if (!map.has(c.id) || map.get(c.id).isFallback) map.set(c.id, c);
-      });
-      return Array.from(map.values()).sort((a, b) => {
-        if ((a.filters || '全国') === '全国' && (b.filters || '全国') !== '全国') return -1;
-        if ((b.filters || '全国') === '全国' && (a.filters || '全国') !== '全国') return 1;
-        return conditionText(a).localeCompare(conditionText(b), 'ja');
-      });
-    }
+        let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
+        let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
+        let maxDistancePenalty = 50, activeFilters = "全国";
+        
+                let localScoreSaved = false, lastScoreRecordState = null;
+        let localRankingSaved = false, lastRankingState = null;
+        let globalRankingSubmitting = false;
+        const RANKING_NAME_KEY = "sateStaRankingName:v1";
+        const RANKING_PLAYER_ID_KEY = "sateStaPlayerId:v1";
+        let inputTimer; 
+        let isComposing = false;
 
-    async function loadConditions() {
-      const select = document.getElementById('condition-select');
-      try {
-        const snap = await getDocs(collection(db, 'rankingIndexes'));
-        const fromDb = [];
-        snap.forEach(d => fromDb.push({ id: d.id, ...d.data() }));
-        allConditions = dedupeConditions(fromDb);
-      } catch (e) {
-        console.warn('rankingIndexesを読み込めませんでした。fallbackだけ表示します。', e);
-        allConditions = dedupeConditions([]);
-      }
-      renderConditionSelect();
-      const first = allConditions.find(c => c.modeKey === currentMode) || allConditions[0];
-      currentConditionId = first?.id || '';
-      if (select) select.value = currentConditionId;
-      loadRanking(currentConditionId);
-    }
+        function getDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
 
-    function renderConditionSelect() {
-      const select = document.getElementById('condition-select');
-      const filtered = allConditions.filter(c => c.modeKey === currentMode);
-      select.innerHTML = filtered.length
-        ? filtered.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(conditionText(c))}</option>`).join('')
-        : '<option value="">このモードの条件はまだありません</option>';
-    }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
 
-    async function loadRanking(conditionId) {
-      const area = document.getElementById('ranking-area');
-      const status = document.getElementById('status');
-      const title = document.getElementById('ranking-title');
-      const condition = allConditions.find(c => c.id === conditionId) || allConditions.find(c => c.modeKey === currentMode) || defaultConditions[0];
-      currentConditionId = condition?.id || '';
-      const isHard = condition?.modeKey === 'hard';
-      title.textContent = condition ? conditionText(condition) : 'ランキング';
-      title.classList.toggle('hard', isHard);
-      status.textContent = '読み込み中';
-      status.style.background = isHard ? '#fff1f0' : '#eef6ff';
-      status.style.color = isHard ? '#b42318' : '#0059b8';
-      document.getElementById('podium').innerHTML = '';
-      area.className = 'loading';
-      area.innerHTML = 'ランキングを読み込み中...';
-      if (!condition?.id) { area.innerHTML = '<div class="empty">この条件のランキングはまだありません。</div>'; return; }
+        function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
 
-      try {
-        const scoresRef = collection(db, 'rankings', condition.id, 'scores');
-        const q = query(scoresRef, orderBy('score', 'desc'), limit(50));
-        const snap = await getDocs(q);
-        const items = [];
-        snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
-        items.sort((a, b) => {
-          if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
-          return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
-        });
-        status.textContent = `${items.length}件取得`;
-        renderPodium(items);
-        area.className = '';
-        area.innerHTML = renderRows(items);
-      } catch (e) {
-        console.error(e);
-        status.textContent = '読み込み失敗';
-        area.className = 'error';
-        area.innerHTML = 'ランキングを読み込めませんでした。Firestore Databaseの作成状況、またはFirestoreルールを確認してください。';
-      }
-    }
+        function init() {
+            refreshAds();
+            refreshAds();
 
-    window.switchMode = function(mode) {
-      currentMode = mode;
-      document.getElementById('tab-normal').classList.toggle('active', mode === 'normal');
-      document.getElementById('tab-normal').classList.toggle('normal', mode === 'normal');
-      document.getElementById('tab-hard').classList.toggle('active', mode === 'hard');
-      document.getElementById('tab-hard').classList.toggle('hard', mode === 'hard');
-      renderConditionSelect();
-      const first = allConditions.find(c => c.modeKey === currentMode);
-      currentConditionId = first?.id || '';
-      const select = document.getElementById('condition-select');
-      if (select) select.value = currentConditionId;
-      loadRanking(currentConditionId);
-    };
+            const params = new URLSearchParams(window.location.search);
+            const resData = params.get('res');
+            map = L.map('map', { zoomControl:false });
+            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
 
-    window.selectCondition = function(conditionId) {
-      loadRanking(conditionId);
-    };
+            if (resData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
+                    playHistory = decoded.history; totalScore = decoded.score; isLocked = decoded.locked; activeFilters = decoded.filters || "全国";
+                    setTimeout(() => { showFinalResult(true); generateResultCard(decoded.rank || "SSS", isLocked ? "ハード" : "通常", true); }, 200);
+                    return;
+                } catch(e) { console.error("Data error"); }
+            }
 
-    window.reloadCurrentRanking = function() {
-      loadConditions();
-    };
+            isLocked = params.get('lock') === 'true';
+            if (isLocked) { map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable(); map.scrollWheelZoom.disable(); map.boxZoom.disable(); map.keyboard.disable(); }
 
-    loadConditions();
-  </script>
+            if (typeof stations === 'undefined') return;
+            const stationMap = new Map();
+            stations.forEach(s => {
+                const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
+                if (stationMap.has(key)) {
+                    const existing = stationMap.get(key);
+                    if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                } else {
+                    const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
+                }
+            });
+
+            const nameCounts = {};
+            allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
+            allStationLabels = allUniqueStations.map(s => {
+                const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
+                s.fullLabel = label;
+                return label;
+            }).sort();
+            
+            const inputEl = document.getElementById('station-input');
+            inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+            inputEl.addEventListener('compositionend', () => { isComposing = false; updateDatalist(); });
+            inputEl.addEventListener('input', () => { if (isComposing) return; clearTimeout(inputTimer); inputTimer = setTimeout(updateDatalist, 150); });
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (isComposing) return;
+                    e.preventDefault(); 
+                    checkAnswer();
+                }
+            });
+
+            let filtered = [...allUniqueStations];
+            const sPref = params.get('pref'), sComp = params.get('company'), sComps = params.get('comps'), sLine = params.get('line'), sLines = params.get('lines');
+            const splitParam = (value) => {
+                if (!value || value === "all") return [];
+                return value.split(',').map(v => v.trim()).filter(Boolean);
+            };
+            const stationKey = (s) => `${s.name}_${Number(s.lat).toFixed(3)}_${Number(s.lng).toFixed(3)}`;
+            const matchValue = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
+            };
+
+            let filterLabels = [];
+            let penaltyValues = [];
+            let rawFiltered = stations.slice();
+
+            const selectedPrefs = splitParam(sPref);
+            if (selectedPrefs.length > 0) {
+                let prefNames = [];
+                selectedPrefs.forEach(p => {
+                    if (p.startsWith("reg:")) {
+                        const regName = p.replace("reg:", "");
+                        prefNames.push(...(REGION_PREFS[regName] || []));
+                        filterLabels.push("地方: "+regName);
+                        penaltyValues.push(45);
+                    } else {
+                        prefNames.push(p);
+                        filterLabels.push("都道府県: "+p);
+                        penaltyValues.push(25);
+                    }
+                });
+                prefNames = Array.from(new Set(prefNames));
+                rawFiltered = rawFiltered.filter(s => prefNames.includes(s.pref));
+            }
+
+            if (sComp && sComp !== "all") {
+                if (sComp.startsWith("grp:")) {
+                    const groupName = sComp.replace("grp:", "");
+                    const grp = COMPANY_GROUPS[groupName] || [];
+                    rawFiltered = rawFiltered.filter(s => grp.some(c => matchValue(s.company, c)) || matchValue(s.company, groupName));
+                    filterLabels.push("会社: "+groupName);
+                    penaltyValues.push(35);
+                } else {
+                    rawFiltered = rawFiltered.filter(s => matchValue(s.company, sComp));
+                    filterLabels.push("会社: "+sComp);
+                    penaltyValues.push(20);
+                }
+            }
+
+            const selectedComps = splitParam(sComps);
+            if (selectedComps.length > 0) {
+                rawFiltered = rawFiltered.filter(s => selectedComps.some(c => matchValue(s.company, c)));
+                filterLabels.push("会社: "+Array.from(new Set(selectedComps)).join('・'));
+                penaltyValues.push(20);
+            }
+
+            const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
+            if (selectedLines.length > 0) {
+                const uniqueLines = Array.from(new Set(selectedLines));
+                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchValue(s.line, l)));
+                filterLabels.push("路線: "+uniqueLines.join('・'));
+                penaltyValues.push(10);
+            }
+
+            const allowedKeys = new Set(rawFiltered.map(stationKey));
+            filtered = allUniqueStations.filter(s => allowedKeys.has(stationKey(s)));
+
+            if (penaltyValues.length > 0) {
+                maxDistancePenalty = Math.min(...penaltyValues);
+                activeFilters = filterLabels.join(" / ");
+            } else {
+                maxDistancePenalty = 50;
+                activeFilters = "全国";
+            }
+
+            for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
+            gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
+            if (gameStations.length === 0) { alert("駅が見つかりませんでした。"); location.href = "index.html"; return; }
+            nextQuestion();
+            makeDraggable(document.getElementById("ui-panel"));
+        }
+
+        function updateDatalist() {
+            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            if (val.length < 1) { dl.innerHTML = ""; return; }
+            const frag = document.createDocumentFragment(); let count = 0;
+            for (const label of allStationLabels) { if (label.toLowerCase().startsWith(val)) { const o = document.createElement('option'); o.value = label; frag.appendChild(o); if (++count >= 100) break; } }
+            dl.innerHTML = ""; dl.appendChild(frag);
+        }
+
+        function nextQuestion() {
+            if (questionCount >= gameStations.length) { showFinalResult(); return; }
+            answered = false; usedHints = { pref: false, line: false };
+            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('result').innerText = ""; 
+            document.getElementById('station-input').value = "";
+            document.getElementById('station-list').innerHTML = ""; 
+            document.getElementById('hint-area').style.display = "none"; document.getElementById('hint-area').innerText = ""; currentStation = gameStations[questionCount];
+            map.setView([currentStation.lat, currentStation.lng], 17);
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
+            startTime = Date.now();
+        }
+
+        function showHint(t) {
+            if(!answered){
+                usedHints[t] = true; const a = document.getElementById('hint-area'); a.style.display = "block";
+                const content = t === 'pref' ? `都道府県: ${currentStation.pref}` : `路線名: ${currentStation.line}`;
+                if (!a.innerHTML.includes(content)) a.innerHTML = (a.innerHTML ? a.innerHTML + "<br>" : "") + content;
+            }
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            const userRaw = document.getElementById('station-input').value.trim();
+            const userName = userRaw.split(' (')[0];
+            const sameNameStations = allUniqueStations.filter(s => s.name === userName);
+            
+            if (userRaw !== "" && sameNameStations.length > 1 && !userRaw.includes(' (')) {
+                const res = document.getElementById('result');
+                res.innerHTML = `<span style="color:#FF3B30; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
+                return;
+            }
+
+            const time = (Date.now() - startTime) / 1000;
+            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
+            
+            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
+            if (!userStation && userRaw !== "") {
+                userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
+            }
+
+            if (userStation) {
+                dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
+                const isNameMatch = (userName === currentStation.name);
+                if ((isNameMatch && dist < 1.0) || dist < 0.1) {
+                    isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                baseScore = 1500;
+                timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+            } else {
+                baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, maxDistancePenalty) / maxDistancePenalty)));
+            }
+
+            let multiplier = 1.0;
+            if (usedHints.pref && usedHints.line) multiplier = 0.1; else if (usedHints.line) multiplier = 0.25; else if (usedHints.pref) multiplier = 0.5;
+            const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
+
+            const res = document.getElementById('result');
+            res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
+                            `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
+                            `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
+                            `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${!userRaw ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
+                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>` +
+                            `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
+
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw || "(未入力)", isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        function showAnswer() {
+            if (answered) return;
+            document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            questionCount++;
+        }
+
+        const SCORE_HISTORY_KEY = "sateStaChallengeScoreHistory:v1";
+        const SCORE_BEST_PREFIX = "sateStaChallengeBestScore:v1:";
+
+        function confirmExitToTitle() {
+            if (confirm("本当に終了してタイトルに戻りますか？")) {
+                location.href = "index.html";
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, (match) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[match]));
+        }
+
+        function safeJsonParse(value, fallback) {
+            try {
+                return value ? JSON.parse(value) : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function getCurrentConditionKey() {
+            const mode = isLocked ? "hard" : "normal";
+            const filterKey = activeFilters || "全国";
+            return `${mode}|${filterKey}|penalty:${maxDistancePenalty}`;
+        }
+
+        function getCurrentConditionLabel(modeName) {
+            return `${modeName} / ${activeFilters || "全国"}`;
+        }
+
+        function getCorrectCount() {
+            return playHistory.filter(h => h.isCorrect).length;
+        }
+
+        function getTotalTimeSeconds() {
+            const total = playHistory.reduce((sum, h) => sum + (Number(h.time) || 0), 0);
+            return Math.round(total * 10) / 10;
+        }
+
+        function getBestRecord(conditionKey) {
+            return safeJsonParse(localStorage.getItem(SCORE_BEST_PREFIX + conditionKey), null);
+        }
+
+        function saveLocalScoreRecord(rank, modeName) {
+            const conditionKey = getCurrentConditionKey();
+            const result = {
+                score: totalScore,
+                rank,
+                correctCount: getCorrectCount(),
+                totalQuestions: playHistory.length,
+                totalTime: getTotalTimeSeconds(),
+                modeName,
+                filters: activeFilters || "全国",
+                conditionKey,
+                conditionLabel: getCurrentConditionLabel(modeName),
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
+            };
+
+            const previousBest = getBestRecord(conditionKey);
+            const shouldUpdateBest = !previousBest ||
+                result.score > previousBest.score ||
+                (result.score === previousBest.score && result.totalTime < previousBest.totalTime);
+
+            const conditionBest = shouldUpdateBest ? result : previousBest;
+            if (shouldUpdateBest) {
+                localStorage.setItem(SCORE_BEST_PREFIX + conditionKey, JSON.stringify(result));
+            }
+
+            const history = safeJsonParse(localStorage.getItem(SCORE_HISTORY_KEY), []);
+            history.unshift(result);
+            const limitedHistory = history.slice(0, 10);
+            localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(limitedHistory));
+
+            return {
+                result,
+                previousBest,
+                conditionBest,
+                isNewBest: shouldUpdateBest,
+                history: limitedHistory
+            };
+        }
+
+        function formatRecordDate(isoString) {
+            try {
+                return new Date(isoString).toLocaleString("ja-JP", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function createScoreRecordHtml(state) {
+            const result = state.result;
+            const best = state.conditionBest || result;
+            const previousBestText = state.previousBest
+                ? `${Number(state.previousBest.score).toLocaleString()}点`
+                : "なし";
+            const badge = state.isNewBest ? '<span class="new-best-badge">自己ベスト更新！</span>' : "";
+            const historyHtml = state.history.length
+                ? state.history.map((item) => `
+                    <li>
+                        ${escapeHtml(formatRecordDate(item.playedAt))}：
+                        ${Number(item.score).toLocaleString()}点 / ${escapeHtml(item.rank)}
+                        （${Number(item.correctCount)}/${Number(item.totalQuestions)}問・${escapeHtml(item.modeName)}）
+                    </li>
+                `).join("")
+                : '<li>まだ記録がありません</li>';
+
+            return `
+                <div id="score-record-area" class="score-record-box">
+                    <div class="score-record-title">
+                        <span>自己記録</span>
+                        ${badge}
+                    </div>
+                    <div class="score-record-condition">${escapeHtml(result.conditionLabel)}</div>
+                    <div class="score-record-grid">
+                        <div class="score-record-cell">
+                            <span>今回</span>
+                            <strong>${Number(result.score).toLocaleString()}点</strong>
+                        </div>
+                        <div class="score-record-cell">
+                            <span>条件別ベスト</span>
+                            <strong>${Number(best.score).toLocaleString()}点</strong>
+                        </div>
+                    </div>
+                    <div class="score-record-sub">
+                        正答数：${Number(result.correctCount)}/${Number(result.totalQuestions)}問　
+                        合計時間：${Number(result.totalTime).toFixed(1)}秒<br>
+                        これまでの条件別ベスト：${escapeHtml(previousBestText)}
+                    </div>
+                    <details class="score-history-details">
+                        <summary>最近10回の記録を見る</summary>
+                        <ol class="score-history-list">${historyHtml}</ol>
+                    </details>
+                    <button class="btn-record-reset" onclick="resetScoreRecords()">自己記録をリセット</button>
+                </div>`;
+        }
+
+        function resetScoreRecords() {
+            if (!confirm("自己記録をすべて削除しますか？")) return;
+
+            Object.keys(localStorage).forEach((key) => {
+                if (key.startsWith(SCORE_BEST_PREFIX) || key === SCORE_HISTORY_KEY) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            const area = document.getElementById("score-record-area");
+            if (area) {
+                area.innerHTML = `
+                    <div class="score-record-title">自己記録</div>
+                    <div class="score-record-sub">自己記録を削除しました。</div>
+                `;
+            }
+        }
+
+
+
+        function getRankingKey() {
+            return `${getCurrentConditionKey()}|questions:${playHistory.length}`;
+        }
+
+        function getRankingDocId(rankingKey) {
+            return encodeURIComponent(rankingKey).replace(/\./g, "%2E");
+        }
+
+        function normalizeRankingName(name) {
+            const cleaned = String(name || "").trim().replace(/\s+/g, " ").slice(0, 16);
+            return cleaned || "ゲスト";
+        }
+
+        function getOrCreatePlayerId() {
+            let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
+            if (!playerId) {
+                const randomPart = Math.random().toString(36).slice(2);
+                const timePart = Date.now().toString(36);
+                playerId = `player_${timePart}_${randomPart}`;
+                localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
+            }
+            return playerId;
+        }
+
+        function getRankingModeKey() {
+            return isLocked ? "hard" : "normal";
+        }
+
+        function getRankingHistoryForSave() {
+            return playHistory.map((h, index) => ({
+                no: index + 1,
+                name: String(h.name || ""),
+                pref: String(h.pref || ""),
+                line: String(h.line || ""),
+                userAns: String(h.userAns || "(未入力)"),
+                isCorrect: !!h.isCorrect,
+                dist: Math.round((Number(h.dist) || 0) * 100) / 100,
+                score: Math.round(Number(h.score) || 0),
+                time: Math.round((Number(h.time) || 0) * 10) / 10,
+                lat: Number(h.lat) || 0,
+                lng: Number(h.lng) || 0
+            }));
+        }
+
+        function createCurrentRankingEntry(rank, modeName, nameOverride = null) {
+            const rankingName = normalizeRankingName(nameOverride || localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
+            return {
+                name: rankingName,
+                playerId: getOrCreatePlayerId(),
+                score: Math.round(Number(totalScore) || 0),
+                rank,
+                correctCount: getCorrectCount(),
+                totalQuestions: playHistory.length,
+                totalTime: getTotalTimeSeconds(),
+                modeKey: getRankingModeKey(),
+                modeName,
+                filters: activeFilters || "全国",
+                conditionKey: getRankingKey(),
+                conditionLabel: getCurrentConditionLabel(modeName),
+                history: getRankingHistoryForSave(),
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
+            };
+        }
+
+        function createRankingHtml(state) {
+            const current = state.current;
+            return `
+                <div id="ranking-area" class="ranking-box">
+                    <div class="ranking-title">
+                        <span>全国ランキング</span>
+                        <span id="ranking-position">未送信</span>
+                    </div>
+                    <div class="ranking-condition">${escapeHtml(current.conditionLabel)} / ${Number(current.totalQuestions)}問</div>
+                    <div class="ranking-user-row">
+                        <input id="ranking-name-input" class="ranking-name-input" value="${escapeHtml(current.name)}" maxlength="16" placeholder="ランキング名">
+                        <button id="ranking-submit-btn" class="btn-ranking-save" onclick="saveRankingNameFromInput()">全国に送信</button>
+                    </div>
+                    <div id="ranking-current" class="ranking-current">
+                        今回：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br>
+                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件のランキングに登録されます。</span>
+                    </div>
+                    <table class="ranking-table">
+                        <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th><th>詳細</th></tr></thead>
+                        <tbody id="ranking-tbody"><tr><td colspan="6">ランキングを読み込み中...</td></tr></tbody>
+                    </table>
+                </div>`;
+        }
+
+        async function waitForFirebaseReady() {
+            if (window.sateStaFirebaseReady && window.sateStaFirebase) return window.sateStaFirebase;
+            await new Promise((resolve) => window.addEventListener("sateStaFirebaseReady", resolve, { once: true }));
+            return window.sateStaFirebase;
+        }
+
+        function renderRankingRows(ranking, currentDocId = null) {
+            const tbody = document.getElementById("ranking-tbody");
+            if (!tbody) return;
+            const rows = ranking.slice(0, 10).map((item, index) => {
+                const isCurrent = currentDocId && item.id === currentDocId;
+                const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`;
+                return `
+                    <tr class="${isCurrent ? 'ranking-highlight' : ''}">
+                        <td>${medal}</td>
+                        <td>${escapeHtml(item.name || "ゲスト")}</td>
+                        <td>${Number(item.score || 0).toLocaleString()}</td>
+                        <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 0)}</td>
+                        <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
+                        <td><button class="btn-view" onclick="window.open('ranking.html', '_blank')">詳細</button></td>
+                    </tr>`;
+            }).join("");
+            tbody.innerHTML = rows || '<tr><td colspan="6">まだ記録がありません</td></tr>'; 
+        }
+
+        async function fetchGlobalRanking(rankingKey) {
+            const fb = await waitForFirebaseReady();
+            const rankingDocId = getRankingDocId(rankingKey);
+            const scoresRef = fb.collection(fb.db, "rankings", rankingDocId, "scores");
+            const q = fb.query(scoresRef, fb.orderBy("score", "desc"), fb.limit(50));
+            const snap = await fb.getDocs(q);
+            const ranking = [];
+            snap.forEach((d) => ranking.push({ id: d.id, ...d.data() }));
+            ranking.sort((a, b) => {
+                if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
+                return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
+            });
+            return ranking;
+        }
+
+        async function loadGlobalRanking() {
+            if (!lastRankingState) return;
+            const tbody = document.getElementById("ranking-tbody");
+            try {
+                const ranking = await fetchGlobalRanking(lastRankingState.current.conditionKey);
+                lastRankingState.ranking = ranking;
+                renderRankingRows(ranking, lastRankingState.docId || null);
+                const posEl = document.getElementById("ranking-position");
+                if (posEl && lastRankingState.docId) {
+                    const pos = ranking.findIndex(item => item.id === lastRankingState.docId) + 1;
+                    posEl.textContent = pos > 0 ? `${pos}位` : "50位圏外";
+                } else if (posEl) {
+                    posEl.textContent = "未送信";
+                }
+            } catch (e) {
+                console.error(e);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5">ランキングを読み込めませんでした</td></tr>';
+            }
+        }
+
+        async function saveRankingIndex(fb, rankingDocId, current) {
+            const indexRef = fb.doc(fb.db, "rankingIndexes", rankingDocId);
+            await fb.setDoc(indexRef, {
+                conditionKey: current.conditionKey,
+                conditionLabel: current.conditionLabel,
+                modeKey: current.modeKey || (current.modeName === "ハード" ? "hard" : "normal"),
+                modeName: current.modeName,
+                filters: current.filters || "全国",
+                totalQuestions: current.totalQuestions,
+                maxDistancePenalty: maxDistancePenalty,
+                updatedAt: fb.serverTimestamp()
+            }, { merge: true });
+        }
+
+        async function saveRankingNameFromInput() {
+            if (!lastRankingState || globalRankingSubmitting) return;
+            const input = document.getElementById("ranking-name-input");
+            const button = document.getElementById("ranking-submit-btn");
+            const currentBox = document.getElementById("ranking-current");
+            const name = normalizeRankingName(input ? input.value : "ゲスト");
+            if (input) input.value = name;
+            localStorage.setItem(RANKING_NAME_KEY, name);
+
+            globalRankingSubmitting = true;
+            if (button) { button.disabled = true; button.textContent = "送信中..."; }
+
+            try {
+                const fb = await waitForFirebaseReady();
+                const current = { ...lastRankingState.current, name, playerId: getOrCreatePlayerId(), history: getRankingHistoryForSave() };
+                const rankingDocId = getRankingDocId(current.conditionKey);
+                const playerDocId = current.playerId;
+                const scoreRef = fb.doc(fb.db, "rankings", rankingDocId, "scores", playerDocId);
+
+                await saveRankingIndex(fb, rankingDocId, current);
+
+                const oldSnap = await fb.getDoc(scoreRef);
+                const old = oldSnap.exists() ? oldSnap.data() : null;
+                const isBetter = !old || Number(current.score) > Number(old.score || -1) ||
+                    (Number(current.score) === Number(old.score || -1) && Number(current.totalTime) <= Number(old.totalTime || 999999));
+
+                if (isBetter) {
+                    await fb.setDoc(scoreRef, {
+                        ...current,
+                        updatedAt: fb.serverTimestamp(),
+                        createdAt: old?.createdAt || fb.serverTimestamp(),
+                        userAgent: navigator.userAgent.slice(0, 120)
+                    }, { merge: true });
+                    lastRankingState.docId = playerDocId;
+                    if (currentBox) {
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br><span style="font-size:10px;color:#666;">この条件の自己ベストを更新しました。ランキングページで回答詳細を見られます。</span>`;
+                    }
+                } else {
+                    // 自己ベスト未更新でも名前だけは更新します。回答履歴はベスト記録のものを残します。
+                    await fb.setDoc(scoreRef, { name, updatedAt: fb.serverTimestamp() }, { merge: true });
+                    lastRankingState.docId = playerDocId;
+                    if (currentBox) {
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong><br><span style="font-size:10px;color:#666;">今回は自己ベスト未更新のため、ランキング上の詳細は現在のベスト記録のままです。</span>`;
+                    }
+                }
+
+                lastRankingState.current = current;
+                if (button) button.textContent = "名前を更新";
+                await loadGlobalRanking();
+            } catch (e) {
+                console.error(e);
+                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが書き込み許可になっているか確認してください。");
+                if (button) button.textContent = "全国に送信";
+            } finally {
+                globalRankingSubmitting = false;
+                if (button) button.disabled = false;
+            }
+        }
+
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select();
+            document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！");
+        }
+
+        function showFinalResult(isViewMode = false) {
+            const gameUi = document.getElementById('game-ui');
+            const titleEl = document.getElementById('question-title');
+            const finalUi = document.getElementById('final-ui');
+            if (gameUi) gameUi.style.display = "none";
+            if (titleEl) titleEl.innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            if (!finalUi) return;
+            finalUi.style.display = "block";
+
+            const modeName = isLocked ? "ハード" : "通常";
+            const totalMax = playHistory.length * 2000;
+            const ratio = totalScore / (totalMax || 1);
+            let rank = "D";
+            if (ratio >= 0.9) rank = "SSS";
+            else if (ratio >= 0.8) rank = "SS";
+            else if (ratio >= 0.7) rank = "S";
+            else if (ratio >= 0.5) rank = "A";
+            else if (ratio >= 0.3) rank = "B";
+            else if (ratio >= 0.1) rank = "C";
+
+            const safeNum = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+            const resultItems = playHistory.map((h) => {
+                const dist = safeNum(h.dist, 999);
+                const time = safeNum(h.time, 0);
+                const score = safeNum(h.score, 0);
+                const closeMark = dist < (maxDistancePenalty * 0.1);
+                const mark = h.isCorrect ? '●' : (closeMark ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (closeMark ? 'orange' : 'blue');
+                const userAns = h.userAns || "(未入力)";
+                const distText = (userAns === "(未入力)" || userAns === "ギブアップ") ? '-' : `${dist.toFixed(1)}km`;
+                return `<li class="result-item">
+                    <div class="res-status" style="color:${markColor}">${mark}</div>
+                    <div class="res-info">
+                        <span class="res-name">${escapeHtml(h.name || "不明")}</span>
+                        <span class="res-user-ans">解答: ${escapeHtml(userAns)}</span>
+                        <span class="res-sub">${escapeHtml(h.pref || "")} / ${escapeHtml(h.line || "")}</span>
+                        <span class="res-score-detail">${score.toLocaleString()}pt | 誤差:${escapeHtml(distText)} | ${time.toFixed(1)}s</span>
+                    </div>
+                    <button class="btn-view" onclick="jumpToStation(${safeNum(h.lat)}, ${safeNum(h.lng)})">確認</button>
+                </li>`;
+            }).join("");
+
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const shareTextAttr = escapeHtml(shareText.replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
+
+            // まず最低限のリザルトを必ず表示する。ランキングや広告で失敗しても答え一覧を消さない。
+            finalUi.innerHTML = `
+                <div class="final-score">${totalScore.toLocaleString()} 点</div>
+                <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
+                <div id="score-record-mount"></div>
+                <div id="ranking-mount"></div>
+                <div class="ad-container">
+                                        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="horizontal"></ins>
+                </div>
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareTextAttr}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareTextAttr}')">Insta用コピー</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
+                </div>
+                <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
+                <div class="ad-container">
+                                        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="ca-pub-6887981844690617" data-ad-format="rectangle"></ins>
+                </div>
+                <div class="result-footer-buttons">
+                    ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
+                </div>`;
+
+            // 自己記録とランキングは後から差し込む。失敗してもリザルト本体は維持。
+            try {
+                if (!isViewMode) {
+                    if (!localScoreSaved) {
+                        lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
+                        localScoreSaved = true;
+                    }
+                    const mount = document.getElementById("score-record-mount");
+                    if (mount && lastScoreRecordState) mount.innerHTML = createScoreRecordHtml(lastScoreRecordState);
+                }
+            } catch (e) {
+                console.error("score record error", e);
+            }
+
+            try {
+                if (!isViewMode) {
+                    if (!localRankingSaved) {
+                        lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
+                        localRankingSaved = true;
+                    }
+                    const mount = document.getElementById("ranking-mount");
+                    if (mount && lastRankingState) mount.innerHTML = createRankingHtml(lastRankingState);
+                }
+            } catch (e) {
+                console.error("ranking html error", e);
+                const mount = document.getElementById("ranking-mount");
+                if (mount) mount.innerHTML = '<div class="ranking-box">全国ランキングの表示準備に失敗しました。</div>';
+            }
+
+            setTimeout(() => {
+                try {
+                    const ads = finalUi.querySelectorAll('.adsbygoogle');
+                    ads.forEach(() => refreshAds());
+                } catch (e) {}
+                if (!isViewMode && lastRankingState) loadGlobalRanking();
+            }, 100);
+        }
+
+        async function generateResultCard(rank, modeName, autoShow = false) {
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = 800; canvas.height = 1450;
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#FF3B30"; ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${modeName} / ${activeFilters}`, 400, 170);
+            ctx.fillStyle = "#FF3B30"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 50px sans-serif"; ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
+            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
+            let y = 480;
+            playHistory.forEach((h, i) => {
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < (maxDistancePenalty*0.1) ? '#FF9500' : '#007AFF');
+                ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; 
+                ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600); 
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; 
+                ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30, 650);
+                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; 
+                ctx.fillText(`誤差: ${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y + 15);
+                y += 92;
+            });
+            ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
+            const dataUrl = canvas.toDataURL("image/png");
+            const container = document.getElementById('share-image-container');
+            container.innerHTML = `<img src="${dataUrl}">`;
+            document.getElementById('image-overlay').style.display = "flex";
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！ #サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            if (navigator.share && !autoShow) {
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], "result.png", { type: "image/png" });
+                const b = document.createElement('button'); b.className="overlay-close"; b.style.background="#007AFF"; b.style.color="white"; b.innerText="画像を直接SNSに送る";
+                b.onclick = () => navigator.share({ files: [file], title: 'サテステ', text: shareText });
+                container.appendChild(b);
+            }
+        }
+        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
+        function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+        function makeDraggable(el) { if (window.innerWidth <= 600) return; const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0; h.onmousedown = (e) => { e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none"; document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; }; document.onmousemove = (e) => { e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto"; }; } }
+    </script>
 </body>
 </html>
