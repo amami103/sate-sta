@@ -497,7 +497,8 @@
                 filters: activeFilters || "全国",
                 conditionKey,
                 conditionLabel: getCurrentConditionLabel(modeName),
-                playedAt: new Date().toISOString()
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
             };
 
             const previousBest = getBestRecord(conditionKey);
@@ -664,7 +665,8 @@
                 conditionKey: getRankingKey(),
                 conditionLabel: getCurrentConditionLabel(modeName),
                 history: getRankingHistoryForSave(),
-                playedAt: new Date().toISOString()
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
             };
         }
 
