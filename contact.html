@@ -10,6 +10,9 @@
       gtag('config', 'G-RVMQ4R05XJ');
     </script>
 
+    <!-- i-mobile広告タグ共通スクリプト -->
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>お問い合わせ | サテステ</title>
@@ -52,6 +55,68 @@
         .footer-links a:hover { color: #fff; text-decoration: underline; }
         .copyright { font-size: 12px; color: #888; }
 
+
+
+        /* ===== 広告枠：i-mobile ===== */
+        .ad-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 24px auto 30px;
+            text-align: center;
+        }
+        .ad-label {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+        }
+        .ad-inner {
+            display: inline-block;
+            max-width: 100%;
+            min-height: 60px;
+            overflow: hidden;
+        }
+        .ad-top-banner .ad-inner {
+            width: 728px;
+            max-width: 100%;
+            min-height: 90px;
+        }
+        .ad-rectangle .ad-inner {
+            width: 300px;
+            min-height: 250px;
+        }
+        .ad-large-rectangle .ad-inner {
+            width: 336px;
+            max-width: 100%;
+            min-height: 280px;
+        }
+        .ad-small-banner .ad-inner {
+            width: 468px;
+            max-width: 100%;
+            min-height: 60px;
+        }
+        .side-ad {
+            position: fixed;
+            top: 185px;
+            right: 18px;
+            z-index: 1;
+            width: 160px;
+            text-align: center;
+        }
+        .side-ad .ad-inner {
+            width: 160px;
+            min-height: 600px;
+            overflow: hidden;
+        }
+        @media (max-width: 1080px) {
+            .side-ad { display: none; }
+        }
+        @media (max-width: 760px) {
+            .ad-top-banner { display: none; }
+            .ad-box { margin: 20px auto 24px; }
+        }
+
         @media (max-width: 600px) { 
             header { min-height: auto; padding: 20px 10px; }
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
@@ -77,7 +142,26 @@
         </nav>
     </header>
 
+    <aside class="side-ad" aria-label="広告">
+        <div class="ad-label">スポンサーリンク</div>
+        <div class="ad-inner">
+            <div id="im-1ce20f69e4c74cfd864974fbba0a000a">
+              <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-1ce20f69e4c74cfd864974fbba0a000a"})</script>
+            </div>
+        </div>
+    </aside>
+
     <main>
+        <div class="ad-box ad-top-banner" aria-label="広告">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-inner">
+                <div id="im-aa65fb4d2be24e57a360a2bfbbc42c99">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-aa65fb4d2be24e57a360a2bfbbc42c99"})</script>
+                </div>
+            </div>
+        </div>
+
+
         <div class="card article-section">
             <h2>お問い合わせ</h2>
 
@@ -89,6 +173,15 @@
                 <a href="https://docs.google.com/forms/d/e/1FAIpQLSd_R_lvnCVOJyhM3wECf4C8F2aRanYH0ZchjcTMwdL3kp6FMA/viewform?usp=dialog" class="btn" target="_blank" rel="noopener noreferrer">フォームを開く</a>
             </div>
 
+        <div class="ad-box ad-rectangle" aria-label="広告">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-inner">
+                <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+                </div>
+            </div>
+        </div>
+
             <div class="contact-box">
                 <h3>2. メールでのお問い合わせ</h3>
                 <p>直接の返信が必要な場合や、お仕事に関するご依頼は以下のメールアドレスまでお願いいたします。</p>
@@ -97,7 +190,26 @@
             </div>
         </div>
 
+        <div class="ad-box ad-large-rectangle" aria-label="広告">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-inner">
+                <div id="im-8415a356c5d2430c915a75d1484b81e0">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+                </div>
+            </div>
+        </div>
+
         <a href="index.html" class="btn-back">ホームに戻る</a>
+
+        <div class="ad-box ad-small-banner" aria-label="広告">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-inner">
+                <div id="im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6"})</script>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer>
