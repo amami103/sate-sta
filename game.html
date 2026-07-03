@@ -10,6 +10,7 @@
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="stations.js"></script>
+<script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
 <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
@@ -18,9 +19,56 @@
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
-        /* 広告用スタイル */
-        .ad-container { margin: 10px 0; text-align: center; background: #fafafa; border-radius: 4px; overflow: hidden; min-height: 60px; font-size: 10px; color: #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
-        .ad-label { font-size: 8px; color: #999; margin-bottom: 2px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; }
+        /* 広告用スタイル：ゲーム中は邪魔にしない。回答後・結果画面中心に表示 */
+        .ad-container {
+            margin: 12px 0;
+            text-align: center;
+            background: #fafafa;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 60px;
+            font-size: 10px;
+            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .ad-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 6px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #fdfdfd;
+            line-height: 1.6;
+        }
+        .ad-game-after-answer,
+        .ad-final-large {
+            display: none;
+        }
+        .ad-final-large {
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+        .ad-note {
+            font-size: 10px;
+            color: #999;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+        @media (min-width: 760px) {
+            .ui-container {
+                width: 360px;
+            }
+        }
+        @media (max-width: 600px) {
+            .ad-final-large {
+                display: none !important;
+            }
+        }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
@@ -106,10 +154,23 @@
 </div>
 <div id="hint-area"></div>
 <div id="result"></div>
-<!-- 広告枠2: ゲームUIの下 -->
+
+<div class="ad-container ad-game-after-answer" id="ad-after-answer" aria-label="スポンサーリンク">
+    <div class="ad-label">スポンサーリンク</div>
+    <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+    </div>
+    <div class="ad-note">回答後のみ表示されます</div>
+</div>
 
 </div>
 <div id="final-ui" style="display:none;"></div>
+<div class="ad-container ad-final-large" id="ad-final-large" aria-label="スポンサーリンク">
+    <div class="ad-label">スポンサーリンク</div>
+    <div id="im-8415a356c5d2430c915a75d1484b81e0">
+      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+    </div>
+</div>
 </div>
 </div>
 <div id="image-overlay">
@@ -118,9 +179,14 @@
 <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
 </div>
 <script>
-        // 広告読み込み用
+        // 広告表示制御：プレイ中は隠し、回答後・結果画面で表示
+        function setAdVisible(id, visible) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = visible ? "flex" : "none";
+        }
+
         function refreshAds() {
-            try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+            // i-mobileタグは静的に読み込むため、ここでは追加処理しない
         }
 
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
@@ -293,6 +359,8 @@
         }
 
         function nextQuestion() {
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", false);
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false; usedHints = { pref: false, line: false };
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
@@ -362,6 +430,7 @@
 
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw || "(未入力)", isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            setAdVisible("ad-after-answer", true);
             questionCount++;
         }
 
@@ -370,6 +439,7 @@
             document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            setAdVisible("ad-after-answer", true);
             questionCount++;
         }
 
@@ -546,6 +616,8 @@
         }
 
         function showFinalResult(isViewMode = false) {
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", true);
             document.getElementById('game-ui').style.display = "none"; const modeName = isLocked ? "ハード" : "通常";
             document.getElementById('question-title').innerText = isViewMode ? "リザルト閲覧" : "結果発表";
             const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
