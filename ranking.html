@@ -151,6 +151,15 @@
             .table-wrap { padding: 0 20px 20px; }
             .loading, .error, .empty { margin: 0 20px 20px; }
         }
+    
+        /* PC/SP広告出し分け */
+        .ad-sp-only { display: none; }
+        .ad-pc-only { display: block; }
+        @media (max-width: 760px) {
+            .ad-pc-only { display: none !important; }
+            .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
+            .side-ad { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -158,9 +167,9 @@
     <aside class="pc-side-ad" aria-label="広告">
         <div class="ad-box-inner">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-ranking-side-skyscraper">
+                    <div class="ad-pc-only"><div id="im-ranking-side-skyscraper">
                         <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-ranking-side-skyscraper"})</script>
-                    </div>
+                    </div></div>
                 </div>
     </aside>
     <header>
@@ -182,9 +191,12 @@
         <div class="ad-box ad-top ad-big-banner" aria-label="広告">
             <div class="ad-box-inner">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-ranking-top-bigbanner">
+                    <div class="ad-pc-only"><div id="im-ranking-top-bigbanner">
                         <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-ranking-top-bigbanner"})</script>
-                    </div>
+                    </div></div>
+<div class="ad-sp-only"><div id="im-4f537cb9ba134a618a2caaa4198064aa">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935807,type:"banner",display:"inline",elementid:"im-4f537cb9ba134a618a2caaa4198064aa"})</script>
+</div></div>
                 </div>
         </div>
         <section class="card" style="border: 2px solid #FF9500;">
@@ -199,9 +211,12 @@
         <div class="ad-box" aria-label="広告">
             <div class="ad-box-inner">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-ranking-after-hero-large-rectangle">
+                    <div class="ad-pc-only"><div id="im-ranking-after-hero-large-rectangle">
                         <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-ranking-after-hero-large-rectangle"})</script>
-                    </div>
+                    </div></div>
+<div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
                 </div>
         </div>
 
@@ -234,9 +249,12 @@
         <div class="ad-box" aria-label="広告">
             <div class="ad-box-inner">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-ranking-after-table-rectangle">
+                    <div class="ad-pc-only"><div id="im-ranking-after-table-rectangle">
                         <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-ranking-after-table-rectangle"})</script>
-                    </div>
+                    </div></div>
+<div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
                 </div>
         </div>
 
@@ -254,9 +272,12 @@
         <div class="ad-box ad-bottom" aria-label="広告">
             <div class="ad-box-inner">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-ranking-bottom-banner">
+                    <div class="ad-pc-only"><div id="im-ranking-bottom-banner">
                         <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-ranking-bottom-banner"})</script>
-                    </div>
+                    </div></div>
+<div class="ad-sp-only"><div id="im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935807,type:"banner",display:"inline",elementid:"im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa"})</script>
+</div></div>
                 </div>
         </div>
     </main>
