@@ -66,7 +66,12 @@
         }
         @media (max-width: 600px) {
             .ad-final-large {
-                display: none !important;
+                margin: 12px auto;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            .ad-final-large .ad-label {
+                font-size: 10px;
             }
         }
 
@@ -129,6 +134,14 @@
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
+    
+        /* PC/SP広告出し分け */
+        .ad-sp-only { display: none; }
+        .ad-pc-only { display: block; }
+        @media (max-width: 760px) {
+            .ad-pc-only { display: none !important; }
+            .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
+        }
     </style>
 </link></head>
 <body onload="init()">
@@ -157,9 +170,12 @@
 
 <div class="ad-container ad-game-after-answer" id="ad-after-answer" aria-label="スポンサーリンク">
     <div class="ad-label">スポンサーリンク</div>
-    <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+    <div class="ad-pc-only"><div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
       <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
-    </div>
+    </div></div>
+<div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
     <div class="ad-note">回答後のみ表示されます</div>
 </div>
 
@@ -167,9 +183,13 @@
 <div id="final-ui" style="display:none;"></div>
 <div class="ad-container ad-final-large" id="ad-final-large" aria-label="スポンサーリンク">
     <div class="ad-label">スポンサーリンク</div>
-    <div id="im-8415a356c5d2430c915a75d1484b81e0">
+    <div class="ad-note">最終結果画面に表示されます</div>
+    <div class="ad-pc-only"><div id="im-8415a356c5d2430c915a75d1484b81e0">
       <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
-    </div>
+    </div></div>
+<div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
 </div>
 </div>
 </div>
