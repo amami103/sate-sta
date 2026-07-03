@@ -118,6 +118,15 @@
             .header-nav a { font-size: 12px; }
             .check-grid { grid-template-columns: 1fr; } 
         }
+    
+        /* PC/SP広告出し分け */
+        .ad-sp-only { display: none; }
+        .ad-pc-only { display: block; }
+        @media (max-width: 760px) {
+            .ad-pc-only { display: none !important; }
+            .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
+            .side-ad { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -660,6 +669,38 @@
                     type: "banner",
                     display: "inline"
                 }
+                ,spRectMain: {
+                    elementid: "im-fa6bed2a14844c52ba4d1c1b3e4113f3",
+                    pid: 85120,
+                    mid: 594261,
+                    asid: 1935806,
+                    type: "banner",
+                    display: "inline"
+                },
+                spRectArticle: {
+                    elementid: "im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3",
+                    pid: 85120,
+                    mid: 594261,
+                    asid: 1935806,
+                    type: "banner",
+                    display: "inline"
+                },
+                spBigTop: {
+                    elementid: "im-4f537cb9ba134a618a2caaa4198064aa",
+                    pid: 85120,
+                    mid: 594261,
+                    asid: 1935807,
+                    type: "banner",
+                    display: "inline"
+                },
+                spBigBottom: {
+                    elementid: "im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa",
+                    pid: 85120,
+                    mid: 594261,
+                    asid: 1935807,
+                    type: "banner",
+                    display: "inline"
+                }
             };
 
             let imobileScriptLoaded = false;
@@ -699,22 +740,24 @@
                 const width = window.innerWidth || document.documentElement.clientWidth;
                 const sideAd = document.getElementById("side-ad");
 
-                // 上部：PCはビッグバナー、タブレット幅は通常バナー。スマホ最上部は圧が強いので出さない。
+                // 上部：PCはビッグバナー、スマホはスマホ用ビッグバナー。
                 if (width >= 760) {
                     renderAd("ad-slot-top", ADS.bigBanner);
-                } else if (width >= 500) {
-                    renderAd("ad-slot-top", ADS.banner);
+                } else {
+                    renderAd("ad-slot-top", ADS.spBigTop);
                 }
 
-                // メイン導線後：最も自然に見られやすい主力枠。
-                renderAd("ad-slot-after-modes", ADS.rectangleLarge);
+                // メイン導線後：PCはレクタングル大、スマホはミディアムレクタングル。
+                renderAd("ad-slot-after-modes", width >= 760 ? ADS.rectangleLarge : ADS.spRectMain);
 
-                // 説明記事後：読了後の自然な広告枠。
-                renderAd("ad-slot-article", ADS.rectangle);
+                // 説明記事後：PCはレクタングル、スマホはミディアムレクタングル。
+                renderAd("ad-slot-article", width >= 760 ? ADS.rectangle : ADS.spRectArticle);
 
-                // 下部：PCのみ通常バナー。スマホは広告過多を避ける。
+                // 下部：PCは通常バナー、スマホはスマホ用ビッグバナー。
                 if (width >= 760 && !document.getElementById(ADS.banner.elementid)) {
                     renderAd("ad-slot-bottom", ADS.banner);
+                } else if (width < 760) {
+                    renderAd("ad-slot-bottom", ADS.spBigBottom);
                 }
 
                 // PC右サイド：広い画面はハーフページ、やや狭いPCはスカイスクレイパー。
