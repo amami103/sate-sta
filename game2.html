@@ -83,6 +83,14 @@
             .ui-header { cursor: pointer; padding: 14px; }
             .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
         }
+    
+        /* PC/SP広告出し分け */
+        .ad-sp-only { display: none; }
+        .ad-pc-only { display: block; }
+        @media (max-width: 760px) {
+            .ad-pc-only { display: none !important; }
+            .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
+        }
     </style>
 </head>
 <body onload="init()">
@@ -107,17 +115,23 @@
                 <div id="result"></div>
                 <div class="ad-container imobile-answer-ad" id="answer-ad-slot" aria-label="スポンサーリンク">
                     <span class="ad-label">スポンサーリンク</span>
-                    <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                    <div class="ad-pc-only"><div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
                       <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
-                    </div>
+                    </div></div>
+<div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
                 </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
             <div class="ad-container imobile-final-ad" id="final-ad-slot" aria-label="スポンサーリンク">
                 <span class="ad-label">スポンサーリンク</span>
-                <div id="im-8415a356c5d2430c915a75d1484b81e0">
+                <div class="ad-pc-only"><div id="im-8415a356c5d2430c915a75d1484b81e0">
                   <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
-                </div>
+                </div></div>
+<div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
             </div>
         </div>
     </div>
