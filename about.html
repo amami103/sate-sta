@@ -9,6 +9,8 @@
       gtag('js', new Date());
       gtag('config', 'G-RVMQ4R05XJ');
     </script>
+    <!-- i-mobile広告共通スクリプト -->
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,11 +46,63 @@
         .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
         .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
+        /* ===== 広告枠：i-mobile ===== */
+        .ad-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 26px auto 30px;
+            text-align: center;
+            clear: both;
+        }
+        .ad-label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 7px;
+            letter-spacing: 0.02em;
+        }
+        .ad-inner {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            vertical-align: top;
+        }
+        .ad-top-banner { display: none; }
+        .desktop-side-ad {
+            display: none;
+            position: fixed;
+            top: 180px;
+            right: 18px;
+            z-index: 2;
+            text-align: center;
+        }
+        .desktop-side-ad-left {
+            display: none;
+            position: fixed;
+            top: 180px;
+            left: 18px;
+            z-index: 2;
+            text-align: center;
+        }
+
         footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
         .footer-links { margin-bottom: 15px; }
         .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
         .footer-links a:hover { color: #fff; text-decoration: underline; }
         .copyright { font-size: 12px; color: #888; }
+
+        @media (min-width: 760px) {
+            .ad-top-banner { display: block; }
+        }
+
+        @media (min-width: 1120px) {
+            .desktop-side-ad { display: block; }
+        }
+
+        @media (min-width: 1360px) {
+            .desktop-side-ad { display: none; }
+            .desktop-side-ad-left { display: block; }
+        }
 
         @media (max-width: 600px) { 
             header { min-height: auto; padding: 20px 10px; }
@@ -56,6 +110,9 @@
             .header-nav { padding: 0; gap: 8px 12px; }
             .header-nav a { font-size: 12px; }
             .profile-box { flex-direction: column; text-align: center; }
+            main { padding: 22px 0; }
+            .card { padding: 20px; margin-bottom: 24px; }
+            .ad-box { margin: 22px auto 26px; }
         }
     </style>
 </head>
@@ -76,7 +133,37 @@
         </nav>
     </header>
 
+    <!-- PC向け右サイド広告：ワイドスカイスクレイパー。スマホでは非表示 -->
+    <aside class="desktop-side-ad" aria-label="スポンサーリンク">
+        <span class="ad-label">スポンサーリンク</span>
+        <div class="ad-inner">
+            <div id="im-1ce20f69e4c74cfd864974fbba0a000a">
+              <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-1ce20f69e4c74cfd864974fbba0a000a"})</script>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 大きいPC向け左サイド広告：ハーフページ。スマホ・通常PCでは非表示 -->
+    <aside class="desktop-side-ad-left" aria-label="スポンサーリンク">
+        <span class="ad-label">スポンサーリンク</span>
+        <div class="ad-inner">
+            <div id="im-e82042922aee4348b451c4e931913a33">
+              <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935785,type:"banner",display:"inline",elementid:"im-e82042922aee4348b451c4e931913a33"})</script>
+            </div>
+        </div>
+    </aside>
+
     <main>
+        <!-- PC/タブレット向け上部広告：ビッグバナー。スマホでは非表示 -->
+        <div class="ad-box ad-top-banner" aria-label="スポンサーリンク">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner">
+                <div id="im-aa65fb4d2be24e57a360a2bfbbc42c99">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-aa65fb4d2be24e57a360a2bfbbc42c99"})</script>
+                </div>
+            </div>
+        </div>
+
         <div class="card article-section">
             <h2>サテステとは</h2>
             <p>「サテステ -From Satellite to Station-」は、衛星画像からその駅名を当てるという新感覚クイズゲームです。</p>
@@ -85,24 +172,44 @@
             <p>どうぞ「サテステ -From Satellite to Station-」を宜しくお願い致します。</p>
         </div>
 
+        <!-- 記事1本目の後：スマホでも自然に見える主力枠 -->
+        <div class="ad-box" aria-label="スポンサーリンク">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner">
+                <div id="im-8415a356c5d2430c915a75d1484b81e0">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+                </div>
+            </div>
+        </div>
+
         <div class="card article-section">
             <h2>運営者情報</h2>
             <div class="profile-box">
-                <link rel="icon" href="logo2.jpg">
+                <div class="profile-img">🚃</div>
                 <div>
-                    <h3 style="margin-top: 0; border-left: none; padding-left: 0;">サテステ制作委員会
-                       <p>Amami103 X:</strong> <a href="https://x.com/Amami103_" target="_blank">@Amami103_</a></li> Youtube:</strong> <a href="https://www.youtube.com/@amami103" target="_blank">Amami103音鉄チャンネル</a></li></p></h3>
+                    <h3 style="margin-top: 0; border-left: none; padding-left: 0;">サテステ制作委員会</h3>
+                    <p>Amami103 X: <a href="https://x.com/Amami103_" target="_blank">@Amami103_</a><br>YouTube: <a href="https://www.youtube.com/@amami103" target="_blank">Amami103音鉄チャンネル</a></p>
                     <p style="margin-bottom: 0;">103系をこよなく愛する人。小学生の頃に見た103系の高速通過に憧れて撮り鉄・音鉄の世界へ。普段は鉄道写真の撮影、鉄道走行音の収録をメインに活動し、XやYouTubeにも投稿。その傍ら「サテステ」の運営を行っています。</p>
                 </div>
             </div>
             
             <h3>開発のきっかけ</h3>
-            <p>ストリートビューから位置をGuessする某ゲームをプレイ中に、「衛星画像から駅を当てるゲームがあれば面白いのではないか」と思いつきました。その考えから適当な駅の衛星画像を用意してその駅を当てるというゲームを鉄道好きの友人とやったことがありました。
-                それから時は流れ、その友人がとあるアプリを開発したと聞きました。彼にくわしく話を聞いてみると、最近開発が急速に進んでいるAIを利用すれば初心者でも簡単にアプリを開発できたとのことでした。じゃあこの技術を活用して自分も何か作ってみようと思い立ち、こんなゲームを作ってみようと思ったわけです。
-                誰でも無料で使える</strong> <a href="https://maps.gsi.go.jp/" target="_blank">国土地理院地図</a></li>と<a href="https://ekidata.jp/" target="_blank">駅データ.jp</a></li>様のデータを活用させていただき、簡単に全国の駅を出題範囲にすることを実現することができました。この場を借りて御礼申し上げます。</p>
+            <p>ストリートビューから位置をGuessする某ゲームをプレイ中に、「衛星画像から駅を当てるゲームがあれば面白いのではないか」と思いつきました。その考えから適当な駅の衛星画像を用意してその駅を当てるというゲームを鉄道好きの友人とやったことがありました。</p>
+            <p>それから時は流れ、その友人がとあるアプリを開発したと聞きました。彼にくわしく話を聞いてみると、最近開発が急速に進んでいるAIを利用すれば初心者でも簡単にアプリを開発できたとのことでした。じゃあこの技術を活用して自分も何か作ってみようと思い立ち、こんなゲームを作ってみようと思ったわけです。</p>
+            <p>誰でも無料で使える <a href="https://maps.gsi.go.jp/" target="_blank">国土地理院地図</a> と <a href="https://ekidata.jp/" target="_blank">駅データ.jp</a> 様のデータを活用させていただき、簡単に全国の駅を出題範囲にすることを実現することができました。この場を借りて御礼申し上げます。</p>
 
             <h3>大切にしていること</h3>
             <p>単なるクイズゲームに留まらず、プレイされた方に「地理って面白い」、「今度行ってみよう」と思っていただけるような、実体験に繋がるプラットフォームでありたいと考えています。また、データを提供していただいた皆様への感謝の気持ちを大切にして開発しております。</p>
+        </div>
+
+        <!-- 長めの本文後：レクタングル。読み終わり位置なので嫌われにくい -->
+        <div class="ad-box" aria-label="スポンサーリンク">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner">
+                <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+                </div>
+            </div>
         </div>
 
         <div class="card article-section">
@@ -112,6 +219,16 @@
                 <li><strong>衛星画像：</strong> <a href="https://maps.gsi.go.jp/" target="_blank">国土地理院地図</a></li>
                 <li><strong>駅データ：</strong> <a href="https://ekidata.jp/" target="_blank">駅データ.jp</a></li>
             </ul>
+        </div>
+
+        <!-- ページ下部：控えめな通常バナー -->
+        <div class="ad-box" aria-label="スポンサーリンク">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner">
+                <div id="im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6"})</script>
+                </div>
+            </div>
         </div>
 
         <a href="index.html" class="btn-back">ホームに戻る</a>
