@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
@@ -21,8 +22,15 @@
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
         /* 広告用スタイル */
-        .ad-container { margin: 10px 0; text-align: center; background: #fafafa; border-radius: 4px; overflow: hidden; min-height: 60px; font-size: 10px; color: #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
-        .ad-label { font-size: 8px; color: #999; margin-bottom: 2px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; }
+        .ad-container { margin: 12px 0; text-align: center; background: #fafafa; border-radius: 8px; overflow: hidden; min-height: 60px; font-size: 10px; color: #999; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
+        .ad-label { font-size: 9px; color: #999; margin-bottom: 4px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; padding: 3px 0; }
+        .ad-container.imobile-answer-ad, .ad-container.imobile-final-ad { display: none; }
+        .ad-container.is-visible { display: flex; }
+        .imobile-final-ad { margin-top: 14px; margin-bottom: 14px; }
+        @media (max-width: 600px) {
+            .imobile-answer-ad { margin-top: 12px; }
+            .imobile-final-ad { max-width: 100%; overflow: hidden; }
+        }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
@@ -97,8 +105,20 @@
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
+                <div class="ad-container imobile-answer-ad" id="answer-ad-slot" aria-label="スポンサーリンク">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+                    </div>
+                </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
+            <div class="ad-container imobile-final-ad" id="final-ad-slot" aria-label="スポンサーリンク">
+                <span class="ad-label">スポンサーリンク</span>
+                <div id="im-8415a356c5d2430c915a75d1484b81e0">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -239,6 +259,8 @@
             answered = false;
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
             document.getElementById('result').innerText = ""; document.getElementById('station-input').value = "";
+            const answerAdSlot = document.getElementById('answer-ad-slot');
+            if (answerAdSlot) answerAdSlot.classList.remove('is-visible');
             document.getElementById('station-list').innerHTML = ""; document.getElementById('hint-area').style.display = "none";
             currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
@@ -278,12 +300,23 @@
             finishOne();
         }
 
-        function finishOne() { answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block"; questionCount++; }
+        function finishOne() {
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            const answerAdSlot = document.getElementById('answer-ad-slot');
+            if (answerAdSlot) answerAdSlot.classList.add('is-visible');
+            questionCount++;
+        }
         function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
         function copyToClipboard(text) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); alert("文章をコピーしました！"); }
 
         function showFinalResult() {
             expandPanel(); document.getElementById('game-ui').style.display = "none";
+            const answerAdSlot = document.getElementById('answer-ad-slot');
+            if (answerAdSlot) answerAdSlot.classList.remove('is-visible');
+            const finalAdSlot = document.getElementById('final-ad-slot');
+            if (finalAdSlot) finalAdSlot.classList.add('is-visible');
             const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
             let totalT = 0, listH = '<ul class="result-list">';
             
@@ -318,13 +351,11 @@
                     <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用</button>
                     <button class="btn-sns btn-card" onclick="generateResultCard()">画像で結果をシェア！</button>
                 </div>
-                <div class="ad-container"><span class="ad-label">Sponsor</span><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6887981844690617" data-ad-slot="6887981844690617" data-ad-format="horizontal"></ins></div>
                 ${listH + '</ul>'}
                 <div class="result-footer-buttons">
                     <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
-            setTimeout(() => { finalUi.querySelectorAll('.adsbygoogle').forEach(() => refreshAds()); }, 100);
         }
 
         async function generateResultCard() {
