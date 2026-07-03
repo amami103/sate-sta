@@ -84,6 +84,33 @@
         .footer-links a:hover { color: #fff; text-decoration: underline; }
         .copyright { font-size: 12px; color: #888; }
 
+
+
+        /* ===== i-mobile広告枠：収益とUXのバランス重視 ===== */
+        .ad-box { width: 100%; box-sizing: border-box; margin: 26px auto; text-align: center; }
+        .ad-label { display: block; margin-bottom: 8px; font-size: 11px; line-height: 1; color: #999; letter-spacing: 0.04em; }
+        .ad-inner { display: flex; justify-content: center; align-items: center; max-width: 100%; min-height: 80px; overflow: hidden; }
+        .ad-card { background: rgba(255,255,255,0.75); border: 1px solid #edf0f3; border-radius: 14px; padding: 12px 6px; }
+        .ad-top { margin-top: 0; margin-bottom: 28px; }
+        .ad-after-modes { margin-top: 2px; margin-bottom: 34px; }
+        .ad-bottom { margin-top: 30px; margin-bottom: 0; }
+        .side-ad { position: fixed; right: 16px; top: 170px; z-index: 3; width: 300px; text-align: center; }
+        .side-ad .ad-inner { min-height: 600px; }
+        .side-ad.compact { width: 170px; }
+        .side-ad.compact .ad-inner { min-height: 600px; }
+        .ad-note { font-size: 10px; color: #aaa; margin-top: 6px; }
+
+        @media (max-width: 1059px) {
+            .side-ad { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .ad-box { margin: 22px auto; }
+            .ad-card { padding: 10px 0; border-radius: 12px; }
+            .ad-inner { min-height: 70px; }
+            .ad-after-modes { margin-top: 0; margin-bottom: 26px; }
+        }
+
         @media (max-width: 600px) { 
             header { min-height: auto; padding: 20px 10px; }
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
@@ -110,7 +137,17 @@
         </nav>
     </header>
 
+    <aside class="side-ad" id="side-ad" aria-label="広告">
+        <span class="ad-label">スポンサーリンク</span>
+        <div class="ad-inner" id="ad-slot-side"></div>
+    </aside>
+
     <main>
+        <div class="ad-box ad-top" aria-label="広告">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner" id="ad-slot-top"></div>
+        </div>
+
         <!-- フリーモードのボックス -->
         <div class="card" style="border: 2px solid #007AFF;">
             <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
@@ -171,7 +208,7 @@
             </label>
             <div style="margin-top: 20px; text-align: center;">
                 <button onclick="startGame('game2.html', 'f')" class="btn-start btn-free">フリープレイ開始</button>
-                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、</strong> <a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a></li>・</strong> <a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a></li>に同意したものとみなします</p>
+                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします</p>
             </div>
         </div>
 
@@ -203,7 +240,7 @@
             </label>
             <div style="margin-top: 20px; text-align: center;">
                 <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
-                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、</strong> <a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a></li>・</strong> <a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a></li>に同意したものとみなします</p>
+                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします</p>
             </div>
         </div>
 
@@ -248,6 +285,11 @@
             </div>
         </div>
 
+        <div class="ad-box ad-card ad-after-modes" aria-label="広告">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner" id="ad-slot-after-modes"></div>
+        </div>
+
         <div class="card article-section">
             <h2>サテステとは？</h2>
             <p>「サテステ -Satellite from Station-」は、日本全国約9,000駅の衛星画像を見てその駅名を当てる地理・鉄道クイズゲームです。出題範囲は全国のみならず、特定の都道府県、鉄道会社、路線などお好きなように指定することができます。まったりプレイできる「通常モード」に加え、ハイスコアを目指す「チャレンジモード」、世界中のプレイヤーとスコアを競い合える「ランキングモード」と多彩な楽しみ方をしていただけます。</p>
@@ -269,6 +311,11 @@
             </div>
         </div>
 
+        <div class="ad-box ad-card" aria-label="広告">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner" id="ad-slot-article"></div>
+        </div>
+
         <div class="card article-section">
             <h2>動画配信・サイト掲載について</h2>
             <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
@@ -280,6 +327,11 @@
                 <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
                 <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
             </ul>
+        </div>
+
+        <div class="ad-box ad-bottom" aria-label="広告">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner" id="ad-slot-bottom"></div>
         </div>
 
         <div class="card">
@@ -554,5 +606,134 @@
             window.location.href = url;
         }
     </script>
+
+
+    <script>
+        /* i-mobile広告：画面幅に応じて必要な枠だけ読み込み */
+        (function() {
+            const ADS = {
+                banner: {
+                    elementid: "im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935776,
+                    type: "banner",
+                    display: "inline"
+                },
+                rectangle: {
+                    elementid: "im-d89e63082e9347d2b3b7d2f81b5c1828",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935779,
+                    type: "banner",
+                    display: "inline"
+                },
+                rectangleLarge: {
+                    elementid: "im-8415a356c5d2430c915a75d1484b81e0",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935780,
+                    type: "banner",
+                    display: "inline"
+                },
+                wideSkyscraper: {
+                    elementid: "im-1ce20f69e4c74cfd864974fbba0a000a",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935783,
+                    type: "banner",
+                    display: "inline"
+                },
+                bigBanner: {
+                    elementid: "im-aa65fb4d2be24e57a360a2bfbbc42c99",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935784,
+                    type: "banner",
+                    display: "inline"
+                },
+                halfPage: {
+                    elementid: "im-e82042922aee4348b451c4e931913a33",
+                    pid: 85120,
+                    mid: 594260,
+                    asid: 1935785,
+                    type: "banner",
+                    display: "inline"
+                }
+            };
+
+            let imobileScriptLoaded = false;
+
+            function loadImobileScriptOnce() {
+                if (imobileScriptLoaded) return;
+                imobileScriptLoaded = true;
+                const script = document.createElement("script");
+                script.async = true;
+                script.src = "https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104";
+                document.head.appendChild(script);
+            }
+
+            function renderAd(slotId, adConfig) {
+                const slot = document.getElementById(slotId);
+                if (!slot || !adConfig) return;
+                if (document.getElementById(adConfig.elementid)) return;
+
+                const div = document.createElement("div");
+                div.id = adConfig.elementid;
+                slot.appendChild(div);
+
+                window.adsbyimobile = window.adsbyimobile || [];
+                window.adsbyimobile.push({
+                    pid: adConfig.pid,
+                    mid: adConfig.mid,
+                    asid: adConfig.asid,
+                    type: adConfig.type,
+                    display: adConfig.display,
+                    elementid: adConfig.elementid
+                });
+
+                loadImobileScriptOnce();
+            }
+
+            function initAds() {
+                const width = window.innerWidth || document.documentElement.clientWidth;
+                const sideAd = document.getElementById("side-ad");
+
+                // 上部：PCはビッグバナー、タブレット幅は通常バナー。スマホ最上部は圧が強いので出さない。
+                if (width >= 760) {
+                    renderAd("ad-slot-top", ADS.bigBanner);
+                } else if (width >= 500) {
+                    renderAd("ad-slot-top", ADS.banner);
+                }
+
+                // メイン導線後：最も自然に見られやすい主力枠。
+                renderAd("ad-slot-after-modes", ADS.rectangleLarge);
+
+                // 説明記事後：読了後の自然な広告枠。
+                renderAd("ad-slot-article", ADS.rectangle);
+
+                // 下部：PCのみ通常バナー。スマホは広告過多を避ける。
+                if (width >= 760 && !document.getElementById(ADS.banner.elementid)) {
+                    renderAd("ad-slot-bottom", ADS.banner);
+                }
+
+                // PC右サイド：広い画面はハーフページ、やや狭いPCはスカイスクレイパー。
+                if (sideAd && width >= 1280) {
+                    sideAd.classList.remove("compact");
+                    renderAd("ad-slot-side", ADS.halfPage);
+                } else if (sideAd && width >= 1060) {
+                    sideAd.classList.add("compact");
+                    renderAd("ad-slot-side", ADS.wideSkyscraper);
+                }
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initAds);
+            } else {
+                initAds();
+            }
+        })();
+    </script>
+
 </body>
 </html>
