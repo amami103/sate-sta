@@ -15,6 +15,8 @@
     <title>遊び方・攻略ガイド | サテステ</title>
     <link rel="icon" href="logo2.jpg">
     <meta name="description" content="航空写真から駅を当てるクイズゲーム「サテステ」の詳しい遊び方と攻略方法。スコア計算の仕組みやランク判定、駅特定のテクニックを解説。">
+    <!-- i-mobile ad script -->
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     
     <style>
         body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
@@ -49,6 +51,74 @@
 
         .guide-img { width: 100%; max-width: 550px; border-radius: 12px; border: 1px solid #ddd; margin: 18px auto 28px; display: block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
+        /* ===== 広告枠：i-mobile ===== */
+        .ad-wrap {
+            width: 100%;
+            margin: 28px auto;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .ad-wrap .ad-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .ad-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+            min-height: 60px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .ad-top {
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+        .ad-in-card {
+            margin: 30px auto 34px;
+            padding: 18px 0;
+            border-top: 1px solid #eef2f7;
+            border-bottom: 1px solid #eef2f7;
+        }
+        .ad-after-card {
+            margin-top: -8px;
+            margin-bottom: 30px;
+        }
+        .side-ad {
+            position: fixed;
+            top: 180px;
+            z-index: 10;
+            text-align: center;
+        }
+        .side-ad .ad-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .side-ad-right {
+            right: 18px;
+        }
+        .side-ad-left {
+            left: 18px;
+        }
+        @media (max-width: 1499px) {
+            .side-ad-left { display: none; }
+        }
+        @media (max-width: 1180px) {
+            .side-ad { display: none; }
+        }
+        @media (max-width: 760px) {
+            .ad-top { display: none; }
+            .ad-wrap { margin: 22px auto; }
+            .ad-in-card {
+                margin: 26px auto 30px;
+                padding: 16px 0;
+            }
+        }
+
         .example-text { background: #f6faff; border-left: 4px solid #007AFF; padding: 9px 12px; border-radius: 0 8px 8px 0; margin: 8px 0 12px; font-size: 14.5px; color: #444; }
         .point-block { background: #fbfcfe; border: 1px solid #e8eef7; border-radius: 12px; padding: 16px 18px; margin: 18px 0 24px; }
         .point-block p:last-child { margin-bottom: 0; }
@@ -79,6 +149,20 @@
 </head>
 <body>
 
+    <aside class="side-ad side-ad-right" aria-label="スポンサーリンク">
+        <div class="ad-label">スポンサーリンク</div>
+        <div id="im-1ce20f69e4c74cfd864974fbba0a000a">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-1ce20f69e4c74cfd864974fbba0a000a"})</script>
+</div>
+    </aside>
+    <aside class="side-ad side-ad-left" aria-label="スポンサーリンク">
+        <div class="ad-label">スポンサーリンク</div>
+        <div id="im-e82042922aee4348b451c4e931913a33">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935785,type:"banner",display:"inline",elementid:"im-e82042922aee4348b451c4e931913a33"})</script>
+</div>
+    </aside>
+
+
     <header>
         <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
         <h1>サテステ</h1>
@@ -94,6 +178,15 @@
             <a href="contact.html">お問い合わせ</a>
         </nav>
     </header>
+
+        <div class="ad-wrap ad-top">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-box">
+                <div id="im-aa65fb4d2be24e57a360a2bfbbc42c99">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-aa65fb4d2be24e57a360a2bfbbc42c99"})</script>
+</div>
+            </div>
+        </div>
 
     <main>
         <!-- 基本ルールセクション -->
@@ -141,10 +234,29 @@
             <p>ランキングに挑戦したい場合は、トップページの「ランキングモード」から開始してください。記録を見るだけの場合は、ヘッダーまたはフッターの「ランキング」から確認できます。</p>
         </div>
 
+        <div class="ad-wrap ad-after-card">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-box">
+                <div id="im-8415a356c5d2430c915a75d1484b81e0">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+</div>
+            </div>
+        </div>
+
         <!-- 攻略詳細セクション -->
         <div class="card article-section">
             <h2>ハイスコアのための攻略ヒント</h2>
             <p>「サテステ」は、地理的知識、駅の構造、そして街並みからの想像力が試される非常に奥の深いゲームです。ここでは高得点を目指すための攻略ヒントを詳しく解説します。</p>
+
+        <div class="ad-wrap ad-in-card">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-box">
+                <div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+</div>
+            </div>
+        </div>
+
 
             <h3>1. マップを広く見る</h3>
             <p>まずはマップを広く見ることです。駅の構造はもちろんのこと、まわりに他の鉄道路線が写っていないかどうか、都会か田舎なのか...など見るべきポイントは多々あります。</p>
@@ -229,6 +341,15 @@
                   <img src="image20.png" alt="駅の構造ヒント1" class="guide-img">
 
             </div>
+
+        <div class="ad-wrap ad-in-card">
+            <div class="ad-label">スポンサーリンク</div>
+            <div class="ad-box">
+                <div id="im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6"})</script>
+</div>
+            </div>
+        </div>
 
             <div class="point-block">
             <p><strong>・地形で判断</strong><br>
