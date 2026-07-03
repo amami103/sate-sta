@@ -8,6 +8,7 @@
       gtag('js', new Date());
       gtag('config', 'G-RVMQ4R05XJ');
     </script>
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全国ランキング | サテステ</title>
@@ -99,6 +100,16 @@
         .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
         .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
         .article-section li { margin-bottom: 8px; }
+
+        /* i-mobile広告枠 */
+        .ad-box { margin: 24px auto 30px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .ad-box-inner { display: inline-block; max-width: 100%; padding: 8px; background: rgba(255,255,255,0.85); border: 1px solid #e8eef5; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); overflow: hidden; }
+        .ad-label { display: block; font-size: 11px; color: #888; margin-bottom: 6px; text-align: center; line-height: 1; }
+        .ad-top { margin-top: 0; }
+        .ad-bottom { margin-bottom: 10px; }
+        .pc-side-ad { position: fixed; top: 190px; right: 18px; z-index: 20; display: none; text-align: center; }
+        .pc-side-ad .ad-box-inner { background: rgba(255,255,255,0.92); }
+
         footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
         .footer-links { margin-bottom: 15px; }
         .footer-links a { color: #ccc; text-decoration: none; margin: 0 15px; font-size: 13px; }
@@ -116,6 +127,14 @@
         .detail-table { min-width: 720px; font-size: 12px; }
         .detail-ok { color: #d33; font-weight: bold; }
         .detail-ng { color: #007AFF; font-weight: bold; }
+        @media (min-width: 1180px) {
+            .pc-side-ad { display: block; }
+        }
+        @media (max-width: 760px) {
+            .ad-big-banner { display: none; }
+            .ad-box { margin: 18px auto 24px; }
+            .ad-box-inner { padding: 6px; border-radius: 12px; }
+        }
         @media (max-width: 600px) {
             header { min-height: auto; padding: 20px 10px; }
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
@@ -135,10 +154,19 @@
     </style>
 </head>
 <body>
+
+    <aside class="pc-side-ad" aria-label="広告">
+        <div class="ad-box-inner">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-ranking-side-skyscraper">
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-ranking-side-skyscraper"})</script>
+                    </div>
+                </div>
+    </aside>
     <header>
-        <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo" onerror="this.style.display='none'">
-        <h1>全国ランキング</h1>
-        <p class="subtitle">サテステの上位スコアをチェック</p>
+        <img src="logo.jpg" alt="サテステ ロゴ" class="header-logo">
+        <h1>サテステ</h1>
+        <p class="subtitle">衛星画像から駅を当てよう</p>
         <nav class="header-nav" aria-label="ヘッダーナビゲーション">
             <a href="/">ホーム</a>
             <a href="about.html">サテステについて（自己紹介）</a>
@@ -151,6 +179,14 @@
     </header>
 
     <main>
+        <div class="ad-box ad-top ad-big-banner" aria-label="広告">
+            <div class="ad-box-inner">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-ranking-top-bigbanner">
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-ranking-top-bigbanner"})</script>
+                    </div>
+                </div>
+        </div>
         <section class="card" style="border: 2px solid #FF9500;">
             <div class="card-title" style="color:#FF9500;">🥇 全国ランキング</div>
             <div class="card-desc">ランキング挑戦モードで送信されたスコアを表示しています。都道府県・会社・路線など、挑戦時の絞り込み条件ごとにランキングを切り替えられます。同点の場合は合計時間が短い記録を上位として表示します。</div>
@@ -159,6 +195,15 @@
                 <a href="index.html" class="btn-start btn-free">タイトルへ戻る</a>
             </div>
         </section>
+
+        <div class="ad-box" aria-label="広告">
+            <div class="ad-box-inner">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-ranking-after-hero-large-rectangle">
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-ranking-after-hero-large-rectangle"})</script>
+                    </div>
+                </div>
+        </div>
 
         <section class="card ranking-card">
             <div class="tabs">
@@ -186,6 +231,15 @@
             <div id="ranking-area" class="loading">ランキングを読み込み中...</div>
         </section>
 
+        <div class="ad-box" aria-label="広告">
+            <div class="ad-box-inner">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-ranking-after-table-rectangle">
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-ranking-after-table-rectangle"})</script>
+                    </div>
+                </div>
+        </div>
+
         <section class="card article-section">
             <h2>ランキングについて</h2>
             <ul>
@@ -196,6 +250,15 @@
                 <li>「詳細」ボタンから、その記録の各問題の正解駅・解答・得点・誤差・時間を確認できます。</li>
             </ul>
         </section>
+
+        <div class="ad-box ad-bottom" aria-label="広告">
+            <div class="ad-box-inner">
+                    <span class="ad-label">スポンサーリンク</span>
+                    <div id="im-ranking-bottom-banner">
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-ranking-bottom-banner"})</script>
+                    </div>
+                </div>
+        </div>
     </main>
 
 
