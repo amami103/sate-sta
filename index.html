@@ -379,6 +379,7 @@
         // 大手私鉄の定義
         const KANSAI_MAJORS = ["近畿日本鉄道", "南海電鉄", "京阪電鉄", "阪急電鉄", "阪神電鉄"];
         const KANTO_MAJORS = ["東武鉄道", "西武鉄道", "京成電鉄", "京王電鉄", "小田急電鉄", "東急電鉄", "京浜急行電鉄", "相模鉄道", "東京メトロ"];
+         const OTHER_MAJORS = ["名古屋鉄道", "西日本鉄道"];
 
         let masterCompanies = [], masterLines = [];
 
@@ -488,7 +489,7 @@
                     } else if (c === "grp:関東大手私鉄") {
                         companyKeywords.push(...KANTO_MAJORS);
                     } else if (c === "grp:大手私鉄") {
-                        companyKeywords.push(...KANSAI_MAJORS, ...KANTO_MAJORS);
+                        companyKeywords.push(...KANSAI_MAJORS, ...KANTO_MAJORS, ...OTHER_MAJORS);
                     } else if (c === "grp:JR") {
                         companyKeywords.push("JR");
                     } else if (c.startsWith("grp:")) {
