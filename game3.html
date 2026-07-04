@@ -5,7 +5,7 @@
     <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ランキングチャレンジ | サテステ</title>
+    <title>サテステ（チャレンジ）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
@@ -13,7 +13,7 @@
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
-        .ui-header { background: #FF3B30; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header { background: #FF9500; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
@@ -31,7 +31,7 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
-        .btn-title-exit { background: #FF3B30; grid-column: span 2; margin-top: 5px; font-size: 13px; }
+        .btn-title-exit { background: #FF9500; grid-column: span 2; margin-top: 5px; font-size: 13px; }
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
         
@@ -49,7 +49,7 @@
         .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
         .score-record-box { background: #fff7ed; border: 1px solid #ffd3a3; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
         .score-record-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; }
-        .new-best-badge { background: #FF3B30; color: white; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
+        .new-best-badge { background: #FF9500; color: white; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
         .score-record-condition { font-size: 10px; color: #777; margin-bottom: 8px; word-break: break-word; }
         .score-record-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
         .score-record-cell { background: rgba(255,255,255,0.8); border-radius: 8px; padding: 7px; text-align: center; }
@@ -98,7 +98,7 @@
 <body onload="init()">
     <div id="map"></div>
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ (チャレンジ)</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ（チャレンジ）</div>
         <div class="ui-content" id="ui-content">
             
             <!-- 広告枠1: コンテンツ最上部（常設） -->
@@ -380,7 +380,7 @@
             
             if (userRaw !== "" && sameNameStations.length > 1 && !userRaw.includes(' (')) {
                 const res = document.getElementById('result');
-                res.innerHTML = `<span style="color:#FF3B30; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
+                res.innerHTML = `<span style="color:#FF9500; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
                 return;
             }
 
@@ -942,10 +942,10 @@
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
             canvas.width = 800; canvas.height = 1450;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#FF3B30"; ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#FF9500"; ctx.fillRect(0, 0, canvas.width, 120);
             ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
             ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${modeName} / ${activeFilters}`, 400, 170);
-            ctx.fillStyle = "#FF3B30"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
+            ctx.fillStyle = "#FF9500"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
             ctx.fillStyle = "#333333"; ctx.font = "bold 50px sans-serif"; ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
             ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
             let y = 480;
