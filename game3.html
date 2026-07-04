@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
@@ -17,11 +18,61 @@
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
-        /* 広告用スタイル */
-        .ad-container { margin: 10px 0; text-align: center; background: #fafafa; border-radius: 6px; overflow: hidden; min-height: 60px; font-size: 10px; color: #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
-        .ad-label { font-size: 8px; color: #999; margin-bottom: 2px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; }
-        .ad-inner { width: 100%; max-width: 100%; min-height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        @media (min-width: 760px) { .ad-inner { min-height: 90px; } }
+        /* 広告用スタイル：ゲーム中は邪魔にしない。回答後・結果画面中心に表示 */
+        .ad-container {
+            margin: 12px 0;
+            text-align: center;
+            background: #fafafa;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 60px;
+            font-size: 10px;
+            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .ad-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 6px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #fdfdfd;
+            line-height: 1.6;
+        }
+        .ad-game-after-answer,
+        .ad-final-large {
+            display: none;
+        }
+        .ad-final-large {
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+        .ad-note {
+            font-size: 10px;
+            color: #999;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+        @media (min-width: 760px) {
+            .ui-container {
+                width: 360px;
+            }
+        }
+        @media (max-width: 600px) {
+            .ad-final-large {
+                margin: 12px auto;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            .ad-final-large .ad-label {
+                font-size: 10px;
+            }
+        }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
         input { padding: 12px; font-size: 16px; width: 100%; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
@@ -95,6 +146,14 @@
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
         @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
+
+        /* PC/SP広告出し分け */
+        .ad-sp-only { display: none; }
+        .ad-pc-only { display: block; }
+        @media (max-width: 760px) {
+            .ad-pc-only { display: none !important; }
+            .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
+        }
     </style>
 </head>
 <body onload="init()">
@@ -102,13 +161,6 @@
     <div class="ui-container" id="ui-panel">
         <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ（チャレンジ）</div>
         <div class="ui-content" id="ui-content">
-            
-            <!-- 広告枠1: コンテンツ最上部（PC/スマホ出し分け） -->
-            <div class="ad-container" aria-label="広告">
-                <span class="ad-label">スポンサーリンク</span>
-                <div class="ad-inner" id="ad-slot-game-top"></div>
-            </div>
-
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
@@ -126,13 +178,28 @@
                 <div id="hint-area"></div>
                 <div id="result"></div>
 
-                <!-- 広告枠2: ゲームUIの下（PC/スマホ出し分け） -->
-                <div class="ad-container" aria-label="広告">
-                    <span class="ad-label">スポンサーリンク</span>
-                    <div class="ad-inner" id="ad-slot-game-bottom"></div>
+                <div class="ad-container ad-game-after-answer" id="ad-after-answer" aria-label="スポンサーリンク">
+                    <div class="ad-label">スポンサーリンク</div>
+                    <div class="ad-pc-only"><div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+                    </div></div>
+                    <div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+                      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+                    </div></div>
+                    <div class="ad-note">回答後のみ表示されます</div>
                 </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
+            <div class="ad-container ad-final-large" id="ad-final-large" aria-label="スポンサーリンク">
+                <div class="ad-label">スポンサーリンク</div>
+                <div class="ad-note">最終結果画面に表示されます</div>
+                <div class="ad-pc-only"><div id="im-8415a356c5d2430c915a75d1484b81e0">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+                </div></div>
+                <div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+                </div></div>
+            </div>
         </div>
     </div>
 
@@ -167,58 +234,14 @@
     </script>
 
     <script>
-        // i-mobile広告読み込み用（index.htmlと同じ広告ユニットをPC/スマホで出し分け）
-        const IMOBILE_ADS = {
-            banner: { elementid: "im-game-banner-6b2db4aaa2914f5ebf99f4fa7ca3d7e6", pid: 85120, mid: 594260, asid: 1935776, type: "banner", display: "inline" },
-            rectangle: { elementid: "im-game-rect-d89e63082e9347d2b3b7d2f81b5c1828", pid: 85120, mid: 594260, asid: 1935779, type: "banner", display: "inline" },
-            rectangleLarge: { elementid: "im-game-rect-lg-8415a356c5d2430c915a75d1484b81e0", pid: 85120, mid: 594260, asid: 1935780, type: "banner", display: "inline" },
-            bigBanner: { elementid: "im-game-big-aa65fb4d2be24e57a360a2bfbbc42c99", pid: 85120, mid: 594260, asid: 1935784, type: "banner", display: "inline" },
-            spRectMain: { elementid: "im-game-sp-rect-main-fa6bed2a14844c52ba4d1c1b3e4113f3", pid: 85120, mid: 594261, asid: 1935806, type: "banner", display: "inline" },
-            spRectArticle: { elementid: "im-game-sp-rect-article-fa6bed2a14844c52ba4d1c1b3e4113f3", pid: 85120, mid: 594261, asid: 1935806, type: "banner", display: "inline" },
-            spBigTop: { elementid: "im-game-sp-big-top-4f537cb9ba134a618a2caaa4198064aa", pid: 85120, mid: 594261, asid: 1935807, type: "banner", display: "inline" },
-            spBigBottom: { elementid: "im-game-sp-big-bottom-4f537cb9ba134a618a2caaa4198064aa", pid: 85120, mid: 594261, asid: 1935807, type: "banner", display: "inline" }
-        };
-        let imobileScriptLoaded = false;
-
-        function loadImobileScriptOnce() {
-            if (imobileScriptLoaded) return;
-            imobileScriptLoaded = true;
-            const script = document.createElement("script");
-            script.async = true;
-            script.src = "https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104";
-            document.head.appendChild(script);
+        // 広告表示制御：プレイ中は隠し、回答後・結果画面で表示
+        function setAdVisible(id, visible) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = visible ? "flex" : "none";
         }
 
-        function renderImobileAd(slotId, adConfig) {
-            const slot = document.getElementById(slotId);
-            if (!slot || !adConfig || slot.dataset.adLoaded === "true") return;
-            slot.dataset.adLoaded = "true";
-
-            const div = document.createElement("div");
-            div.id = adConfig.elementid;
-            slot.appendChild(div);
-
-            window.adsbyimobile = window.adsbyimobile || [];
-            window.adsbyimobile.push({
-                pid: adConfig.pid,
-                mid: adConfig.mid,
-                asid: adConfig.asid,
-                type: adConfig.type,
-                display: adConfig.display,
-                elementid: adConfig.elementid
-            });
-
-            loadImobileScriptOnce();
-        }
-
-        function initImobileAds() {
-            const width = window.innerWidth || document.documentElement.clientWidth;
-            const isPc = width >= 760;
-
-            renderImobileAd("ad-slot-game-top", isPc ? IMOBILE_ADS.bigBanner : IMOBILE_ADS.spBigTop);
-            renderImobileAd("ad-slot-game-bottom", isPc ? IMOBILE_ADS.rectangleLarge : IMOBILE_ADS.spRectMain);
-            renderImobileAd("ad-slot-final-top", isPc ? IMOBILE_ADS.banner : IMOBILE_ADS.spBigBottom);
-            renderImobileAd("ad-slot-final-bottom", isPc ? IMOBILE_ADS.rectangle : IMOBILE_ADS.spRectArticle);
+        function refreshAds() {
+            // i-mobileタグは静的に読み込むため、ここでは追加処理しない
         }
 
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
@@ -252,7 +275,8 @@
         function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
 
         function init() {
-            initImobileAds();
+            refreshAds();
+            refreshAds();
 
             const params = new URLSearchParams(window.location.search);
             const resData = params.get('res');
@@ -394,6 +418,8 @@
         }
 
         function nextQuestion() {
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", false);
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false; usedHints = { pref: false, line: false };
             document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
@@ -463,6 +489,7 @@
 
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw || "(未入力)", isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            setAdVisible("ad-after-answer", true);
             questionCount++;
         }
 
@@ -471,6 +498,7 @@
             document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
             answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            setAdVisible("ad-after-answer", true);
             questionCount++;
         }
 
@@ -872,6 +900,8 @@
         }
 
         function showFinalResult(isViewMode = false) {
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", true);
             const gameUi = document.getElementById('game-ui');
             const titleEl = document.getElementById('question-title');
             const finalUi = document.getElementById('final-ui');
@@ -922,10 +952,6 @@
                 <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
                 <div id="score-record-mount"></div>
                 <div id="ranking-mount"></div>
-                <div class="ad-container" aria-label="広告">
-                    <span class="ad-label">スポンサーリンク</span>
-                    <div class="ad-inner" id="ad-slot-final-top"></div>
-                </div>
                 <div class="sns-share-area">
                     <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
                     <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
@@ -935,10 +961,6 @@
                     <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
                 </div>
                 <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
-                <div class="ad-container" aria-label="広告">
-                    <span class="ad-label">スポンサーリンク</span>
-                    <div class="ad-inner" id="ad-slot-final-bottom"></div>
-                </div>
                 <div class="result-footer-buttons">
                     ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
                     <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
@@ -974,7 +996,10 @@
             }
 
             setTimeout(() => {
-                try { initImobileAds(); } catch (e) {}
+                try {
+                    const ads = finalUi.querySelectorAll('.adsbygoogle');
+                    ads.forEach(() => refreshAds());
+                } catch (e) {}
                 if (!isViewMode && lastRankingState) loadGlobalRanking();
             }, 100);
         }
