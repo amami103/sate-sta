@@ -175,7 +175,7 @@
             stations.forEach(s => {
                 const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
                 if (stationMap.has(key)) {
-                    const ex = stationMap.get(key); if (!ex.line.includes(s.line)) ex.line += `・${s.line}`;
+                    const ex = stationMap.get(key); if (!ex.line.includes(s.line)) ex.line += `・${s.line}`; if (s.company && !String(ex.company || '').includes(s.company)) ex.company = ex.company ? `${ex.company}・${s.company}` : s.company;
                 } else {
                     const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
                 }
@@ -279,13 +279,8 @@
             }
 
             if (sComp && sComp !== "all") {
-                if (sComp.startsWith("grp:")) {
-                    const groupName = sComp.replace("grp:", "");
-                    const expandedCompanies = expandCompanySelections([sComp]);
-                    rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
-                } else {
-                    rawFiltered = rawFiltered.filter(s => matchValue(s.company, sComp));
-                }
+                const expandedCompanies = expandCompanySelections([sComp]);
+                rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
             }
 
             const selectedComps = splitParam(sComps);
