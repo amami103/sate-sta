@@ -200,10 +200,65 @@
                 if (!value || value === "all") return [];
                 return value.split(',').map(v => v.trim()).filter(Boolean);
             };
+            const expandCompanySelections = (values) => {
+                const expanded = [];
+                values.forEach(v => {
+                    if (!v) return;
+                    if (v.startsWith("grp:")) {
+                        const groupName = v.replace("grp:", "");
+                        const groupValues = COMPANY_GROUPS[groupName] || [];
+                        expanded.push(...groupValues);
+                    } else if (COMPANY_GROUPS[v]) {
+                        expanded.push(...COMPANY_GROUPS[v]);
+                    } else {
+                        expanded.push(v);
+                    }
+                });
+                return Array.from(new Set(expanded));
+            };
             const stationKey = (s) => `${s.name}_${Number(s.lat).toFixed(3)}_${Number(s.lng).toFixed(3)}`;
+            const RAIL_COMPANY_ALIASES = {
+                "近畿日本鉄道": ["近畿日本鉄道", "近鉄", "近鉄電車", "近畿日本"],
+                "南海電鉄": ["南海電鉄", "南海電気鉄道", "南海", "南海電車"],
+                "京阪電鉄": ["京阪電鉄", "京阪電気鉄道", "京阪", "京阪電車"],
+                "阪急電鉄": ["阪急電鉄", "阪急", "阪急電車"],
+                "阪神電鉄": ["阪神電鉄", "阪神電気鉄道", "阪神", "阪神電車"],
+                "西日本鉄道": ["西日本鉄道", "西鉄"],
+                "名古屋鉄道": ["名古屋鉄道", "名鉄"],
+                "東京メトロ": ["東京メトロ", "東京地下鉄"],
+                "相模鉄道": ["相模鉄道", "相鉄"],
+                "京急電鉄": ["京急電鉄", "京浜急行電鉄", "京急"],
+                "小田急電鉄": ["小田急電鉄", "小田急"],
+                "京王電鉄": ["京王電鉄", "京王"],
+                "京成電鉄": ["京成電鉄", "京成"],
+                "東急電鉄": ["東急電鉄", "東急"],
+                "東武鉄道": ["東武鉄道", "東武"],
+                "西武鉄道": ["西武鉄道", "西武"]
+            };
+
+            const normalizeRailCompanyValues = (value) => {
+                if (!value) return [];
+                const raw = String(value)
+                    .split(/[・,、／/]+/)
+                    .map(v => v.trim())
+                    .filter(Boolean);
+                const values = new Set(raw);
+                raw.forEach(v => {
+                    Object.entries(RAIL_COMPANY_ALIASES).forEach(([official, aliases]) => {
+                        if (v === official || aliases.includes(v) || aliases.some(a => v.includes(a) || a.includes(v))) {
+                            values.add(official);
+                            aliases.forEach(a => values.add(a));
+                        }
+                    });
+                });
+                return Array.from(values);
+            };
+
             const matchValue = (stationValue, selectedValue) => {
-                if (!stationValue || !selectedValue) return false;
-                return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
+                const stationValues = normalizeRailCompanyValues(stationValue);
+                const selectedValues = normalizeRailCompanyValues(selectedValue);
+                if (stationValues.length === 0 || selectedValues.length === 0) return false;
+                return stationValues.some(sv => selectedValues.some(tv => sv === tv || sv.includes(tv) || tv.includes(sv)));
             };
 
             let rawFiltered = stations.slice();
@@ -226,8 +281,8 @@
             if (sComp && sComp !== "all") {
                 if (sComp.startsWith("grp:")) {
                     const groupName = sComp.replace("grp:", "");
-                    const gr = COMPANY_GROUPS[groupName] || [];
-                    rawFiltered = rawFiltered.filter(s => gr.some(c => matchValue(s.company, c)) || matchValue(s.company, groupName));
+                    const expandedCompanies = expandCompanySelections([sComp]);
+                    rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
                 } else {
                     rawFiltered = rawFiltered.filter(s => matchValue(s.company, sComp));
                 }
@@ -235,7 +290,8 @@
 
             const selectedComps = splitParam(sComps);
             if (selectedComps.length > 0) {
-                rawFiltered = rawFiltered.filter(s => selectedComps.some(c => matchValue(s.company, c)));
+                const expandedCompanies = expandCompanySelections(selectedComps);
+                rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
             }
 
             const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
