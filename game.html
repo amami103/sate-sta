@@ -263,6 +263,7 @@
                 if (stationMap.has(key)) {
                     const existing = stationMap.get(key);
                     if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                    if (s.company && !String(existing.company || '').includes(s.company)) existing.company = existing.company ? `${existing.company}・${s.company}` : s.company;
                 } else {
                     const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
                 }
@@ -379,17 +380,12 @@
             }
 
             if (sComp && sComp !== "all") {
-                if (sComp.startsWith("grp:")) {
-                    const groupName = sComp.replace("grp:", "");
-                    const expandedCompanies = expandCompanySelections([sComp]);
-                    rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
-                    filterLabels.push("会社: "+groupName);
-                    penaltyValues.push(35);
-                } else {
-                    rawFiltered = rawFiltered.filter(s => matchValue(s.company, sComp));
-                    filterLabels.push("会社: "+sComp);
-                    penaltyValues.push(20);
-                }
+                const isCompanyGroup = sComp.startsWith("grp:") || !!COMPANY_GROUPS[sComp];
+                const groupName = sComp.startsWith("grp:") ? sComp.replace("grp:", "") : sComp;
+                const expandedCompanies = expandCompanySelections([sComp]);
+                rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
+                filterLabels.push("会社: "+(isCompanyGroup ? groupName : sComp));
+                penaltyValues.push(isCompanyGroup ? 35 : 20);
             }
 
             const selectedComps = splitParam(sComps);
