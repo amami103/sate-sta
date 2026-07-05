@@ -142,6 +142,14 @@
             .ad-pc-only { display: none !important; }
             .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
         }
+        /* 回答後ボタン強制表示 */
+        .after-answer #answer-btn,
+        .after-answer #station-input,
+        .after-answer .btn-reset,
+        .after-answer .btn-giveup,
+        .after-answer .btn-hint { display: none !important; }
+        .after-answer #next-btn { display: block !important; visibility: visible !important; grid-column: span 2; }
+
     </style>
 </link></head>
 <body onload="init()">
@@ -431,11 +439,14 @@
         }
 
         function nextQuestion() {
+            document.getElementById('game-ui')?.classList.remove('after-answer');
             setAdVisible("ad-after-answer", false);
             setAdVisible("ad-final-large", false);
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false; usedHints = { pref: false, line: false };
-            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('answer-btn').style.display = "block";
+            const nextBtnReset = document.getElementById('next-btn');
+            if (nextBtnReset) nextBtnReset.style.setProperty('display', 'none', 'important');
             document.getElementById('result').innerText = ""; 
             document.getElementById('station-input').value = "";
             document.getElementById('station-list').innerHTML = ""; 
@@ -499,13 +510,29 @@
             finishOne();
         }
 
+        function finishOne() {
+            answered = true;
+            const gameUi = document.getElementById('game-ui');
+            if (gameUi) gameUi.classList.add('after-answer');
+
+            const answerBtn = document.getElementById('answer-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (answerBtn) answerBtn.style.setProperty('display', 'none', 'important');
+            if (nextBtn) {
+                nextBtn.style.setProperty('display', 'block', 'important');
+                nextBtn.style.setProperty('visibility', 'visible', 'important');
+                nextBtn.style.gridColumn = 'span 2';
+            }
+
+            setAdVisible("ad-after-answer", true);
+            questionCount++;
+        }
+
         function showAnswer() {
             if (answered) return;
             document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
-            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
-            setAdVisible("ad-after-answer", true);
-            questionCount++;
+            finishOne();
         }
 
         const SCORE_HISTORY_KEY = "sateStaChallengeScoreHistory:v1";
