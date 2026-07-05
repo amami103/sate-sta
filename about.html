@@ -2,8 +2,6 @@
 <html lang="ja">
 <head>
     <!-- Google tag (gtag.js) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVMQ4R05XJ"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -11,79 +9,122 @@
       gtag('js', new Date());
       gtag('config', 'G-RVMQ4R05XJ');
     </script>
+    <!-- i-mobile広告共通スクリプト -->
+    <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サテステ | 航空写真から駅当てクイズ</title>
+    <title>サテステについて（自己紹介） | サテステ</title>
     <link rel="icon" href="logo2.jpg">
-    <meta name="description" content="人工衛星から撮影された航空写真を見て駅名を当てる無料クイズゲームです。JR、私鉄、地下鉄など日本全国約9,000駅からランダム出題。">
+    <meta name="description" content="航空写真駅当てクイズ「サテステ」の制作背景と運営者情報。日本全国の鉄道と地理の魅力を伝えるためのプロジェクトです。">
     
-    <!-- X(Twitter)共有設定 -->
-    <meta property="og:url" content="https://sate-sta.com/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="サテステ | 航空写真から駅当てクイズ" />
-    <meta property="og:description" content="この駅、どこか分かりますか？全国約9,000駅からランダム出題！" />
-    <meta property="og:site_name" content="サテステ" />
-    <meta property="og:image" content="https://github.com/amami103/sate-sta/blob/main/logo.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Amami103_" />
-
     <style>
         body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
         header { width: 100%; min-height: 140px; background: linear-gradient(135deg, #007AFF, #00C6FF); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; padding: 10px; }
         .header-logo { position: absolute; top: 14px; left: 20px; height: 112px; background-color: rgba(255, 255, 255, 0.95); padding: 5px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        h1 { margin: 0; font-size: 28px; }
+        p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
+
         .header-nav { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding: 0 150px; box-sizing: border-box; }
         .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; opacity: 0.95; }
         .header-nav a:hover { text-decoration: underline; opacity: 1; }
         
-        h1 { margin: 0; font-size: 28px; }
-        p.subtitle { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-        
         main { flex: 1; width: 95%; max-width: 700px; padding: 30px 0; text-align: center; }
         
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; text-align: left; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .card-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
-
-        .setting-item { margin-bottom: 15px; }
-        .setting-item label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
         
-        select, input[type="number"], .search-input { width: 100%; padding: 10px; font-size: 15px; border-radius: 8px; border: 2px solid #ddd; background-color: #fff; box-sizing: border-box; }
-        .search-input { margin-bottom: 5px; border-style: dashed; font-size: 13px; }
-        
-        .num-input { width: 100px; text-align: center; display: block; margin: 0 auto; font-size: 20px; border-color: #007AFF; }
-        .lock-option { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; padding: 12px; background: #f0f4ff; border-radius: 10px; margin-top: 15px; border: 1px solid #007AFF; }
-        
-        .btn-toggle-custom { background: #5856D6; color: white; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; margin: 10px 0; width: 100%; font-weight: bold; }
-        #custom-area { display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
-        
-        .check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; max-height: 180px; overflow-y: auto; padding: 8px; background: white; border: 1px solid #eee; border-radius: 5px; }
-        .check-item { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-
-        .btn-start { display: inline-block; color: white; width: 100%; font-size: 22px; font-weight: bold; padding: 15px 0; border-radius: 50px; border: none; cursor: pointer; margin-top: 5px; }
-        .btn-challenge { background: #FF3B30; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
-        .btn-ranking { background: #FF9500; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.4); margin-top: 12px; }
-        .btn-ranking-view { background: #34C759; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.35); margin-top: 12px; }
-        .btn-free { background: #007AFF; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4); }
-
-        .support-box { background: linear-gradient(135deg, #fff8e8, #ffffff); padding: 18px 20px; border-radius: 18px; border: 2px solid #FF9500; box-shadow: 0 4px 18px rgba(255, 149, 0, 0.14); margin-bottom: 30px; text-align: center; }
-        .support-title { font-size: 18px; font-weight: bold; color: #d46b00; margin-bottom: 8px; }
-        .support-desc { font-size: 13px; color: #555; line-height: 1.7; margin: 0 0 14px; }
-        .support-btn { display: inline-block; padding: 11px 22px; background: #FF9500; color: white; font-size: 15px; font-weight: bold; text-decoration: none; border-radius: 999px; box-shadow: 0 4px 12px rgba(255, 149, 0, 0.32); transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease; }
-        .support-btn:hover { transform: translateY(1px); box-shadow: 0 2px 8px rgba(255, 149, 0, 0.28); opacity: 0.92; }
-        .support-note { display: block; margin-top: 10px; font-size: 11px; color: #888; }
-        
-        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 30px; }
+        .article-section h2 { font-size: 20px; color: #007AFF; border-bottom: 2px solid #007AFF; padding-bottom: 5px; margin-top: 10px; }
         .article-section h3 { font-size: 17px; color: #333; margin-top: 25px; border-left: 5px solid #007AFF; padding-left: 10px; }
         .article-section p { line-height: 1.8; color: #444; font-size: 15px; }
         .article-section ul { padding-left: 20px; color: #444; font-size: 15px; line-height: 1.8; }
-        .article-section li { margin-bottom: 12px; }
         
-        .update-log { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 12px; background: #fafafa; border-radius: 8px; text-align: left; }
-        .update-item { margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
-        .update-date { color: #888; flex-shrink: 0; width: 80px; font-size: 13px; }
-        .update-text { color: #333; font-size: 13px; }
+        .profile-box { display: flex; align-items: center; gap: 20px; background: #f9f9f9; padding: 20px; border-radius: 15px; margin-top: 10px; }
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+
+        .support-box {
+            background: #fff8e6;
+            border: 2px solid #FF9500;
+            border-radius: 18px;
+            padding: 20px;
+            margin: 0 0 30px;
+            text-align: center;
+            box-shadow: 0 4px 18px rgba(255,149,0,0.12);
+        }
+        .support-box h2 {
+            margin: 0 0 10px;
+            color: #FF9500;
+            font-size: 19px;
+        }
+        .support-box p {
+            margin: 0 0 14px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .support-btn {
+            display: inline-block;
+            padding: 11px 24px;
+            background: #FF9500;
+            color: white;
+            text-decoration: none;
+            border-radius: 999px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255,149,0,0.30);
+        }
+        .support-btn:hover {
+            background: #e68600;
+            transform: translateY(1px);
+        }
+        .support-note {
+            display: block;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .btn-back { display: inline-block; margin-top: 20px; padding: 12px 30px; background: #007AFF; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
+        .btn-back:hover { background: #0056b3; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        /* ===== 広告枠：i-mobile ===== */
+        .ad-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 26px auto 30px;
+            text-align: center;
+            clear: both;
+        }
+        .ad-label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 7px;
+            letter-spacing: 0.02em;
+        }
+        .ad-inner {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            vertical-align: top;
+        }
+        .ad-top-banner { display: none; }
+        .desktop-side-ad {
+            display: none;
+            position: fixed;
+            top: 180px;
+            right: 18px;
+            z-index: 2;
+            text-align: center;
+        }
+        .desktop-side-ad-left {
+            display: none;
+            position: fixed;
+            top: 180px;
+            left: 18px;
+            z-index: 2;
+            text-align: center;
+        }
 
         footer { width: 100%; padding: 30px 0; background: #333; color: #fff; text-align: center; }
         .footer-links { margin-bottom: 15px; }
@@ -91,31 +132,17 @@
         .footer-links a:hover { color: #fff; text-decoration: underline; }
         .copyright { font-size: 12px; color: #888; }
 
-
-
-        /* ===== i-mobile広告枠：収益とUXのバランス重視 ===== */
-        .ad-box { width: 100%; box-sizing: border-box; margin: 26px auto; text-align: center; }
-        .ad-label { display: block; margin-bottom: 8px; font-size: 11px; line-height: 1; color: #999; letter-spacing: 0.04em; }
-        .ad-inner { display: flex; justify-content: center; align-items: center; max-width: 100%; min-height: 80px; overflow: hidden; }
-        .ad-card { background: rgba(255,255,255,0.75); border: 1px solid #edf0f3; border-radius: 14px; padding: 12px 6px; }
-        .ad-top { margin-top: 0; margin-bottom: 28px; }
-        .ad-after-modes { margin-top: 2px; margin-bottom: 34px; }
-        .ad-bottom { margin-top: 30px; margin-bottom: 0; }
-        .side-ad { position: fixed; right: 16px; top: 170px; z-index: 3; width: 300px; text-align: center; }
-        .side-ad .ad-inner { min-height: 600px; }
-        .side-ad.compact { width: 170px; }
-        .side-ad.compact .ad-inner { min-height: 600px; }
-        .ad-note { font-size: 10px; color: #aaa; margin-top: 6px; }
-
-        @media (max-width: 1059px) {
-            .side-ad { display: none; }
+        @media (min-width: 760px) {
+            .ad-top-banner { display: block; }
         }
 
-        @media (max-width: 600px) {
-            .ad-box { margin: 22px auto; }
-            .ad-card { padding: 10px 0; border-radius: 12px; }
-            .ad-inner { min-height: 70px; }
-            .ad-after-modes { margin-top: 0; margin-bottom: 26px; }
+        @media (min-width: 1120px) {
+            .desktop-side-ad { display: block; }
+        }
+
+        @media (min-width: 1360px) {
+            .desktop-side-ad { display: none; }
+            .desktop-side-ad-left { display: block; }
         }
 
         @media (max-width: 600px) { 
@@ -123,7 +150,10 @@
             .header-logo { position: static; height: 80px; margin-bottom: 10px; }
             .header-nav { padding: 0; gap: 8px 12px; }
             .header-nav a { font-size: 12px; }
-            .check-grid { grid-template-columns: 1fr; } 
+            .profile-box { flex-direction: column; text-align: center; }
+            main { padding: 22px 0; }
+            .card { padding: 20px; margin-bottom: 24px; }
+            .ad-box { margin: 22px auto 26px; }
         }
     
         /* PC/SP広告出し分け */
@@ -143,237 +173,140 @@
         <h1>サテステ</h1>
         <p class="subtitle">衛星画像から駅を当てよう</p>
         <nav class="header-nav" aria-label="ヘッダーナビゲーション">
-            <a href="/">ホーム</a>
+            <a href="index.html">ホーム</a>
             <a href="about.html">サテステについて（自己紹介）</a>
             <a href="guide.html">攻略ガイド</a>
             <a href="ranking.html">ランキング</a>
             <a href="terms.html">利用規約</a>
             <a href="privacy.html">プライバシーポリシー</a>
             <a href="contact.html">お問い合わせ</a>
+            <a href="https://ofuse.me/6ce396a4" target="_blank" rel="noopener">OFUSEで応援</a>
         </nav>
     </header>
 
-    <aside class="side-ad" id="side-ad" aria-label="広告">
+    <!-- PC向け右サイド広告：ワイドスカイスクレイパー。スマホでは非表示 -->
+    <aside class="desktop-side-ad" aria-label="スポンサーリンク">
         <span class="ad-label">スポンサーリンク</span>
-        <div class="ad-inner" id="ad-slot-side"></div>
+        <div class="ad-inner">
+            <div class="ad-pc-only"><div id="im-1ce20f69e4c74cfd864974fbba0a000a">
+              <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935783,type:"banner",display:"inline",elementid:"im-1ce20f69e4c74cfd864974fbba0a000a"})</script>
+            </div></div>
+        </div>
+    </aside>
+
+    <!-- 大きいPC向け左サイド広告：ハーフページ。スマホ・通常PCでは非表示 -->
+    <aside class="desktop-side-ad-left" aria-label="スポンサーリンク">
+        <span class="ad-label">スポンサーリンク</span>
+        <div class="ad-inner">
+            <div class="ad-pc-only"><div id="im-e82042922aee4348b451c4e931913a33">
+              <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935785,type:"banner",display:"inline",elementid:"im-e82042922aee4348b451c4e931913a33"})</script>
+            </div></div>
+        </div>
     </aside>
 
     <main>
-        <div class="ad-box ad-top" aria-label="広告">
+        <!-- PC/タブレット向け上部広告：ビッグバナー。スマホでは非表示 -->
+        <div class="ad-box ad-top-banner" aria-label="スポンサーリンク">
             <span class="ad-label">スポンサーリンク</span>
-            <div class="ad-inner" id="ad-slot-top"></div>
+            <div class="ad-inner">
+                <div class="ad-pc-only"><div id="im-aa65fb4d2be24e57a360a2bfbbc42c99">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935784,type:"banner",display:"inline",elementid:"im-aa65fb4d2be24e57a360a2bfbbc42c99"})</script>
+                </div></div>
+<div class="ad-sp-only"><div id="im-4f537cb9ba134a618a2caaa4198064aa">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935807,type:"banner",display:"inline",elementid:"im-4f537cb9ba134a618a2caaa4198064aa"})</script>
+</div></div>
+            </div>
         </div>
 
-        <!-- フリーモードのボックス -->
-        <div class="card" style="border: 2px solid #007AFF;">
-            <div class="card-title" style="color: #007AFF;">🍃 フリーモード</div>
-            <div class="card-desc">スコアを気にせずのんびり遊べるモードです。都道府県や路線を自由に組み合わせて練習できます。</div>
+        <div class="card article-section">
+            <h2>サテステとは</h2>
+            <p>「サテステ -From Satellite to Station-」は、衛星画像からその駅名を当てるという新感覚クイズゲームです。</p>
+            <p>日本には9000を超える駅がありますが、全く同じ駅はないわけです。その多数ある駅を衛星画像から推測するのは単なる鉄道知識だけではなく、地理的知識や推察力も試されます。</p>
+            <p>このゲームは鉄道ファンはもちろん地理好きの方、そして何より全ての方に楽しんでいただけるコンテンツを目指しています。今後、駅だけにとどまらず、様々な観点で楽しめる地理クイズサイトにすることを目指しております。</p>
+            <p>どうぞ「サテステ -From Satellite to Station-」を宜しくお願い致します。</p>
+        </div>
+
+        <!-- 記事1本目の後：スマホでも自然に見える主力枠 -->
+        <div class="ad-box" aria-label="スポンサーリンク">
+            <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-inner">
+                <div class="ad-pc-only"><div id="im-8415a356c5d2430c915a75d1484b81e0">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
+                </div></div>
+<div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
+            </div>
+        </div>
+
+        <div class="card article-section">
+            <h2>運営者情報</h2>
+            <div class="profile-box">
+                <div class="profile-img">🚃</div>
+                <div>
+                    <h3 style="margin-top: 0; border-left: none; padding-left: 0;">サテステ制作委員会</h3>
+                    <p>Amami103 X: <a href="https://x.com/Amami103_" target="_blank">@Amami103_</a><br>YouTube: <a href="https://www.youtube.com/@amami103" target="_blank">Amami103音鉄チャンネル</a></p>
+                    <p style="margin-bottom: 0;">103系をこよなく愛する人。小学生の頃に見た103系の高速通過に憧れて撮り鉄・音鉄の世界へ。普段は鉄道写真の撮影、鉄道走行音の収録をメインに活動し、XやYouTubeにも投稿。その傍ら「サテステ」の運営を行っています。</p>
+                </div>
+            </div>
             
-            <div id="normal-settings-f">
-                <div class="setting-item">
-                    <label>都道府県・地方</label>
-                    <select id="pref-select-f"><option value="all">全国（指定なし）</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>鉄道会社</label>
-                    <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-f', this.value, 'f')">
-                    <select id="company-select-f"><option value="all">すべての会社</option></select>
-                </div>
-                <div class="setting-item">
-                    <label>路線名</label>
-                    <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-f', this.value, 'f')">
-                    <select id="line-select-f"><option value="all">すべての路線</option></select>
-                </div>
-            </div>
+            <h3>開発のきっかけ</h3>
+            <p>ストリートビューから位置をGuessする某ゲームをプレイ中に、「衛星画像から駅を当てるゲームがあれば面白いのではないか」と思いつきました。その考えから適当な駅の衛星画像を用意してその駅を当てるというゲームを鉄道好きの友人とやったことがありました。</p>
+            <p>それから時は流れ、その友人がとあるアプリを開発したと聞きました。彼にくわしく話を聞いてみると、最近開発が急速に進んでいるAIを利用すれば初心者でも簡単にアプリを開発できたとのことでした。じゃあこの技術を活用して自分も何か作ってみようと思い立ち、こんなゲームを作ってみようと思ったわけです。</p>
+            <p>誰でも無料で使える <a href="https://maps.gsi.go.jp/" target="_blank">国土地理院地図</a> と <a href="https://ekidata.jp/" target="_blank">駅データ.jp</a> 様のデータを活用させていただき、簡単に全国の駅を出題範囲にすることを実現することができました。この場を借りて御礼申し上げます。</p>
 
-            <button class="btn-toggle-custom" onclick="toggleCustom()">カスタム設定（複数選択）を表示</button>
-
-            <div id="custom-area">
-                <div class="custom-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 style="margin:10px 0;">都道府県を選択</h4>
-                        <button class="btn-clear" onclick="clearChecks('pref-checks')" style="font-size:10px;">解除</button>
-                    </div>
-                    <div class="check-grid" id="pref-checks"></div>
-                </div>
-                <div class="custom-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 style="margin:10px 0;">鉄道会社を選択</h4>
-                        <button class="btn-clear" onclick="clearChecks('company-checks')" style="font-size:10px;">解除</button>
-                    </div>
-                    <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterCheckboxes('company-checks', this.value)">
-                    <div class="check-grid" id="company-checks"></div>
-                </div>
-                <div class="custom-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 style="margin:10px 0;">路線を選択</h4>
-                        <button class="btn-clear" onclick="clearChecks('line-checks')" style="font-size:10px;">解除</button>
-                    </div>
-                    <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterCheckboxes('line-checks', this.value)">
-                    <div class="check-grid" id="line-checks"></div>
-                </div>
-            </div>
-
-            <div class="setting-item" style="text-align: center; margin-top: 20px;">
-                <label>出題数</label>
-                <input type="number" id="num-input-f" class="num-input" value="10" min="1" max="100">
-            </div>
-            <label class="lock-option">
-                <input type="checkbox" id="map-lock-f">
-                <span>地図の移動・拡大を禁止（ハードモード）</span>
-            </label>
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="startGame('game2.html', 'f')" class="btn-start btn-free">フリープレイ開始</button>
-                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします</p>
-            </div>
+            <h3>大切にしていること</h3>
+            <p>単なるクイズゲームに留まらず、プレイされた方に「地理って面白い」、「今度行ってみよう」と思っていただけるような、実体験に繋がるプラットフォームでありたいと考えています。また、データを提供していただいた皆様への感謝の気持ちを大切にして開発しております。</p>
         </div>
 
-        <!-- チャレンジモードのボックス -->
-        <div class="card" style="border: 2px solid #FF3B30;">
-            <div class="card-title" style="color: #FF3B30;">🏆 チャレンジモード</div>
-            <div class="card-desc">高得点を目指す本気モードです。解答速度と正確さがスコア化され、ランク判定が行われます。</div>
-            
-            <div class="setting-item">
-                <label>都道府県・地方</label>
-                <select id="pref-select-c"><option value="all">全国（指定なし）</option></select>
-            </div>
-            <div class="setting-item">
-                <label>鉄道会社</label>
-                <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-c', this.value, 'c')">
-                <select id="company-select-c"><option value="all">すべての会社</option></select>
-            </div>
-            <div class="setting-item">
-                <label>路線名</label>
-                <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-c', this.value, 'c')">
-                <select id="line-select-c"><option value="all">すべての路線</option></select>
-            </div>
-            <div class="setting-item" style="text-align: center; padding: 10px; background: #fff5f5; border-radius: 10px; border: 1px dashed #FF3B30;">
-                <span style="font-weight: bold; color: #FF3B30; font-size: 16px;">出題数: 10問固定</span>
-            </div>
-            <label class="lock-option">
-                <input type="checkbox" id="map-lock-c">
-                <span>地図の移動・拡大を禁止（ハードモード）</span>
-            </label>
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="startGame('game.html', 'c')" class="btn-start btn-challenge">チャレンジ開始！</button>
-                <p style="font-size: 11px; color: #666; margin-top: 10px;">ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします</p>
-            </div>
-        </div>
-
-        <!-- ランキングモードのボックス -->
-        <div class="card" style="border: 2px solid #FF9500;">
-            <div class="card-title" style="color: #FF9500;">🌐 ランキングモード</div>
-            <div class="card-desc">全国のプレイヤーとスコアを競うモードです。チャレンジモードと同じ10問固定ルールで遊び、結果は条件別ランキングに記録されます。都道府県・会社・路線で絞り込むと、その条件専用のランキングとして集計されます。</div>
-
-            <div class="setting-item">
-                <label>都道府県・地方</label>
-                <select id="pref-select-r"><option value="all">全国（指定なし）</option></select>
-            </div>
-            <div class="setting-item">
-                <label>鉄道会社</label>
-                <input type="text" class="search-input" placeholder="会社名を検索..." oninput="filterSelect('company-select-r', this.value, 'r')">
-                <select id="company-select-r"><option value="all">すべての会社</option></select>
-            </div>
-            <div class="setting-item">
-                <label>路線名</label>
-                <input type="text" class="search-input" placeholder="路線名を検索..." oninput="filterSelect('line-select-r', this.value, 'r')">
-                <select id="line-select-r"><option value="all">すべての路線</option></select>
-            </div>
-            <div class="setting-item" style="text-align: center; padding: 10px; background: #fff8ed; border-radius: 10px; border: 1px dashed #FF9500;">
-                <span style="font-weight: bold; color: #FF9500; font-size: 16px;">出題数: 10問固定 / 全国ランキング対応</span>
-            </div>
-            <label class="lock-option" style="background:#fff8ed; border-color:#FF9500;">
-                <input type="checkbox" id="map-lock-r">
-                <span>地図の移動・拡大を禁止（ハードモード）</span>
-            </label>
-
-            <div style="margin-top: 18px; padding: 14px; background:#fafafa; border-radius: 12px; border:1px solid #eee; font-size:13px; color:#555; line-height:1.7;">
-                <strong style="color:#333;">ランキングモードの特徴</strong><br>
-                ・初回のみニックネーム登録。次回から同じ名前で記録されます。<br>
-                ・同じ条件で遊んだ人同士のランキングが表示されます。<br>
-                ・同点の場合は、合計解答時間が短い記録を上位として扱います。
-            </div>
-
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="startGame('game3.html', 'r')" class="btn-start btn-ranking">ランキングに挑戦</button>
-                <button onclick="location.href='ranking.html'" class="btn-start btn-ranking-view">ランキングを表示</button>
-                <p style="font-size: 11px; color: #666; margin-top: 10px;">ランキング機能では、ニックネーム・スコア・出題条件が保存されます。ゲームをプレイすることにより、<a href="https://sate-sta.com/terms.html" target="_blank">利用規約</a>・<a href="https://sate-sta.com/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします。</p>
-            </div>
-        </div>
-
-        <!-- OFUSE応援リンク -->
-        <div class="support-box" aria-label="OFUSEで応援">
-            <div class="support-title">☕ サテステを応援する</div>
-            <p class="support-desc">このゲームは個人で制作・運営しています。楽しんでいただけたら、今後の開発・駅データ整備・サーバー維持のために応援していただけると嬉しいです。</p>
+        <div class="support-box" aria-label="サテステへの応援">
+            <h2>🚉 サテステを応援する</h2>
+            <p>サテステは個人で制作・運営しています。楽しんでいただけた方は、今後の開発や駅データ整備のためにOFUSEで応援していただけると嬉しいです。</p>
             <a href="https://ofuse.me/6ce396a4" target="_blank" rel="noopener" class="support-btn">OFUSEで応援する</a>
             <span class="support-note">支援は任意です。ゲームはこれまで通り無料で遊べます。</span>
         </div>
 
-        <div class="ad-box ad-card ad-after-modes" aria-label="広告">
+        <!-- 長めの本文後：レクタングル。読み終わり位置なので嫌われにくい -->
+        <div class="ad-box" aria-label="スポンサーリンク">
             <span class="ad-label">スポンサーリンク</span>
-            <div class="ad-inner" id="ad-slot-after-modes"></div>
+            <div class="ad-inner">
+                <div class="ad-pc-only"><div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
+                </div></div>
+<div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+</div></div>
+            </div>
         </div>
 
         <div class="card article-section">
-            <h2>サテステとは？</h2>
-            <p>「サテステ -Satellite from Station-」は、日本全国約9,000駅の衛星画像を見てその駅名を当てる地理・鉄道クイズゲームです。出題範囲は全国のみならず、特定の都道府県、鉄道会社、路線などお好きなように指定することができます。まったりプレイできる「通常モード」に加え、ハイスコアを目指す「チャレンジモード」、世界中のプレイヤーとスコアを競い合える「ランキングモード」と多彩な楽しみ方をしていただけます。</p>
-            
-            <h3>サテステの遊び方</h3>
+            <h2>クレジット・データ提供</h2>
+            <p>本サイトは、以下の素晴らしいデータ・サービスにより支えられています。</p>
             <ul>
-                <li><strong>1. モードを選択する</strong><br>本気でスコアを競う「チャレンジモード」、全国ランキングに記録する「ランキングモード」、自由に設定して遊べる「フリーモード」から選んでください。</li>
-                <li><strong>2. 出題範囲を設定する</strong><br>特定の都道府県や、JR・地下鉄などの鉄道会社に絞って挑戦することも可能です。</li>
-                <li><strong>3. 航空写真から駅名を推測</strong><br>クイズが始まると、ある駅の真上の航空写真が表示されます。周囲の地形や駅の構造から駅名を導き出し、回答欄に入力してください。</li>
-                <li><strong>4. チャレンジ・ランキングモードのルール</strong><br>チャレンジモードとランキングモードでは、正確性と解答スピードに基づいて1問最大 2,000点 のスコアが算出されます。
-                    <ul>
-                        <li><strong>正確性（最大 1,500点）:</strong> 駅名が完全一致で満点。間違えても正解に近い駅を答えれば、距離に応じて加点されます。</li>
-                        <li><strong>タイムボーナス（最大 500点）:</strong> 早く正解するほど高得点となります。</li>
-                    </ul>
-                </li>
-            </ul>
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="guide.html" style="color: #007AFF; font-weight: bold; text-decoration: none;">→ より詳細な攻略ガイドはこちら</a>
-            </div>
-        </div>
-
-        <div class="ad-box ad-card" aria-label="広告">
-            <span class="ad-label">スポンサーリンク</span>
-            <div class="ad-inner" id="ad-slot-article"></div>
-        </div>
-
-        <div class="card article-section">
-            <h2>動画配信・サイト掲載について</h2>
-            <p>YouTube等での実況動画の配信や、ご自身のホームページ・ブログ等での紹介は、事前連絡なしで行っていただいて構いません。むしろ大歓迎です！</p>
-            <p>その際、動画の概要欄や記事内に本サイトのURL（<a href="/">https://sate-sta.com/</a> ）を掲載していただけますと、運営の大きな励みになります。</p>
-            <h3>【利用上の注意点】</h3>
-            <ul style="text-align: left; font-size: 14px; line-height: 1.6; color: #555;">
-                <li><strong>収益化について：</strong> YouTubeのパートナープログラム等の広告収益化については、特に制限いたしません。</li>
-                <li><strong>権利の尊重：</strong> 本サイトで使用している航空写真は「国土地理院」、駅データは「駅データ.jp」の提供によるものです。各データ元の権利を尊重してください。</li>
-                <li><strong>マナーの遵守：</strong> 公序良俗に反する内容や、第三者を誹謗中傷するような文脈での使用は禁止します。</li>
-                <li><strong>免責：</strong> 本サイトの利用（配信含む）により発生したいかなるトラブルについても、運営者は一切の責任を負いかねます。</li>
+                <li><strong>衛星画像：</strong> <a href="https://maps.gsi.go.jp/" target="_blank">国土地理院地図</a></li>
+                <li><strong>駅データ：</strong> <a href="https://ekidata.jp/" target="_blank">駅データ.jp</a></li>
             </ul>
         </div>
 
-        <div class="ad-box ad-bottom" aria-label="広告">
+        <!-- ページ下部：控えめな通常バナー -->
+        <div class="ad-box" aria-label="スポンサーリンク">
             <span class="ad-label">スポンサーリンク</span>
-            <div class="ad-inner" id="ad-slot-bottom"></div>
-        </div>
-
-        <div class="card">
-            <h3>更新履歴</h3>
-            <div class="update-log">
-                 <div class="update-item"><span class="update-date">2026.07.05</span><span class="update-text">250m以内であれば正答にするように採点方式を変更。</span></div>
-                 <div class="update-item"><span class="update-date">2026.06.16</span><span class="update-text">全国ランキング機能を追加。</span></div>
-                  <div class="update-item"><span class="update-date">2026.06.12</span><span class="update-text">ホームページをリニューアル、スコア記録機能を追加。</span></div>
-                <div class="update-item"><span class="update-date">2026.06.10</span><span class="update-text">システム不具合の修正。</span></div>
-                <div class="update-item"><span class="update-date">2026.06.01</span><span class="update-text">チャレンジモードとスコアリング機能を実装。</span></div>
-                <div class="update-item"><span class="update-date">2026.05.29</span><span class="update-text">「サテステ」公開。</span></div>
+            <div class="ad-inner">
+                <div class="ad-pc-only"><div id="im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935776,type:"banner",display:"inline",elementid:"im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6"})</script>
+                </div></div>
+<div class="ad-sp-only"><div id="im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa">
+  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935807,type:"banner",display:"inline",elementid:"im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa"})</script>
+</div></div>
             </div>
         </div>
+
+        <a href="index.html" class="btn-back">ホームに戻る</a>
     </main>
 
     <footer>
         <div class="footer-links">
-            <a href="/">ホーム</a>
+            <a href="index.html">ホーム</a>
             <a href="about.html">サテステについて（自己紹介）</a>
             <a href="guide.html">攻略ガイド</a>
             <a href="ranking.html">ランキング</a>
@@ -387,414 +320,6 @@
             <a href="https://x.com/Amami103_" target="_blank" style="color: #666; font-size: 11px;">Admin: @Amami103_</a>
         </div>
     </footer>
-
-    <script src="stations.js"></script>
-    <script>
-        const prefOrder = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
-        const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
-        
-        // 大手私鉄の定義
-        const KANSAI_MAJORS = ["近畿日本鉄道", "南海電鉄", "京阪電鉄", "阪急電鉄", "阪神電鉄"];
-        const KANTO_MAJORS = ["東武鉄道", "西武鉄道", "京成電鉄", "京王電鉄", "小田急電鉄", "東急電鉄", "京浜急行電鉄", "相模鉄道", "東京メトロ"];
-         const OTHER_MAJORS = ["名古屋鉄道", "西日本鉄道"];
-
-        let masterCompanies = [], masterLines = [];
-
-        window.onload = function() {
-            if (typeof stations === 'undefined') return;
-
-            const existingPrefs = new Set(stations.map(s => s.pref));
-            let compSet = new Set(), lineSet = new Set();
-            
-            stations.forEach(s => {
-                if(s.company) s.company.split(/[,、・/]/).forEach(v => compSet.add(v.trim()));
-                if(s.line) s.line.split(/[,、・/]/).forEach(v => lineSet.add(v.trim()));
-            });
-            masterCompanies = Array.from(compSet).filter(Boolean).sort();
-            masterLines = Array.from(lineSet).filter(Boolean).sort();
-
-            ["c", "f", "r"].forEach(mode => {
-                const ps = document.getElementById(`pref-select-${mode}`);
-                ps.innerHTML += `<option disabled>---------- 地方 ----------</option>`;
-                Object.keys(REGION_PREFS).forEach(reg => ps.add(new Option("・" + reg, "reg:" + reg)));
-                ps.innerHTML += `<option disabled>---------- 都道府県 ----------</option>`;
-                prefOrder.forEach(p => { if (existingPrefs.has(p)) ps.add(new Option(p, p)); });
-                fillSelect(`company-select-${mode}`, masterCompanies, "すべての会社", "grp");
-                fillSelect(`line-select-${mode}`, masterLines, "すべての路線");
-            });
-
-            const prefChecks = document.getElementById("pref-checks");
-            prefOrder.forEach(p => { if (existingPrefs.has(p)) prefChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="c-pref" value="${p}">${p}</label>`; });
-            masterCompanies.forEach(c => document.getElementById("company-checks").innerHTML += `<label class="check-item"><input type="checkbox" name="c-comp" value="${c}">${c}</label>`);
-            masterLines.forEach(l => document.getElementById("line-checks").innerHTML += `<label class="check-item" title="${l}"><input type="checkbox" name="c-line" value="${l}">${l}</label>`);
-        };
-
-        function fillSelect(id, items, defaultText, type="") {
-            const select = document.getElementById(id);
-            select.innerHTML = `<option value="all">${defaultText}</option>`;
-            if(type === "grp") {
-                select.innerHTML += `<option value="grp:関西大手私鉄">・関西大手私鉄</option><option value="grp:関東大手私鉄">・関東大手私鉄</option><option value="grp:大手私鉄">・大手私鉄</option><option value="grp:JR">・JR</option><option disabled>----------</option>`;
-            }
-            items.forEach(item => select.add(new Option(item, item)));
-        }
-
-        function filterSelect(id, query, mode) {
-            const items = (id.includes("company")) ? masterCompanies : masterLines;
-            const filtered = items.filter(item => item.includes(query));
-            fillSelect(id, filtered, (id.includes("company") ? "すべての会社" : "すべての路線"), (id.includes("company") ? "grp" : ""));
-        }
-
-        function filterCheckboxes(containerId, query) {
-            document.getElementById(containerId).querySelectorAll('.check-item').forEach(label => {
-                label.style.display = label.textContent.includes(query) ? "flex" : "none";
-            });
-        }
-
-        function clearChecks(id) {
-            document.getElementById(id).querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        }
-
-        function toggleCustom() {
-            const area = document.getElementById("custom-area");
-            area.style.display = (area.style.display === "block") ? "none" : "block";
-            document.getElementById("normal-settings-f").style.opacity = (area.style.display === "block") ? "0.3" : "1";
-        }
-
-        function startGame(targetHtml, modeSuffix) {
-            if (typeof stations === 'undefined') {
-                alert("駅データを読み込めませんでした。");
-                return;
-            }
-
-            const num = (modeSuffix === 'c' || modeSuffix === 'r') ? 10 : (document.getElementById(`num-input-${modeSuffix}`).value || 10);
-            const lock = document.getElementById(`map-lock-${modeSuffix}`).checked;
-            let url = targetHtml + "?num=" + encodeURIComponent(num);
-
-            const unique = (arr) => Array.from(new Set(arr.map(v => String(v).trim()).filter(Boolean)));
-
-            const getMatchingFullStrings = (selectedKeywords, fieldName) => {
-                let matches = new Set();
-                selectedKeywords.forEach(word => {
-                    stations.forEach(s => {
-                        if (s[fieldName] && s[fieldName].includes(word)) {
-                            matches.add(s[fieldName]);
-                        }
-                    });
-                });
-                return Array.from(matches);
-            };
-
-            const expandPrefs = (selectedPrefs) => {
-                let prefs = [];
-                selectedPrefs.forEach(p => {
-                    if (p.startsWith("reg:")) {
-                        const regName = p.replace("reg:", "");
-                        prefs.push(...(REGION_PREFS[regName] || []));
-                    } else {
-                        prefs.push(p);
-                    }
-                });
-                return unique(prefs);
-            };
-
-            const expandCompanies = (selectedCompanies) => {
-                let companyKeywords = [];
-
-                selectedCompanies.forEach(c => {
-                    if (c === "grp:関西大手私鉄") {
-                        companyKeywords.push(...KANSAI_MAJORS);
-                    } else if (c === "grp:関東大手私鉄") {
-                        companyKeywords.push(...KANTO_MAJORS);
-                    } else if (c === "grp:大手私鉄") {
-                        companyKeywords.push(...KANSAI_MAJORS, ...KANTO_MAJORS, ...OTHER_MAJORS);
-                    } else if (c === "grp:JR") {
-                        companyKeywords.push("JR");
-                    } else if (c.startsWith("grp:")) {
-                        companyKeywords.push(c.replace("grp:", ""));
-                    } else {
-                        companyKeywords.push(c);
-                    }
-                });
-
-                const fullCompanies = getMatchingFullStrings(companyKeywords, 'company');
-                return unique(fullCompanies.length > 0 ? fullCompanies : companyKeywords);
-            };
-
-            const expandLines = (selectedLines) => {
-                const fullLines = getMatchingFullStrings(selectedLines, 'line');
-                return unique(fullLines.length > 0 ? fullLines : selectedLines);
-            };
-
-            const matchValue = (stationValue, selectedValue) => {
-                if (!stationValue || !selectedValue) return false;
-                return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
-            };
-
-            let selectedPrefValues = [];
-            let selectedCompanyValues = [];
-            let selectedLineValues = [];
-
-            let urlPrefValues = [];
-            let urlCompanyValues = [];
-            let urlLineValues = [];
-
-            let singleCompanyParam = null;
-            let singleLineParam = null;
-
-            if (modeSuffix === 'f' && document.getElementById("custom-area").style.display === "block") {
-                const selPrefs = Array.from(document.querySelectorAll('input[name="c-pref"]:checked')).map(el => el.value);
-                const selComps = Array.from(document.querySelectorAll('input[name="c-comp"]:checked')).map(el => el.value);
-                const selLines = Array.from(document.querySelectorAll('input[name="c-line"]:checked')).map(el => el.value);
-
-                selectedPrefValues = expandPrefs(selPrefs);
-                selectedCompanyValues = expandCompanies(selComps);
-                selectedLineValues = expandLines(selLines);
-
-                urlPrefValues = selPrefs;
-                urlCompanyValues = selectedCompanyValues;
-                urlLineValues = selectedLineValues;
-
-                if (selComps.length === 1 && !selComps[0].startsWith("grp:")) singleCompanyParam = selComps[0];
-                if (selLines.length === 1) singleLineParam = selLines[0];
-
-            } else {
-                const p = document.getElementById(`pref-select-${modeSuffix}`).value;
-                const c = document.getElementById(`company-select-${modeSuffix}`).value;
-                const l = document.getElementById(`line-select-${modeSuffix}`).value;
-
-                if (p !== "all") {
-                    selectedPrefValues = expandPrefs([p]);
-                    urlPrefValues = [p];
-                }
-
-                if (c !== "all") {
-                    selectedCompanyValues = expandCompanies([c]);
-                    urlCompanyValues = selectedCompanyValues;
-                    if (!c.startsWith("grp:")) singleCompanyParam = c;
-                }
-
-                if (l !== "all") {
-                    selectedLineValues = expandLines([l]);
-                    urlLineValues = selectedLineValues;
-                    singleLineParam = l;
-                }
-            }
-
-            let candidateStations = stations.slice();
-
-            if (selectedPrefValues.length > 0) {
-                candidateStations = candidateStations.filter(s => selectedPrefValues.includes(s.pref));
-            }
-
-            if (selectedCompanyValues.length > 0) {
-                candidateStations = candidateStations.filter(s => {
-                    return selectedCompanyValues.some(c => matchValue(s.company, c));
-                });
-            }
-
-            if (selectedLineValues.length > 0) {
-                candidateStations = candidateStations.filter(s => {
-                    return selectedLineValues.some(l => matchValue(s.line, l));
-                });
-            }
-
-            const uniqueStationKeys = new Set();
-            candidateStations.forEach(s => {
-                uniqueStationKeys.add(`${s.name}_${Number(s.lat).toFixed(3)}_${Number(s.lng).toFixed(3)}`);
-            });
-
-            if (uniqueStationKeys.size === 0) {
-                alert("該当する駅がありません。条件を変更してください。");
-                return;
-            }
-
-            if (urlPrefValues.length > 0) {
-                url += "&pref=" + encodeURIComponent(unique(urlPrefValues).join(','));
-            }
-
-            if (urlCompanyValues.length > 0) {
-                url += "&comps=" + encodeURIComponent(unique(urlCompanyValues).join(','));
-            }
-
-            if (singleCompanyParam && singleCompanyParam !== "all") {
-                url += "&company=" + encodeURIComponent(singleCompanyParam);
-            }
-
-            if (urlLineValues.length > 0) {
-                url += "&lines=" + encodeURIComponent(unique(urlLineValues).join(','));
-            }
-
-            if (singleLineParam && singleLineParam !== "all") {
-                url += "&line=" + encodeURIComponent(singleLineParam);
-            }
-
-            if (lock) url += "&lock=true";
-
-            window.location.href = url;
-        }
-    </script>
-
-
-    <script>
-        /* i-mobile広告：画面幅に応じて必要な枠だけ読み込み */
-        (function() {
-            const ADS = {
-                banner: {
-                    elementid: "im-6b2db4aaa2914f5ebf99f4fa7ca3d7e6",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935776,
-                    type: "banner",
-                    display: "inline"
-                },
-                rectangle: {
-                    elementid: "im-d89e63082e9347d2b3b7d2f81b5c1828",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935779,
-                    type: "banner",
-                    display: "inline"
-                },
-                rectangleLarge: {
-                    elementid: "im-8415a356c5d2430c915a75d1484b81e0",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935780,
-                    type: "banner",
-                    display: "inline"
-                },
-                wideSkyscraper: {
-                    elementid: "im-1ce20f69e4c74cfd864974fbba0a000a",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935783,
-                    type: "banner",
-                    display: "inline"
-                },
-                bigBanner: {
-                    elementid: "im-aa65fb4d2be24e57a360a2bfbbc42c99",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935784,
-                    type: "banner",
-                    display: "inline"
-                },
-                halfPage: {
-                    elementid: "im-e82042922aee4348b451c4e931913a33",
-                    pid: 85120,
-                    mid: 594260,
-                    asid: 1935785,
-                    type: "banner",
-                    display: "inline"
-                }
-                ,spRectMain: {
-                    elementid: "im-fa6bed2a14844c52ba4d1c1b3e4113f3",
-                    pid: 85120,
-                    mid: 594261,
-                    asid: 1935806,
-                    type: "banner",
-                    display: "inline"
-                },
-                spRectArticle: {
-                    elementid: "im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3",
-                    pid: 85120,
-                    mid: 594261,
-                    asid: 1935806,
-                    type: "banner",
-                    display: "inline"
-                },
-                spBigTop: {
-                    elementid: "im-4f537cb9ba134a618a2caaa4198064aa",
-                    pid: 85120,
-                    mid: 594261,
-                    asid: 1935807,
-                    type: "banner",
-                    display: "inline"
-                },
-                spBigBottom: {
-                    elementid: "im-sp-big-2-4f537cb9ba134a618a2caaa4198064aa",
-                    pid: 85120,
-                    mid: 594261,
-                    asid: 1935807,
-                    type: "banner",
-                    display: "inline"
-                }
-            };
-
-            let imobileScriptLoaded = false;
-
-            function loadImobileScriptOnce() {
-                if (imobileScriptLoaded) return;
-                imobileScriptLoaded = true;
-                const script = document.createElement("script");
-                script.async = true;
-                script.src = "https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104";
-                document.head.appendChild(script);
-            }
-
-            function renderAd(slotId, adConfig) {
-                const slot = document.getElementById(slotId);
-                if (!slot || !adConfig) return;
-                if (document.getElementById(adConfig.elementid)) return;
-
-                const div = document.createElement("div");
-                div.id = adConfig.elementid;
-                slot.appendChild(div);
-
-                window.adsbyimobile = window.adsbyimobile || [];
-                window.adsbyimobile.push({
-                    pid: adConfig.pid,
-                    mid: adConfig.mid,
-                    asid: adConfig.asid,
-                    type: adConfig.type,
-                    display: adConfig.display,
-                    elementid: adConfig.elementid
-                });
-
-                loadImobileScriptOnce();
-            }
-
-            function initAds() {
-                const width = window.innerWidth || document.documentElement.clientWidth;
-                const sideAd = document.getElementById("side-ad");
-
-                // 上部：PCはビッグバナー、スマホはスマホ用ビッグバナー。
-                if (width >= 760) {
-                    renderAd("ad-slot-top", ADS.bigBanner);
-                } else {
-                    renderAd("ad-slot-top", ADS.spBigTop);
-                }
-
-                // メイン導線後：PCはレクタングル大、スマホはミディアムレクタングル。
-                renderAd("ad-slot-after-modes", width >= 760 ? ADS.rectangleLarge : ADS.spRectMain);
-
-                // 説明記事後：PCはレクタングル、スマホはミディアムレクタングル。
-                renderAd("ad-slot-article", width >= 760 ? ADS.rectangle : ADS.spRectArticle);
-
-                // 下部：PCは通常バナー、スマホはスマホ用ビッグバナー。
-                if (width >= 760 && !document.getElementById(ADS.banner.elementid)) {
-                    renderAd("ad-slot-bottom", ADS.banner);
-                } else if (width < 760) {
-                    renderAd("ad-slot-bottom", ADS.spBigBottom);
-                }
-
-                // PC右サイド：広い画面はハーフページ、やや狭いPCはスカイスクレイパー。
-                if (sideAd && width >= 1280) {
-                    sideAd.classList.remove("compact");
-                    renderAd("ad-slot-side", ADS.halfPage);
-                } else if (sideAd && width >= 1060) {
-                    sideAd.classList.add("compact");
-                    renderAd("ad-slot-side", ADS.wideSkyscraper);
-                }
-            }
-
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", initAds);
-            } else {
-                initAds();
-            }
-        })();
-    </script>
 
 </body>
 </html>
