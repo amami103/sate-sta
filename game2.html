@@ -338,17 +338,31 @@
 
         function checkAnswer() {
             if (answered) return; expandPanel();
-            const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim(), user = userRaw.split(' (')[0];
-            const res = document.getElementById('result'), isCorrect = (user === currentStation.name);
+            const time = (Date.now() - startTime) / 1000;
+            const userRaw = document.getElementById('station-input').value.trim();
+            const user = userRaw.split(' (')[0];
+            const res = document.getElementById('result');
             
             let dist = null;
+            let isCorrect = false;
             let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
-            if (!userStation && userRaw !== "") userStation = allUniqueStations.find(s => s.name === user);
-            if (userStation) dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
+            if (!userStation && userRaw !== "") {
+                const sameNameStations = allUniqueStations.filter(s => s.name === user);
+                if (sameNameStations.length > 0) {
+                    userStation = sameNameStations
+                        .map(s => ({ station: s, dist: getDistance(currentStation.lat, currentStation.lng, s.lat, s.lng) }))
+                        .sort((a, b) => a.dist - b.dist)[0].station;
+                }
+            }
+            if (userStation) {
+                dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
+                // 250m以内なら、駅名・路線・会社に関係なく無条件で正解
+                isCorrect = dist <= 0.25;
+            }
 
             // 回答直後の表示（正解駅の県名・路線名を表示）
             const infoDisplay = `<div style="font-size:11px; color:#666;">正解駅: ${currentStation.pref} / ${currentStation.line}</div>`;
-            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userRaw ? '-' : (dist ? dist.toFixed(2) + 'km' : '0.00km')} / ${time.toFixed(1)}秒</div>`;
+            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userStation ? '-' : Math.round(dist * 1000) + 'm'} / ${time.toFixed(1)}秒</div>`;
 
             if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + infoDisplay + distDisplay; score++; }
             else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>` + infoDisplay + distDisplay; }
