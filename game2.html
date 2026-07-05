@@ -5,6 +5,17 @@
     <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta property="og:title" content="サテステ - 航空写真から駅当てクイズ">
+<meta property="og:description" content="航空写真を見て駅名を当てる鉄道・地理クイズです。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sate-sta.com/">
+<meta property="og:image" content="https://sate-sta.com/logo.jpg">
+<meta property="og:image:secure_url" content="https://sate-sta.com/logo.jpg">
+<meta property="og:image:alt" content="サテステ ロゴ">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="サテステ - 航空写真から駅当てクイズ">
+<meta name="twitter:description" content="航空写真を見て駅名を当てる鉄道・地理クイズです。">
+<meta name="twitter:image" content="https://sate-sta.com/logo.jpg">
     <title>クイズプレイ | サテステ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -371,12 +382,13 @@
                 isCorrect = dist <= 0.25;
             }
 
-            // 回答直後の表示（正解駅の県名・路線名を表示）
-            const infoDisplay = `<div style="font-size:11px; color:#666;">正解駅: ${currentStation.pref} / ${currentStation.line}</div>`;
+            // 回答直後の表示（本来の正解駅・県名・路線名を表示）
+            const correctNameDisplay = `<div style="font-size:13px; color:#333; margin-top:4px;">本来の正解駅: <strong>${currentStation.name}</strong></div>`;
+            const infoDisplay = `<div style="font-size:11px; color:#666;">${currentStation.pref} / ${currentStation.line}</div>`;
             const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userStation ? '-' : Math.round(dist * 1000) + 'm'} / ${time.toFixed(1)}秒</div>`;
 
-            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + infoDisplay + distDisplay; score++; }
-            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！正解は「${currentStation.name}」</span>` + infoDisplay + distDisplay; }
+            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; score++; }
+            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; }
             
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist: dist });
             finishOne();
