@@ -5,7 +5,7 @@
     <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>サテステ（チャレンジ）</title>
+    <title>サテステ（ランキング）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
@@ -159,7 +159,7 @@
 <body onload="init()">
     <div id="map"></div>
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ（チャレンジ）</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ（ランキング）</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
@@ -535,6 +535,14 @@
             
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist, score: questionScore, baseScore, timeBonus, multiplier, usedHints: { ...usedHints } });
             finishOne();
+        }
+
+        function finishOne() {
+            answered = true;
+            document.getElementById('answer-btn').style.display = "none";
+            document.getElementById('next-btn').style.display = "block";
+            setAdVisible("ad-after-answer", true);
+            questionCount++;
         }
 
         function showAnswer() {
