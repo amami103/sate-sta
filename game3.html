@@ -5,18 +5,19 @@
     <link rel="apple-touch-icon" href="logo2.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta property="og:title" content="サテステ - 航空写真から駅当てクイズ">
-<meta property="og:description" content="航空写真を見て駅名を当てる鉄道・地理クイズです。">
+    
+<meta property="og:title" content="サテステ">
+<meta property="og:description" content="航空写真から駅を当てる地理クイズゲーム">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sate-sta.com/">
 <meta property="og:image" content="https://sate-sta.com/logo.jpg">
 <meta property="og:image:secure_url" content="https://sate-sta.com/logo.jpg">
 <meta property="og:image:alt" content="サテステ ロゴ">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="サテステ - 航空写真から駅当てクイズ">
-<meta name="twitter:description" content="航空写真を見て駅名を当てる鉄道・地理クイズです。">
+<meta name="twitter:title" content="サテステ">
+<meta name="twitter:description" content="航空写真から駅を当てる地理クイズゲーム">
 <meta name="twitter:image" content="https://sate-sta.com/logo.jpg">
-    <title>サテステ（ランキング）</title>
+<title>サテステ（ランキング）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
@@ -569,7 +570,7 @@
             const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
 
             const res = document.getElementById('result');
-            const correctNameDisplay = `<div style="font-size:13px; color:#333; margin-top:4px;">本来の正解駅: <strong>${currentStation.name}</strong></div>`;
+            const correctNameDisplay = `<div style="font-size:13px; color:#333; margin-top:4px;">正解駅: <strong>${currentStation.name}</strong></div>`;
             res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解'}</span>` +
                             correctNameDisplay +
