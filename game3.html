@@ -495,26 +495,23 @@
             if (answered) return;
             const userRaw = document.getElementById('station-input').value.trim();
             const userName = userRaw.split(' (')[0];
-            const sameNameStations = allUniqueStations.filter(s => s.name === userName);
-            
-            if (userRaw !== "" && sameNameStations.length > 1 && !userRaw.includes(' (')) {
-                const res = document.getElementById('result');
-                res.innerHTML = `<span style="color:#FF9500; font-weight:bold;">同名の駅が複数あります。<br>候補から駅を選択してください。</span>`;
-                return;
-            }
-
             const time = (Date.now() - startTime) / 1000;
             let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
             
             let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
             if (!userStation && userRaw !== "") {
-                userStation = sameNameStations.find(s => s.lat === currentStation.lat && s.lng === currentStation.lng) || sameNameStations[0];
+                const sameNameStations = allUniqueStations.filter(s => s.name === userName);
+                if (sameNameStations.length > 0) {
+                    userStation = sameNameStations
+                        .map(s => ({ station: s, dist: getDistance(currentStation.lat, currentStation.lng, s.lat, s.lng) }))
+                        .sort((a, b) => a.dist - b.dist)[0].station;
+                }
             }
 
             if (userStation) {
                 dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
-                const isNameMatch = (userName === currentStation.name);
-                if ((isNameMatch && dist < 1.0) || dist < 0.1) {
+                // 250m以内なら、駅名・路線・会社に関係なく無条件で正解
+                if (dist <= 0.25) {
                     isCorrect = true;
                 }
             }
@@ -534,14 +531,10 @@
             res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
                             `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解（正解は「'+currentStation.name+'」）'}</span>` +
                             `<br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
-                            `<div style="font-size:13px; color:#444; margin-top:5px;">解答時間: <span style="font-weight:bold;">${time.toFixed(1)}秒</span> / 誤差: <span style="font-weight:bold;">${!userRaw ? '-' : dist.toFixed(2) + 'km'}</span></div>` +
-                            `<div style="font-size:16px; color:#E60; font-weight:bold; margin-top:2px;">+${questionScore.toLocaleString()}点</div>` +
-                            `<div style="font-size:10px; color:#888;">(基礎:${Math.round(baseScore)} + タイム:${Math.round(timeBonus)}) × 倍率:${multiplier}</div>`;
-
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: userRaw || "(未入力)", isCorrect, dist, score: questionScore, time, lat: currentStation.lat, lng: currentStation.lng });
-            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
-            setAdVisible("ad-after-answer", true);
-            questionCount++;
+                            `<br><span style="font-size:12px; color:#555;">距離: ${userStation ? Math.round(dist * 1000) + 'm' : '判定不可'} / 得点: +${questionScore}</span>`;
+            
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist, score: questionScore, baseScore, timeBonus, multiplier, usedHints: { ...usedHints } });
+            finishOne();
         }
 
         function showAnswer() {
