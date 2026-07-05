@@ -91,6 +91,14 @@
             .ad-pc-only { display: none !important; }
             .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
         }
+        /* 回答後ボタン強制表示 */
+        .after-answer #answer-btn,
+        .after-answer #station-input,
+        .after-answer .btn-reset,
+        .after-answer .btn-giveup,
+        .after-answer .btn-hint { display: none !important; }
+        .after-answer #next-btn { display: block !important; visibility: visible !important; grid-column: span 2; }
+
     </style>
 </head>
 <body onload="init()">
@@ -320,9 +328,12 @@
         }
 
         function nextQuestion() {
+            document.getElementById('game-ui')?.classList.remove('after-answer');
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false;
-            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            document.getElementById('answer-btn').style.display = "block";
+            const nextBtnReset = document.getElementById('next-btn');
+            if (nextBtnReset) nextBtnReset.style.setProperty('display', 'none', 'important');
             document.getElementById('result').innerText = ""; document.getElementById('station-input').value = "";
             const answerAdSlot = document.getElementById('answer-ad-slot');
             if (answerAdSlot) answerAdSlot.classList.remove('is-visible');
@@ -381,8 +392,18 @@
 
         function finishOne() {
             answered = true;
-            document.getElementById('answer-btn').style.display = "none";
-            document.getElementById('next-btn').style.display = "block";
+            const gameUi = document.getElementById('game-ui');
+            if (gameUi) gameUi.classList.add('after-answer');
+
+            const answerBtn = document.getElementById('answer-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (answerBtn) answerBtn.style.setProperty('display', 'none', 'important');
+            if (nextBtn) {
+                nextBtn.style.setProperty('display', 'block', 'important');
+                nextBtn.style.setProperty('visibility', 'visible', 'important');
+                nextBtn.style.gridColumn = 'span 2';
+            }
+
             const answerAdSlot = document.getElementById('answer-ad-slot');
             if (answerAdSlot) answerAdSlot.classList.add('is-visible');
             questionCount++;
