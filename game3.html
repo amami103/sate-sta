@@ -85,6 +85,20 @@
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
         .btn-title-exit { background: #FF9500; grid-column: span 2; margin-top: 5px; font-size: 13px; }
+
+        /* 回答後ボタン表示の固定：次の駅へを必ず出す */
+        .button-group.answered-state #answer-btn,
+        .button-group.answered-state .btn-reset,
+        .button-group.answered-state .btn-giveup,
+        .button-group.answered-state .btn-hint,
+        .button-group.answered-state .btn-fullscreen {
+            display: none !important;
+        }
+        .button-group.answered-state #next-btn,
+        .button-group.answered-state .btn-title-exit {
+            display: block !important;
+            grid-column: span 2;
+        }
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
         
@@ -165,7 +179,7 @@
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
                 <datalist id="station-list"></datalist>
-                <div class="button-group">
+                <div class="button-group" id="button-group">
                     <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
                     <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                     <button class="btn-reset" onclick="resetView()">場所を戻す</button>
@@ -468,12 +482,28 @@
             dl.innerHTML = ""; dl.appendChild(frag);
         }
 
+
+        function setAnsweredButtonState(isAnswered) {
+            const group = document.getElementById('button-group');
+            const answerBtn = document.getElementById('answer-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (group) group.classList.toggle('answered-state', !!isAnswered);
+            if (answerBtn) answerBtn.style.display = isAnswered ? "none" : "block";
+            if (nextBtn) {
+                nextBtn.hidden = false;
+                nextBtn.removeAttribute('hidden');
+                nextBtn.style.setProperty('display', isAnswered ? 'block' : 'none', 'important');
+                nextBtn.style.setProperty('visibility', 'visible', 'important');
+                nextBtn.style.setProperty('opacity', '1', 'important');
+            }
+        }
+
         function nextQuestion() {
             setAdVisible("ad-after-answer", false);
             setAdVisible("ad-final-large", false);
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
             answered = false; usedHints = { pref: false, line: false };
-            document.getElementById('answer-btn').style.display = "block"; document.getElementById('next-btn').style.display = "none";
+            setAnsweredButtonState(false);
             document.getElementById('result').innerText = ""; 
             document.getElementById('station-input').value = "";
             document.getElementById('station-list').innerHTML = ""; 
@@ -539,8 +569,7 @@
 
         function finishOne() {
             answered = true;
-            document.getElementById('answer-btn').style.display = "none";
-            document.getElementById('next-btn').style.display = "block";
+            setAnsweredButtonState(true);
             setAdVisible("ad-after-answer", true);
             questionCount++;
         }
@@ -549,7 +578,7 @@
             if (answered) return;
             document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
             playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
-            answered = true; document.getElementById('answer-btn').style.display = "none"; document.getElementById('next-btn').style.display = "block";
+            answered = true; setAnsweredButtonState(true);
             setAdVisible("ad-after-answer", true);
             questionCount++;
         }
