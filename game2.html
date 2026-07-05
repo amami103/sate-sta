@@ -388,7 +388,7 @@
             // 回答直後の表示（本来の正解駅・県名・路線名を表示）
             const correctNameDisplay = `<div style="font-size:13px; color:#333; margin-top:4px;">正解駅: <strong>${currentStation.name}</strong></div>`;
             const infoDisplay = `<div style="font-size:11px; color:#666;">${currentStation.pref} / ${currentStation.line}</div>`;
-            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userStation ? '-' : Math.round(dist) + 'km'} / ${time.toFixed(1)}秒</div>`;
+            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userStation ? '-' : dist.toFixed(2) + 'km'} / ${time.toFixed(1)}秒</div>`;
 
             if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; score++; }
             else { res.innerHTML = `<span style='color:#007AFF;'>不正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; }
@@ -438,7 +438,7 @@
             playHistory.forEach((h) => {
                 totalT += h.time;
                 const mark = h.isCorrect ? '●' : '×', mc = h.isCorrect ? '#D33' : '#007AFF';
-                const distStr = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
+                const distStr = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(2) + 'km';
                 listH += `
                 <li class="result-item">
                     <div class="res-status" style="color:${mc}">${mark}</div>
@@ -488,7 +488,7 @@
                 ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
                 ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
                 ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; 
-                const d = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(1) + 'km';
+                const d = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(2) + 'km';
                 ctx.fillText(`${d} / ${h.time.toFixed(1)}s`, 750, y + 15);
                 y += 92;
             });
