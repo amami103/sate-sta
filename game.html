@@ -378,6 +378,18 @@
                 return stationValues.some(sv => selectedValues.some(tv => sv === tv || sv.includes(tv) || tv.includes(sv)));
             };
 
+            const splitValueList = (value) => String(value || '')
+                .split(/[・,、／/]+/)
+                .map(v => v.trim())
+                .filter(Boolean);
+
+            const matchLineExact = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                const stationLines = splitValueList(stationValue);
+                const selectedLines = splitValueList(selectedValue);
+                return stationLines.some(sv => selectedLines.some(tv => sv === tv));
+            };
+
             let filterLabels = [];
             let penaltyValues = [];
             let rawFiltered = stations.slice();
@@ -421,7 +433,7 @@
             const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
             if (selectedLines.length > 0) {
                 const uniqueLines = Array.from(new Set(selectedLines));
-                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchValue(s.line, l)));
+                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchLineExact(s.line, l)));
                 filterLabels.push("路線: "+uniqueLines.join('・'));
                 penaltyValues.push(10);
             }
