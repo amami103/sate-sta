@@ -521,13 +521,25 @@
             };
 
             const expandLines = (selectedLines) => {
-                const fullLines = getMatchingFullStrings(selectedLines, 'line');
-                return unique(fullLines.length > 0 ? fullLines : selectedLines);
+                // 路線名は部分一致で広げない（例: 近鉄大阪線指定で他の近鉄路線が混ざるのを防ぐ）
+                return unique(selectedLines);
             };
 
             const matchValue = (stationValue, selectedValue) => {
                 if (!stationValue || !selectedValue) return false;
                 return stationValue === selectedValue || stationValue.includes(selectedValue) || selectedValue.includes(stationValue);
+            };
+
+            const splitValueList = (value) => String(value || '')
+                .split(/[・,、／/]+/)
+                .map(v => v.trim())
+                .filter(Boolean);
+
+            const matchLineExact = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                const stationLines = splitValueList(stationValue);
+                const selectedLines = splitValueList(selectedValue);
+                return stationLines.some(sv => selectedLines.some(tv => sv === tv));
             };
 
             let selectedPrefValues = [];
@@ -594,7 +606,7 @@
 
             if (selectedLineValues.length > 0) {
                 candidateStations = candidateStations.filter(s => {
-                    return selectedLineValues.some(l => matchValue(s.line, l));
+                    return selectedLineValues.some(l => matchLineExact(s.line, l));
                 });
             }
 
