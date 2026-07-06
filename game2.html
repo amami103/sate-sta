@@ -56,6 +56,7 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
+        .btn-title-exit { background: #007AFF; grid-column: span 2; margin-top: 5px; font-size: 13px; }
         
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
@@ -132,6 +133,7 @@
                     <button class="btn-hint" onclick="showHint('pref')">ヒント: 県</button>
                     <button class="btn-hint" onclick="showHint('line')">ヒント: 路線</button>
                     <button class="btn-next" id="next-btn" onclick="nextQuestion()" style="display:none;">次の駅へ</button>
+                    <button class="btn-title-exit" onclick="confirmExitToTitle()">終了してタイトルへ</button>
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
@@ -283,6 +285,18 @@
                 return stationValues.some(sv => selectedValues.some(tv => sv === tv || sv.includes(tv) || tv.includes(sv)));
             };
 
+            const splitValueList = (value) => String(value || '')
+                .split(/[・,、／/]+/)
+                .map(v => v.trim())
+                .filter(Boolean);
+
+            const matchLineExact = (stationValue, selectedValue) => {
+                if (!stationValue || !selectedValue) return false;
+                const stationLines = splitValueList(stationValue);
+                const selectedLines = splitValueList(selectedValue);
+                return stationLines.some(sv => selectedLines.some(tv => sv === tv));
+            };
+
             let rawFiltered = stations.slice();
 
             const selectedPrefs = splitParam(sPref);
@@ -314,7 +328,7 @@
             const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
             if (selectedLines.length > 0) {
                 const uniqueLines = Array.from(new Set(selectedLines));
-                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchValue(s.line, l)));
+                rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchLineExact(s.line, l)));
             }
 
             const allowedKeys = new Set(rawFiltered.map(stationKey));
@@ -471,6 +485,12 @@
                     <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
                     <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
                 </div>`;
+        }
+
+        function confirmExitToTitle() {
+            if (confirm("本当に終了してタイトルに戻りますか？")) {
+                location.href = "index.html";
+            }
         }
 
         async function generateResultCard() {
