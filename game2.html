@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
-     crossorigin="anonymous"></script>
     <link rel="icon" href="logo2.png">
     <link rel="apple-touch-icon" href="logo2.png">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6887981844690617"
+     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -19,7 +19,7 @@
 <meta name="twitter:title" content="サテステ">
 <meta name="twitter:description" content="航空写真から駅を当てる地理クイズゲーム">
 <meta name="twitter:image" content="https://sate-sta.com/logo.jpg">
-<title>クイズプレイ | サテステ</title>
+<title>サテステ（ランキング）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="stations.js"></script>
@@ -28,22 +28,64 @@
         body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; background-color: #eee; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         .ui-container { position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); padding: 0; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 320px; max-height: 85vh; display: flex; flex-direction: column; transition: transform 0.3s ease; }
-        
-        /* ヘッダー色：青 */
-        .ui-header { background: #007AFF; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
+        .ui-header { background: #FF9500; color: white; padding: 12px; cursor: move; font-size: 13px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; user-select: none; flex-shrink: 0; font-weight: bold; }
         .ui-header::after { content: ' (ドラッグで移動)'; font-size: 10px; font-weight: normal; opacity: 0.8; }
-        
         .ui-content { padding: 15px; overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
         
-        /* 広告用スタイル */
-        .ad-container { margin: 12px 0; text-align: center; background: #fafafa; border-radius: 8px; overflow: hidden; min-height: 60px; font-size: 10px; color: #999; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #eee; }
-        .ad-label { font-size: 9px; color: #999; margin-bottom: 4px; display: block; width: 100%; text-align: center; border-bottom: 1px solid #eee; background: #fdfdfd; padding: 3px 0; }
-        .ad-container.imobile-answer-ad, .ad-container.imobile-final-ad { display: none; }
-        .ad-container.is-visible { display: flex; }
-        .imobile-final-ad { margin-top: 14px; margin-bottom: 14px; }
+        /* 広告用スタイル：ゲーム中は邪魔にしない。回答後・結果画面中心に表示 */
+        .ad-container {
+            margin: 12px 0;
+            text-align: center;
+            background: #fafafa;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 60px;
+            font-size: 10px;
+            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .ad-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 6px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #fdfdfd;
+            line-height: 1.6;
+        }
+        .ad-game-after-answer,
+        .ad-final-large {
+            display: none;
+        }
+        .ad-final-large {
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+        .ad-note {
+            font-size: 10px;
+            color: #999;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+        @media (min-width: 760px) {
+            .ui-container {
+                width: 360px;
+            }
+        }
         @media (max-width: 600px) {
-            .imobile-answer-ad { margin-top: 12px; }
-            .imobile-final-ad { max-width: 100%; overflow: hidden; }
+            .ad-final-large {
+                margin: 12px auto;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            .ad-final-large .ad-label {
+                font-size: 10px;
+            }
         }
 
         h2 { margin: 0 0 10px 0; font-size: 16px; color: #333; text-align: center; }
@@ -56,12 +98,24 @@
         .btn-next   { background: #34C759; grid-column: span 2; margin-top: 5px; font-size: 15px; }
         .btn-hint   { background: #5856D6; font-size: 10px; }
         .btn-fullscreen { background: #444; grid-column: span 2; margin-bottom: 5px; font-size: 11px; opacity: 0.8; }
-        .btn-title-exit { background: #007AFF; grid-column: span 2; margin-top: 5px; font-size: 13px; }
-        
+        .btn-title-exit { background: #FF9500; grid-column: span 2; margin-top: 5px; font-size: 13px; }
+
+        /* 回答後ボタン表示の固定：次の駅へを必ず出す */
+        .button-group.answered-state #answer-btn,
+        .button-group.answered-state .btn-reset,
+        .button-group.answered-state .btn-giveup,
+        .button-group.answered-state .btn-hint,
+        .button-group.answered-state .btn-fullscreen {
+            display: none !important;
+        }
+        .button-group.answered-state #next-btn,
+        .button-group.answered-state .btn-title-exit {
+            display: block !important;
+            grid-column: span 2;
+        }
         #hint-area { margin-top: 10px; font-size: 12px; color: #444; background: #f0f0f0; border-radius: 6px; padding: 10px; display: none; border-left: 4px solid #5856D6; }
         #result { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 1.5em; line-height: 1.4; }
-
-        /* リザルトリスト(game.htmlスタイル) */
+        
         .result-list { list-style: none; padding: 0; margin: 10px 0; }
         .result-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .res-status { width: 25px; text-align: center; font-size: 18px; flex-shrink: 0; padding-top: 2px; }
@@ -69,21 +123,48 @@
         .res-name { font-weight: bold; color: #333; display: block; font-size: 14px; margin-bottom: 2px; }
         .res-user-ans { font-size: 11px; color: #666; display: block; }
         .res-sub { font-size: 10px; color: #999; display: block; margin-top: 2px; }
-        .res-detail-label { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
+        .res-score-detail { font-size: 11px; color: #007AFF; font-weight: bold; display: block; margin-top: 5px; }
         .btn-view { background: #5ac8fa; padding: 6px 10px; font-size: 11px; width: auto; color: white; border-radius: 4px; border: none; flex-shrink: 0; margin-left: 5px; }
+        
+        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 2px; }
+        .final-rank { font-size: 18px; color: #444; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .score-record-box { background: #fff7ed; border: 1px solid #ffd3a3; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
+        .score-record-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+        .new-best-badge { background: #FF9500; color: white; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
+        .score-record-condition { font-size: 10px; color: #777; margin-bottom: 8px; word-break: break-word; }
+        .score-record-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+        .score-record-cell { background: rgba(255,255,255,0.8); border-radius: 8px; padding: 7px; text-align: center; }
+        .score-record-cell span { display: block; font-size: 10px; color: #777; margin-bottom: 2px; }
+        .score-record-cell strong { display: block; font-size: 16px; color: #d33; }
+        .score-record-sub { font-size: 11px; color: #555; line-height: 1.5; }
+        .score-history-details { margin-top: 8px; font-size: 11px; }
+        .score-history-details summary { cursor: pointer; font-weight: bold; color: #444; }
+        .score-history-list { margin: 6px 0 0; padding-left: 18px; }
+        .score-history-list li { margin: 4px 0; line-height: 1.4; }
+        .btn-record-reset { background: #8E8E93; color: white; padding: 7px 10px; font-size: 10px; border-radius: 6px; margin-top: 8px; width: 100%; }
 
-        .final-score { font-size: 32px; color: #d33; font-weight: bold; text-align: center; margin-bottom: 5px; }
-        .total-time-display { font-size: 16px; color: #444; text-align: center; font-weight: bold; margin-bottom: 15px; }
+        .ranking-box { background: #f0f7ff; border: 1px solid #b7dcff; border-radius: 10px; padding: 10px; margin: 10px 0 14px; color: #333; }
+        .ranking-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #0059b8; }
+        .ranking-condition { font-size: 10px; color: #666; margin-bottom: 8px; word-break: break-word; }
+        .ranking-user-row { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .ranking-name-input { margin: 0; padding: 9px; font-size: 13px; border: 1px solid #b7dcff; }
+        .btn-ranking-save { background: #007AFF; color: white; padding: 9px 10px; font-size: 11px; border-radius: 6px; }
+        .ranking-current { background: rgba(255,255,255,0.85); border-radius: 8px; padding: 7px; font-size: 12px; margin-bottom: 8px; line-height: 1.5; }
+        .ranking-table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
+        .ranking-table th, .ranking-table td { padding: 6px 4px; border-bottom: 1px solid #eee; text-align: center; }
+        .ranking-table th { background: #e8f3ff; color: #0059b8; font-size: 10px; }
+        .ranking-table td:nth-child(2), .ranking-table th:nth-child(2) { text-align: left; }
+        .ranking-highlight { background: #fff7d6; font-weight: bold; }
 
         .sns-share-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .btn-sns { padding: 10px 0; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; border: none; }
         .btn-x { background: #000; }
         .btn-line { background: #06C755; }
         .btn-threads { background: #000; border: 1px solid #333; }
-        .btn-fb { background: #555; }
+        .btn-fb { background: #1877F2; }
         .btn-insta { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
         .btn-card { background: #5856D6; grid-column: span 3; font-size: 13px; padding: 12px; margin-top: 5px; }
-
+        
         #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
         #share-image-container { max-width: 90%; max-height: 80%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,1); position: relative; }
         #share-image-container img { width: 100%; height: auto; display: block; }
@@ -92,13 +173,8 @@
         .result-footer-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .result-footer-buttons button { flex: 1; padding: 12px 5px; }
 
-        @media (max-width: 600px) {
-            .btn-fullscreen { display: none; }
-            .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; }
-            .ui-header { cursor: pointer; padding: 14px; }
-            .ui-container.minimized { transform: translateY(calc(100% - 46px)); }
-        }
-    
+        @media (max-width: 600px) { .btn-fullscreen { display: none; } .ui-container { width: 100%; left: 0 !important; bottom: 0 !important; top: auto !important; border-radius: 20px 20px 0 0; max-height: 70vh; } .ui-header { cursor: pointer; padding: 14px; } .ui-container.minimized { transform: translateY(calc(100% - 46px)); } }
+
         /* PC/SP広告出し分け */
         .ad-sp-only { display: none; }
         .ad-pc-only { display: block; }
@@ -106,26 +182,18 @@
             .ad-pc-only { display: none !important; }
             .ad-sp-only { display: flex !important; justify-content: center; align-items: center; width: 100%; }
         }
-        /* 回答後ボタン強制表示 */
-        .after-answer #answer-btn,
-        .after-answer #station-input,
-        .after-answer .btn-reset,
-        .after-answer .btn-giveup,
-        .after-answer .btn-hint { display: none !important; }
-        .after-answer #next-btn { display: block !important; visibility: visible !important; grid-column: span 2; }
-
     </style>
 </head>
 <body onload="init()">
     <div id="map"></div>
     <div class="ui-container" id="ui-panel">
-        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ</div>
+        <div class="ui-header" id="ui-header" onclick="handleHeaderClick()">サテステ（ランキング）</div>
         <div class="ui-content" id="ui-content">
             <h2 id="question-title">準備中...</h2>
             <div id="game-ui">
                 <input list="station-list" id="station-input" placeholder="駅名を入力..." autocomplete="off">
                 <datalist id="station-list"></datalist>
-                <div class="button-group">
+                <div class="button-group" id="button-group">
                     <button class="btn-fullscreen" onclick="toggleFullscreen()">全画面 切替</button>
                     <button class="btn-answer" id="answer-btn" onclick="checkAnswer()">回答する</button>
                     <button class="btn-reset" onclick="resetView()">場所を戻す</button>
@@ -137,25 +205,27 @@
                 </div>
                 <div id="hint-area"></div>
                 <div id="result"></div>
-                <div class="ad-container imobile-answer-ad" id="answer-ad-slot" aria-label="スポンサーリンク">
-                    <span class="ad-label">スポンサーリンク</span>
+
+                <div class="ad-container ad-game-after-answer" id="ad-after-answer" aria-label="スポンサーリンク">
+                    <div class="ad-label">スポンサーリンク</div>
                     <div class="ad-pc-only"><div id="im-d89e63082e9347d2b3b7d2f81b5c1828">
                       <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935779,type:"banner",display:"inline",elementid:"im-d89e63082e9347d2b3b7d2f81b5c1828"})</script>
                     </div></div>
-<div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
-  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
-</div></div>
+                    <div class="ad-sp-only"><div id="im-fa6bed2a14844c52ba4d1c1b3e4113f3">
+                      <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+                    </div></div>
                 </div>
             </div>
             <div id="final-ui" style="display:none;"></div>
-            <div class="ad-container imobile-final-ad" id="final-ad-slot" aria-label="スポンサーリンク">
-                <span class="ad-label">スポンサーリンク</span>
+            <div class="ad-container ad-final-large" id="ad-final-large" aria-label="スポンサーリンク">
+                <div class="ad-label">スポンサーリンク</div>
+                <div class="ad-note">最終結果画面に表示されます</div>
                 <div class="ad-pc-only"><div id="im-8415a356c5d2430c915a75d1484b81e0">
                   <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594260,asid:1935780,type:"banner",display:"inline",elementid:"im-8415a356c5d2430c915a75d1484b81e0"})</script>
                 </div></div>
-<div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
-  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
-</div></div>
+                <div class="ad-sp-only"><div id="im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3">
+                  <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:85120,mid:594261,asid:1935806,type:"banner",display:"inline",elementid:"im-sp-rect-2-fa6bed2a14844c52ba4d1c1b3e4113f3"})</script>
+                </div></div>
             </div>
         </div>
     </div>
@@ -166,15 +236,55 @@
         <button class="overlay-close" onclick="closeOverlay()">閉じる</button>
     </div>
 
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKoKPKWt-HHPzuFBvQen6WhabL5dgUA8E",
+            authDomain: "sate-sta-ranking.firebaseapp.com",
+            projectId: "sate-sta-ranking",
+            storageBucket: "sate-sta-ranking.firebasestorage.app",
+            messagingSenderId: "533003449600",
+            appId: "1:533003449600:web:d0b7bebe087178e034efe5",
+            measurementId: "G-BZ63E1NHC3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        try { getAnalytics(app); } catch (e) {}
+        const db = getFirestore(app);
+        window.sateStaFirebase = { db, collection, addDoc, updateDoc, setDoc, getDoc, doc, getDocs, query, orderBy, limit, serverTimestamp };
+        window.sateStaFirebaseReady = true;
+        window.dispatchEvent(new Event("sateStaFirebaseReady"));
+    </script>
+
     <script>
-        function refreshAds() { try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }
+        // 広告表示制御：プレイ中は隠し、回答後・結果画面で表示
+        function setAdVisible(id, visible) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = visible ? "flex" : "none";
+        }
+
+        function refreshAds() {
+            // i-mobileタグは静的に読み込むため、ここでは追加処理しない
+        }
 
         const REGION_PREFS = { "北海道地方": ["北海道"],"東北地方": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],"関東地方": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],"中部地方": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],"近畿地方": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],"中国地方": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],"四国地方": ["徳島県", "香川県", "愛媛県", "高知県"],"九州地方": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]};
         const COMPANY_GROUPS = { "大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道","名古屋鉄道","近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄","西日本鉄道"], "関東大手私鉄": ["東武鉄道","西武鉄道","京成電鉄","京王電鉄","小田急電鉄","東急電鉄","京急電鉄","東京メトロ","相模鉄道"], "関西大手私鉄": ["近畿日本鉄道","南海電鉄","京阪電鉄","阪急電鉄","阪神電鉄"], "地下鉄": ["札幌市交通局","仙台市交通局","東京都交通局","東京メトロ","横浜市交通局","名古屋市交通局","京都市交通局","Osaka Metro","神戸市交通局","福岡市交通局"], "JR": ["JR北海道","JR東日本","JR東海","JR西日本","JR四国","JR九州"]};
 
-        let gameStations = [], currentStation = null, map, score = 0, questionCount = 0, totalQuestions = 10, answered = false, playHistory = [], startTime = 0, isLocked = false;
-        let allUniqueStations = [], allStationLabels = []; 
-        let inputTimer, isComposing = false;
+        let gameStations = [], currentStation = null, map, totalScore = 0, questionCount = 0, answered = false, playHistory = [], startTime = 0, isLocked = false;
+        let allUniqueStations = [], allStationLabels = [], usedHints = { pref: false, line: false };
+        let maxDistancePenalty = 50, activeFilters = "全国";
+        
+                let localScoreSaved = false, lastScoreRecordState = null;
+        let localRankingSaved = false, lastRankingState = null;
+        let globalRankingSubmitting = false;
+        const RANKING_NAME_KEY = "sateStaRankingName:v1";
+        const RANKING_PLAYER_ID_KEY = "sateStaPlayerId:v1";
+        let inputTimer; 
+        let isComposing = false;
 
         function getDistance(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -184,22 +294,42 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
         function handleHeaderClick() { if (window.innerWidth <= 600) document.getElementById('ui-panel').classList.toggle('minimized'); }
-        function expandPanel() { document.getElementById('ui-panel').classList.remove('minimized'); }
 
         function init() {
+            refreshAds();
+            refreshAds();
+
             const params = new URLSearchParams(window.location.search);
-            isLocked = params.get('lock') === 'true';
-            map = L.map('map', { zoomControl:false, dragging:!isLocked, touchZoom:!isLocked, doubleClickZoom:!isLocked, scrollWheelZoom:!isLocked, boxZoom:!isLocked, keyboard:!isLocked });
+            const resData = params.get('res');
+            map = L.map('map', { zoomControl:false });
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', { attribution: '&copy; 国土地理院' }).addTo(map);
+
+            if (resData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(resData))));
+                    playHistory = decoded.history; totalScore = decoded.score; isLocked = decoded.locked; activeFilters = decoded.filters || "全国";
+                    setTimeout(() => { showFinalResult(true); generateResultCard(decoded.rank || "SSS", isLocked ? "ハード" : "通常", true); }, 200);
+                    return;
+                } catch(e) { console.error("Data error"); }
+            }
+
+            isLocked = params.get('lock') === 'true';
+            if (isLocked) { map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable(); map.scrollWheelZoom.disable(); map.boxZoom.disable(); map.keyboard.disable(); }
 
             if (typeof stations === 'undefined') return;
             const stationMap = new Map();
             stations.forEach(s => {
                 const key = `${s.name}_${s.lat.toFixed(3)}_${s.lng.toFixed(3)}`;
                 if (stationMap.has(key)) {
-                    const ex = stationMap.get(key); if (!ex.line.includes(s.line)) ex.line += `・${s.line}`; if (s.company && !String(ex.company || '').includes(s.company)) ex.company = ex.company ? `${ex.company}・${s.company}` : s.company;
+                    const existing = stationMap.get(key);
+                    if (!existing.line.includes(s.line)) existing.line += `・${s.line}`;
+                    if (s.company && !String(existing.company || '').includes(s.company)) existing.company = existing.company ? `${existing.company}・${s.company}` : s.company;
                 } else {
                     const copy = { ...s }; stationMap.set(key, copy); allUniqueStations.push(copy);
                 }
@@ -209,14 +339,21 @@
             allUniqueStations.forEach(s => { nameCounts[s.name] = (nameCounts[s.name] || 0) + 1; });
             allStationLabels = allUniqueStations.map(s => {
                 const label = (nameCounts[s.name] > 1) ? `${s.name} (${s.pref} / ${s.line})` : s.name;
-                s.fullLabel = label; return label;
+                s.fullLabel = label;
+                return label;
             }).sort();
-
+            
             const inputEl = document.getElementById('station-input');
             inputEl.addEventListener('compositionstart', () => { isComposing = true; });
             inputEl.addEventListener('compositionend', () => { isComposing = false; updateDatalist(); });
             inputEl.addEventListener('input', () => { if (isComposing) return; clearTimeout(inputTimer); inputTimer = setTimeout(updateDatalist, 150); });
-            inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (isComposing) return; e.preventDefault(); checkAnswer(); } });
+            inputEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if (isComposing) return;
+                    e.preventDefault(); 
+                    checkAnswer();
+                }
+            });
 
             let filtered = [...allUniqueStations];
             const sPref = params.get('pref'), sComp = params.get('company'), sComps = params.get('comps'), sLine = params.get('line'), sLines = params.get('lines');
@@ -297,6 +434,8 @@
                 return stationLines.some(sv => selectedLines.some(tv => sv === tv));
             };
 
+            let filterLabels = [];
+            let penaltyValues = [];
             let rawFiltered = stations.slice();
 
             const selectedPrefs = splitParam(sPref);
@@ -306,8 +445,12 @@
                     if (p.startsWith("reg:")) {
                         const regName = p.replace("reg:", "");
                         prefNames.push(...(REGION_PREFS[regName] || []));
+                        filterLabels.push("地方: "+regName);
+                        penaltyValues.push(45);
                     } else {
                         prefNames.push(p);
+                        filterLabels.push("都道府県: "+p);
+                        penaltyValues.push(25);
                     }
                 });
                 prefNames = Array.from(new Set(prefNames));
@@ -315,177 +458,169 @@
             }
 
             if (sComp && sComp !== "all") {
+                const isCompanyGroup = sComp.startsWith("grp:") || !!COMPANY_GROUPS[sComp];
+                const groupName = sComp.startsWith("grp:") ? sComp.replace("grp:", "") : sComp;
                 const expandedCompanies = expandCompanySelections([sComp]);
                 rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
+                filterLabels.push("会社: "+(isCompanyGroup ? groupName : sComp));
+                penaltyValues.push(isCompanyGroup ? 35 : 20);
             }
 
             const selectedComps = splitParam(sComps);
             if (selectedComps.length > 0) {
                 const expandedCompanies = expandCompanySelections(selectedComps);
                 rawFiltered = rawFiltered.filter(s => expandedCompanies.some(c => matchValue(s.company, c)));
+                filterLabels.push("会社: "+Array.from(new Set(selectedComps)).map(c => c.startsWith("grp:") ? c.replace("grp:", "") : c).join('・'));
+                penaltyValues.push(20);
             }
 
             const selectedLines = [...splitParam(sLine), ...splitParam(sLines)];
             if (selectedLines.length > 0) {
                 const uniqueLines = Array.from(new Set(selectedLines));
                 rawFiltered = rawFiltered.filter(s => uniqueLines.some(l => matchLineExact(s.line, l)));
+                filterLabels.push("路線: "+uniqueLines.join('・'));
+                penaltyValues.push(10);
             }
 
             const allowedKeys = new Set(rawFiltered.map(stationKey));
             filtered = allUniqueStations.filter(s => allowedKeys.has(stationKey(s)));
 
-            for(let i=filtered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filtered[i],filtered[j]]=[filtered[j],filtered[i]]}
+            if (penaltyValues.length > 0) {
+                maxDistancePenalty = Math.min(...penaltyValues);
+                activeFilters = filterLabels.join(" / ");
+            } else {
+                maxDistancePenalty = 50;
+                activeFilters = "全国";
+            }
+
+            for(let i=filtered.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [filtered[i],filtered[j]]=[filtered[j],filtered[i]]; }
             gameStations = filtered.slice(0, parseInt(params.get('num')) || 10);
-            if (gameStations.length === 0) { alert("該当する駅がありません。条件を変更してください。"); location.href = "index.html"; return; }
-            totalQuestions = gameStations.length;
+            if (gameStations.length === 0) { alert("駅が見つかりませんでした。"); location.href = "index.html"; return; }
             nextQuestion();
             makeDraggable(document.getElementById("ui-panel"));
         }
 
+        function normalizeStationText(str) {
+            return String(str || "")
+                .normalize("NFKC")
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[ヶヵ]/g, "ケ");
+        }
+
         function updateDatalist() {
-            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            const val = normalizeStationText(document.getElementById('station-input').value), dl = document.getElementById('station-list');
             if (val.length < 1) { dl.innerHTML = ""; return; }
             const frag = document.createDocumentFragment(); let count = 0;
-            for (const label of allStationLabels) {
-                if (label.split(' (')[0].toLowerCase().startsWith(val)) {
-                    const o = document.createElement('option'); o.value = label; frag.appendChild(o);
-                    if (++count >= 100) break;
-                }
-            }
+            for (const label of allStationLabels) { if (normalizeStationText(label).startsWith(val)) { const o = document.createElement('option'); o.value = label; frag.appendChild(o); if (++count >= 100) break; } }
             dl.innerHTML = ""; dl.appendChild(frag);
         }
 
+
+        function setAnsweredButtonState(isAnswered) {
+            const group = document.getElementById('button-group');
+            const answerBtn = document.getElementById('answer-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (group) group.classList.toggle('answered-state', !!isAnswered);
+            if (answerBtn) answerBtn.style.display = isAnswered ? "none" : "block";
+            if (nextBtn) {
+                nextBtn.hidden = false;
+                nextBtn.removeAttribute('hidden');
+                nextBtn.style.setProperty('display', isAnswered ? 'block' : 'none', 'important');
+                nextBtn.style.setProperty('visibility', 'visible', 'important');
+                nextBtn.style.setProperty('opacity', '1', 'important');
+            }
+        }
+
         function nextQuestion() {
-            document.getElementById('game-ui')?.classList.remove('after-answer');
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", false);
             if (questionCount >= gameStations.length) { showFinalResult(); return; }
-            answered = false;
-            document.getElementById('answer-btn').style.display = "block";
-            const nextBtnReset = document.getElementById('next-btn');
-            if (nextBtnReset) nextBtnReset.style.setProperty('display', 'none', 'important');
-            document.getElementById('result').innerText = ""; document.getElementById('station-input').value = "";
-            const answerAdSlot = document.getElementById('answer-ad-slot');
-            if (answerAdSlot) answerAdSlot.classList.remove('is-visible');
-            document.getElementById('station-list').innerHTML = ""; document.getElementById('hint-area').style.display = "none";
-            currentStation = gameStations[questionCount];
+            answered = false; usedHints = { pref: false, line: false };
+            setAnsweredButtonState(false);
+            document.getElementById('result').innerText = ""; 
+            document.getElementById('station-input').value = "";
+            document.getElementById('station-list').innerHTML = ""; 
+            document.getElementById('hint-area').style.display = "none"; document.getElementById('hint-area').innerText = ""; currentStation = gameStations[questionCount];
             map.setView([currentStation.lat, currentStation.lng], 17);
-            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${totalQuestions} 問`;
+            document.getElementById('question-title').innerText = `第 ${questionCount + 1} 問 / 全 ${gameStations.length} 問`;
             startTime = Date.now();
         }
 
-        function showHint(t) { if(!answered){ const a = document.getElementById('hint-area'); a.style.display = "block"; a.innerText = (t==='pref'?"都道府県: ":"路線名: ")+(currentStation[t]||"不明"); } }
-        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+        function showHint(t) {
+            if(!answered){
+                usedHints[t] = true; const a = document.getElementById('hint-area'); a.style.display = "block";
+                const content = t === 'pref' ? `都道府県: ${currentStation.pref}` : `路線名: ${currentStation.line}`;
+                if (!a.innerHTML.includes(content)) a.innerHTML = (a.innerHTML ? a.innerHTML + "<br>" : "") + content;
+            }
+        }
 
         function checkAnswer() {
-            if (answered) return; expandPanel();
-            const time = (Date.now() - startTime) / 1000;
+            if (answered) return;
             const userRaw = document.getElementById('station-input').value.trim();
-            const user = userRaw.split(' (')[0];
-            const res = document.getElementById('result');
+            const userName = userRaw.split(' (')[0];
+            const time = (Date.now() - startTime) / 1000;
+            let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
             
-            let dist = null;
-            let isCorrect = false;
-            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
+            let userStation = allUniqueStations.find(s => normalizeStationText(s.fullLabel) === normalizeStationText(userRaw));
             if (!userStation && userRaw !== "") {
-                const sameNameStations = allUniqueStations.filter(s => s.name === user);
+                const sameNameStations = allUniqueStations.filter(s => normalizeStationText(s.name) === normalizeStationText(userName));
                 if (sameNameStations.length > 0) {
                     userStation = sameNameStations
                         .map(s => ({ station: s, dist: getDistance(currentStation.lat, currentStation.lng, s.lat, s.lng) }))
                         .sort((a, b) => a.dist - b.dist)[0].station;
                 }
             }
+
             if (userStation) {
                 dist = getDistance(currentStation.lat, currentStation.lng, userStation.lat, userStation.lng);
                 // 250m以内なら、駅名・路線・会社に関係なく無条件で正解
-                isCorrect = dist <= 0.25;
+                if (dist <= 0.25) {
+                    isCorrect = true;
+                }
             }
 
-            // 回答直後の表示（本来の正解駅・県名・路線名を表示）
+            if (isCorrect) {
+                baseScore = 1500;
+                timeBonus = Math.max(0, 500 - (Math.max(0, time - 10) * 10));
+            } else {
+                baseScore = Math.max(0, 1000 * (1 - Math.sqrt(Math.min(dist, maxDistancePenalty) / maxDistancePenalty)));
+            }
+
+            let multiplier = 1.0;
+            if (usedHints.pref && usedHints.line) multiplier = 0.1; else if (usedHints.line) multiplier = 0.25; else if (usedHints.pref) multiplier = 0.5;
+            const questionScore = Math.round((baseScore + timeBonus) * multiplier); totalScore += questionScore;
+
+            const res = document.getElementById('result');
             const correctNameDisplay = `<div style="font-size:13px; color:#333; margin-top:4px;">正解駅: <strong>${currentStation.name}</strong></div>`;
-            const infoDisplay = `<div style="font-size:11px; color:#666;">${currentStation.pref} / ${currentStation.line}</div>`;
-            const distDisplay = `<div style="font-size: 13px; color: #444; margin-top: 5px;">誤差: ${!userStation ? '-' : dist.toFixed(2) + 'km'} / ${time.toFixed(1)}秒</div>`;
-
-            if (isCorrect) { res.innerHTML = `<span style='color:#D33;'>正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; score++; }
-            else { res.innerHTML = `<span style='color:#007AFF;'>不正解！</span>` + correctNameDisplay + infoDisplay + distDisplay; }
+            res.innerHTML = `<div style="font-size:12px; color:#555;">あなたの解答: ${userRaw || "(未入力)"}</div>` +
+                            `<span style="color:${isCorrect ? '#D33' : '#007AFF'}; font-weight:bold;">${isCorrect ? '正解！' : '不正解'}</span>` +
+                            correctNameDisplay +
+                            `<span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span>` +
+                            `<br><span style="font-size:12px; color:#555;">距離: ${userStation ? dist.toFixed(2) + 'km' : '判定不可'} / 得点: +${questionScore}</span>`;
             
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist: dist });
-            finishOne();
-        }
-
-        function showAnswer() {
-            if (answered) return; expandPanel();
-            const time = (Date.now() - startTime) / 1000, userRaw = document.getElementById('station-input').value.trim();
-            document.getElementById('result').innerHTML = `正解: <span style='color:#E60;'>${currentStation.name}</span><br><div style="font-size:11px; color:#666;">${currentStation.pref} / ${currentStation.line}</div>`;
-            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect: false, time, userAns: userRaw || "ギブアップ", dist: null });
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, lat: currentStation.lat, lng: currentStation.lng, isCorrect, time, userAns: userRaw || "(未入力)", dist, score: questionScore, baseScore, timeBonus, multiplier, usedHints: { ...usedHints } });
             finishOne();
         }
 
         function finishOne() {
             answered = true;
-            const gameUi = document.getElementById('game-ui');
-            if (gameUi) gameUi.classList.add('after-answer');
-
-            const answerBtn = document.getElementById('answer-btn');
-            const nextBtn = document.getElementById('next-btn');
-            if (answerBtn) answerBtn.style.setProperty('display', 'none', 'important');
-            if (nextBtn) {
-                nextBtn.style.setProperty('display', 'block', 'important');
-                nextBtn.style.setProperty('visibility', 'visible', 'important');
-                nextBtn.style.gridColumn = 'span 2';
-            }
-
-            const answerAdSlot = document.getElementById('answer-ad-slot');
-            if (answerAdSlot) answerAdSlot.classList.add('is-visible');
+            setAnsweredButtonState(true);
+            setAdVisible("ad-after-answer", true);
             questionCount++;
         }
-        function jumpToStation(la, ln) { map.dragging.enable(); map.scrollWheelZoom.enable(); map.flyTo([la, ln], 17); }
-        function copyToClipboard(text) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); alert("文章をコピーしました！"); }
 
-        function showFinalResult() {
-            expandPanel(); document.getElementById('game-ui').style.display = "none";
-            const answerAdSlot = document.getElementById('answer-ad-slot');
-            if (answerAdSlot) answerAdSlot.classList.remove('is-visible');
-            const finalAdSlot = document.getElementById('final-ad-slot');
-            if (finalAdSlot) finalAdSlot.classList.add('is-visible');
-            const finalUi = document.getElementById('final-ui'); finalUi.style.display = "block";
-            let totalT = 0, listH = '<ul class="result-list">';
-            
-            playHistory.forEach((h) => {
-                totalT += h.time;
-                const mark = h.isCorrect ? '●' : '×', mc = h.isCorrect ? '#D33' : '#007AFF';
-                const distStr = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(2) + 'km';
-                listH += `
-                <li class="result-item">
-                    <div class="res-status" style="color:${mc}">${mark}</div>
-                    <div class="res-info">
-                        <span class="res-name">${h.name}</span>
-                        <span class="res-user-ans">解答: ${h.userAns}</span>
-                        <span class="res-sub">${h.pref} / ${h.line}</span>
-                        <span class="res-detail-label">誤差: ${distStr} | ${h.time.toFixed(1)}秒</span>
-                    </div>
-                    <button class="btn-view" onclick="jumpToStation(${h.lat}, ${h.lng})">確認</button>
-                </li>`;
-            });
-            
-            const mt = Math.floor(totalT / 60), st = (totalT % 60).toFixed(1), timeStr = mt > 0 ? mt + '分' + st + '秒' : st + '秒';
-            const shareText = `「サテステ」で ${totalQuestions}問中 ${score}問正解しました！\n総解答時間: ${timeStr}\n#サテステ https://sate-sta.com`;
-            
-            finalUi.innerHTML = `
-                <div class="final-score">${totalQuestions}問中 ${score}問正解！</div>
-                <div class="total-time-display">総解答時間: ${timeStr}</div>
-                <div class="sns-share-area">
-                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
-                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
-                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
-                    <button class="btn-sns btn-fb" onclick="copyToClipboard('${shareText}')">文章コピー</button>
-                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareText}')">Insta用</button>
-                    <button class="btn-sns btn-card" onclick="generateResultCard()">画像で結果をシェア！</button>
-                </div>
-                ${listH + '</ul>'}
-                <div class="result-footer-buttons">
-                    <button class="btn-next" style="margin:0;" onclick="location.reload()">もう一度</button>
-                    <button class="btn-reset" onclick="location.href='index.html'">タイトルへ</button>
-                </div>`;
+        function showAnswer() {
+            if (answered) return;
+            document.getElementById('result').innerHTML = `<span style="color:#FF9500; font-weight:bold;">正解は「${currentStation.name}」</span><br><span style="font-size:11px; color:#666;">(${currentStation.pref}/${currentStation.line})</span><div style="font-size:16px; font-weight:bold; margin-top:5px;">+0点</div>`;
+            playHistory.push({ name: currentStation.name, pref: currentStation.pref, line: currentStation.line, userAns: "ギブアップ", isCorrect: false, dist: 999, score: 0, time: 0, lat: currentStation.lat, lng: currentStation.lng });
+            answered = true; setAnsweredButtonState(true);
+            setAdVisible("ad-after-answer", true);
+            questionCount++;
         }
+
+        const SCORE_HISTORY_KEY = "sateStaChallengeScoreHistory:v1";
+        const SCORE_BEST_PREFIX = "sateStaChallengeBestScore:v1:";
 
         function confirmExitToTitle() {
             if (confirm("本当に終了してタイトルに戻りますか？")) {
@@ -493,41 +628,541 @@
             }
         }
 
-        async function generateResultCard() {
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, (match) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            }[match]));
+        }
+
+        function safeJsonParse(value, fallback) {
+            try {
+                return value ? JSON.parse(value) : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function getCurrentConditionKey() {
+            const mode = isLocked ? "hard" : "normal";
+            const filterKey = activeFilters || "全国";
+            return `${mode}|${filterKey}|penalty:${maxDistancePenalty}`;
+        }
+
+        function getCurrentConditionLabel(modeName) {
+            return `${modeName} / ${activeFilters || "全国"}`;
+        }
+
+        function getCorrectCount() {
+            return playHistory.filter(h => h.isCorrect).length;
+        }
+
+        function getTotalTimeSeconds() {
+            const total = playHistory.reduce((sum, h) => sum + (Number(h.time) || 0), 0);
+            return Math.round(total * 10) / 10;
+        }
+
+        function getBestRecord(conditionKey) {
+            return safeJsonParse(localStorage.getItem(SCORE_BEST_PREFIX + conditionKey), null);
+        }
+
+        function saveLocalScoreRecord(rank, modeName) {
+            const conditionKey = getCurrentConditionKey();
+            const result = {
+                score: totalScore,
+                rank,
+                correctCount: getCorrectCount(),
+                totalQuestions: playHistory.length,
+                totalTime: getTotalTimeSeconds(),
+                modeName,
+                filters: activeFilters || "全国",
+                conditionKey,
+                conditionLabel: getCurrentConditionLabel(modeName),
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
+            };
+
+            const previousBest = getBestRecord(conditionKey);
+            const shouldUpdateBest = !previousBest ||
+                result.score > previousBest.score ||
+                (result.score === previousBest.score && result.totalTime < previousBest.totalTime);
+
+            const conditionBest = shouldUpdateBest ? result : previousBest;
+            if (shouldUpdateBest) {
+                localStorage.setItem(SCORE_BEST_PREFIX + conditionKey, JSON.stringify(result));
+            }
+
+            const history = safeJsonParse(localStorage.getItem(SCORE_HISTORY_KEY), []);
+            history.unshift(result);
+            const limitedHistory = history.slice(0, 10);
+            localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(limitedHistory));
+
+            return {
+                result,
+                previousBest,
+                conditionBest,
+                isNewBest: shouldUpdateBest,
+                history: limitedHistory
+            };
+        }
+
+        function formatRecordDate(isoString) {
+            try {
+                return new Date(isoString).toLocaleString("ja-JP", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function createScoreRecordHtml(state) {
+            const result = state.result;
+            const best = state.conditionBest || result;
+            const previousBestText = state.previousBest
+                ? `${Number(state.previousBest.score).toLocaleString()}点`
+                : "なし";
+            const badge = state.isNewBest ? '<span class="new-best-badge">自己ベスト更新！</span>' : "";
+            const historyHtml = state.history.length
+                ? state.history.map((item) => `
+                    <li>
+                        ${escapeHtml(formatRecordDate(item.playedAt))}：
+                        ${Number(item.score).toLocaleString()}点 / ${escapeHtml(item.rank)}
+                        （${Number(item.correctCount)}/${Number(item.totalQuestions)}問・${escapeHtml(item.modeName)}）
+                    </li>
+                `).join("")
+                : '<li>まだ記録がありません</li>';
+
+            return `
+                <div id="score-record-area" class="score-record-box">
+                    <div class="score-record-title">
+                        <span>自己記録</span>
+                        ${badge}
+                    </div>
+                    <div class="score-record-condition">${escapeHtml(result.conditionLabel)}</div>
+                    <div class="score-record-grid">
+                        <div class="score-record-cell">
+                            <span>今回</span>
+                            <strong>${Number(result.score).toLocaleString()}点</strong>
+                        </div>
+                        <div class="score-record-cell">
+                            <span>条件別ベスト</span>
+                            <strong>${Number(best.score).toLocaleString()}点</strong>
+                        </div>
+                    </div>
+                    <div class="score-record-sub">
+                        正答数：${Number(result.correctCount)}/${Number(result.totalQuestions)}問　
+                        合計時間：${Number(result.totalTime).toFixed(1)}秒<br>
+                        これまでの条件別ベスト：${escapeHtml(previousBestText)}
+                    </div>
+                    <details class="score-history-details">
+                        <summary>最近10回の記録を見る</summary>
+                        <ol class="score-history-list">${historyHtml}</ol>
+                    </details>
+                    <button class="btn-record-reset" onclick="resetScoreRecords()">自己記録をリセット</button>
+                </div>`;
+        }
+
+        function resetScoreRecords() {
+            if (!confirm("自己記録をすべて削除しますか？")) return;
+
+            Object.keys(localStorage).forEach((key) => {
+                if (key.startsWith(SCORE_BEST_PREFIX) || key === SCORE_HISTORY_KEY) {
+                    localStorage.removeItem(key);
+                }
+            });
+
+            const area = document.getElementById("score-record-area");
+            if (area) {
+                area.innerHTML = `
+                    <div class="score-record-title">自己記録</div>
+                    <div class="score-record-sub">自己記録を削除しました。</div>
+                `;
+            }
+        }
+
+
+
+        function getRankingKey() {
+            return `${getCurrentConditionKey()}|questions:${playHistory.length}`;
+        }
+
+        function getRankingDocId(rankingKey) {
+            return encodeURIComponent(rankingKey).replace(/\./g, "%2E");
+        }
+
+        function normalizeRankingName(name) {
+            const cleaned = String(name || "").trim().replace(/\s+/g, " ").slice(0, 16);
+            return cleaned || "ゲスト";
+        }
+
+        function getOrCreatePlayerId() {
+            let playerId = localStorage.getItem(RANKING_PLAYER_ID_KEY);
+            if (!playerId) {
+                const randomPart = Math.random().toString(36).slice(2);
+                const timePart = Date.now().toString(36);
+                playerId = `player_${timePart}_${randomPart}`;
+                localStorage.setItem(RANKING_PLAYER_ID_KEY, playerId);
+            }
+            return playerId;
+        }
+
+        function getRankingModeKey() {
+            return isLocked ? "hard" : "normal";
+        }
+
+        function getRankingHistoryForSave() {
+            return playHistory.map((h, index) => ({
+                no: index + 1,
+                name: String(h.name || ""),
+                pref: String(h.pref || ""),
+                line: String(h.line || ""),
+                userAns: String(h.userAns || "(未入力)"),
+                isCorrect: !!h.isCorrect,
+                dist: Math.round((Number(h.dist) || 0) * 100) / 100,
+                score: Math.round(Number(h.score) || 0),
+                time: Math.round((Number(h.time) || 0) * 10) / 10,
+                lat: Number(h.lat) || 0,
+                lng: Number(h.lng) || 0
+            }));
+        }
+
+        function createCurrentRankingEntry(rank, modeName, nameOverride = null) {
+            const rankingName = normalizeRankingName(nameOverride || localStorage.getItem(RANKING_NAME_KEY) || "ゲスト");
+            return {
+                name: rankingName,
+                playerId: getOrCreatePlayerId(),
+                score: Math.round(Number(totalScore) || 0),
+                rank,
+                correctCount: getCorrectCount(),
+                totalQuestions: playHistory.length,
+                totalTime: getTotalTimeSeconds(),
+                modeKey: getRankingModeKey(),
+                modeName,
+                filters: activeFilters || "全国",
+                conditionKey: getRankingKey(),
+                conditionLabel: getCurrentConditionLabel(modeName),
+                history: getRankingHistoryForSave(),
+                playedAt: new Date().toISOString(),
+                updatedAtIso: new Date().toISOString()
+            };
+        }
+
+        function createRankingHtml(state) {
+            const current = state.current;
+            return `
+                <div id="ranking-area" class="ranking-box">
+                    <div class="ranking-title">
+                        <span>全国ランキング</span>
+                        <span id="ranking-position">未送信</span>
+                    </div>
+                    <div class="ranking-condition">${escapeHtml(current.conditionLabel)} / ${Number(current.totalQuestions)}問</div>
+                    <div class="ranking-user-row">
+                        <input id="ranking-name-input" class="ranking-name-input" value="${escapeHtml(current.name)}" maxlength="16" placeholder="ランキング名">
+                        <button id="ranking-submit-btn" class="btn-ranking-save" onclick="saveRankingNameFromInput()">全国に送信</button>
+                    </div>
+                    <div id="ranking-current" class="ranking-current">
+                        今回：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br>
+                        <span style="font-size:10px;color:#666;">名前を入力して「全国に送信」を押すと、同条件のランキングに登録されます。</span>
+                    </div>
+                    <table class="ranking-table">
+                        <thead><tr><th>順位</th><th>名前</th><th>点</th><th>正解</th><th>時間</th><th>詳細</th></tr></thead>
+                        <tbody id="ranking-tbody"><tr><td colspan="6">ランキングを読み込み中...</td></tr></tbody>
+                    </table>
+                </div>`;
+        }
+
+        async function waitForFirebaseReady() {
+            if (window.sateStaFirebaseReady && window.sateStaFirebase) return window.sateStaFirebase;
+            await new Promise((resolve) => window.addEventListener("sateStaFirebaseReady", resolve, { once: true }));
+            return window.sateStaFirebase;
+        }
+
+        function renderRankingRows(ranking, currentDocId = null) {
+            const tbody = document.getElementById("ranking-tbody");
+            if (!tbody) return;
+            const rows = ranking.slice(0, 10).map((item, index) => {
+                const isCurrent = currentDocId && item.id === currentDocId;
+                const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}`;
+                return `
+                    <tr class="${isCurrent ? 'ranking-highlight' : ''}">
+                        <td>${medal}</td>
+                        <td>${escapeHtml(item.name || "ゲスト")}</td>
+                        <td>${Number(item.score || 0).toLocaleString()}</td>
+                        <td>${Number(item.correctCount || 0)}/${Number(item.totalQuestions || 0)}</td>
+                        <td>${Number(item.totalTime || 0).toFixed(1)}秒</td>
+                        <td><button class="btn-view" onclick="window.open('ranking.html', '_blank')">詳細</button></td>
+                    </tr>`;
+            }).join("");
+            tbody.innerHTML = rows || '<tr><td colspan="6">まだ記録がありません</td></tr>'; 
+        }
+
+        async function fetchGlobalRanking(rankingKey) {
+            const fb = await waitForFirebaseReady();
+            const rankingDocId = getRankingDocId(rankingKey);
+            const scoresRef = fb.collection(fb.db, "rankings", rankingDocId, "scores");
+            const q = fb.query(scoresRef, fb.orderBy("score", "desc"), fb.limit(50));
+            const snap = await fb.getDocs(q);
+            const ranking = [];
+            snap.forEach((d) => ranking.push({ id: d.id, ...d.data() }));
+            ranking.sort((a, b) => {
+                if (Number(b.score) !== Number(a.score)) return Number(b.score) - Number(a.score);
+                return Number(a.totalTime || 999999) - Number(b.totalTime || 999999);
+            });
+            return ranking;
+        }
+
+        async function loadGlobalRanking() {
+            if (!lastRankingState) return;
+            const tbody = document.getElementById("ranking-tbody");
+            try {
+                const ranking = await fetchGlobalRanking(lastRankingState.current.conditionKey);
+                lastRankingState.ranking = ranking;
+                renderRankingRows(ranking, lastRankingState.docId || null);
+                const posEl = document.getElementById("ranking-position");
+                if (posEl && lastRankingState.docId) {
+                    const pos = ranking.findIndex(item => item.id === lastRankingState.docId) + 1;
+                    posEl.textContent = pos > 0 ? `${pos}位` : "50位圏外";
+                } else if (posEl) {
+                    posEl.textContent = "未送信";
+                }
+            } catch (e) {
+                console.error(e);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5">ランキングを読み込めませんでした</td></tr>';
+            }
+        }
+
+        async function saveRankingIndex(fb, rankingDocId, current) {
+            const indexRef = fb.doc(fb.db, "rankingIndexes", rankingDocId);
+            await fb.setDoc(indexRef, {
+                conditionKey: current.conditionKey,
+                conditionLabel: current.conditionLabel,
+                modeKey: current.modeKey || (current.modeName === "ハード" ? "hard" : "normal"),
+                modeName: current.modeName,
+                filters: current.filters || "全国",
+                totalQuestions: current.totalQuestions,
+                maxDistancePenalty: maxDistancePenalty,
+                updatedAt: fb.serverTimestamp()
+            }, { merge: true });
+        }
+
+        async function saveRankingNameFromInput() {
+            if (!lastRankingState || globalRankingSubmitting) return;
+            const input = document.getElementById("ranking-name-input");
+            const button = document.getElementById("ranking-submit-btn");
+            const currentBox = document.getElementById("ranking-current");
+            const name = normalizeRankingName(input ? input.value : "ゲスト");
+            if (input) input.value = name;
+            localStorage.setItem(RANKING_NAME_KEY, name);
+
+            globalRankingSubmitting = true;
+            if (button) { button.disabled = true; button.textContent = "送信中..."; }
+
+            try {
+                const fb = await waitForFirebaseReady();
+                const current = { ...lastRankingState.current, name, playerId: getOrCreatePlayerId(), history: getRankingHistoryForSave() };
+                const rankingDocId = getRankingDocId(current.conditionKey);
+                const playerDocId = current.playerId;
+                const scoreRef = fb.doc(fb.db, "rankings", rankingDocId, "scores", playerDocId);
+
+                await saveRankingIndex(fb, rankingDocId, current);
+
+                const oldSnap = await fb.getDoc(scoreRef);
+                const old = oldSnap.exists() ? oldSnap.data() : null;
+                const isBetter = !old || Number(current.score) > Number(old.score || -1) ||
+                    (Number(current.score) === Number(old.score || -1) && Number(current.totalTime) <= Number(old.totalTime || 999999));
+
+                if (isBetter) {
+                    await fb.setDoc(scoreRef, {
+                        ...current,
+                        updatedAt: fb.serverTimestamp(),
+                        createdAt: old?.createdAt || fb.serverTimestamp(),
+                        userAgent: navigator.userAgent.slice(0, 120)
+                    }, { merge: true });
+                    lastRankingState.docId = playerDocId;
+                    if (currentBox) {
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong> / ${escapeHtml(current.rank)} / ${Number(current.correctCount)}/${Number(current.totalQuestions)}問正解 / ${Number(current.totalTime).toFixed(1)}秒<br><span style="font-size:10px;color:#666;">この条件の自己ベストを更新しました。ランキングページで回答詳細を見られます。</span>`;
+                    }
+                } else {
+                    // 自己ベスト未更新でも名前だけは更新します。回答履歴はベスト記録のものを残します。
+                    await fb.setDoc(scoreRef, { name, updatedAt: fb.serverTimestamp() }, { merge: true });
+                    lastRankingState.docId = playerDocId;
+                    if (currentBox) {
+                        currentBox.innerHTML = `送信済み：<strong>${Number(current.score).toLocaleString()}点</strong><br><span style="font-size:10px;color:#666;">今回は自己ベスト未更新のため、ランキング上の詳細は現在のベスト記録のままです。</span>`;
+                    }
+                }
+
+                lastRankingState.current = current;
+                if (button) button.textContent = "名前を更新";
+                await loadGlobalRanking();
+            } catch (e) {
+                console.error(e);
+                alert("ランキング送信に失敗しました。Firestore Databaseが作成済みか、ルールが書き込み許可になっているか確認してください。");
+                if (button) button.textContent = "全国に送信";
+            } finally {
+                globalRankingSubmitting = false;
+                if (button) button.disabled = false;
+            }
+        }
+
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select();
+            document.execCommand('copy'); document.body.removeChild(temp); alert("文章をコピーしました！");
+        }
+
+        function showFinalResult(isViewMode = false) {
+            setAdVisible("ad-after-answer", false);
+            setAdVisible("ad-final-large", true);
+            const gameUi = document.getElementById('game-ui');
+            const titleEl = document.getElementById('question-title');
+            const finalUi = document.getElementById('final-ui');
+            if (gameUi) gameUi.style.display = "none";
+            if (titleEl) titleEl.innerText = isViewMode ? "リザルト閲覧" : "結果発表";
+            if (!finalUi) return;
+            finalUi.style.display = "block";
+
+            const modeName = isLocked ? "ハード" : "通常";
+            const totalMax = playHistory.length * 2000;
+            const ratio = totalScore / (totalMax || 1);
+            let rank = "D";
+            if (ratio >= 0.9) rank = "SSS";
+            else if (ratio >= 0.8) rank = "SS";
+            else if (ratio >= 0.7) rank = "S";
+            else if (ratio >= 0.5) rank = "A";
+            else if (ratio >= 0.3) rank = "B";
+            else if (ratio >= 0.1) rank = "C";
+
+            const safeNum = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+            const resultItems = playHistory.map((h) => {
+                const dist = safeNum(h.dist, 999);
+                const time = safeNum(h.time, 0);
+                const score = safeNum(h.score, 0);
+                const closeMark = dist < (maxDistancePenalty * 0.1);
+                const mark = h.isCorrect ? '●' : (closeMark ? '▲' : '×');
+                const markColor = h.isCorrect ? 'red' : (closeMark ? 'orange' : 'blue');
+                const userAns = h.userAns || "(未入力)";
+                const distText = (userAns === "(未入力)" || userAns === "ギブアップ") ? '-' : `${dist.toFixed(2)}km`;
+                return `<li class="result-item">
+                    <div class="res-status" style="color:${markColor}">${mark}</div>
+                    <div class="res-info">
+                        <span class="res-name">${escapeHtml(h.name || "不明")}</span>
+                        <span class="res-user-ans">解答: ${escapeHtml(userAns)}</span>
+                        <span class="res-sub">${escapeHtml(h.pref || "")} / ${escapeHtml(h.line || "")}</span>
+                        <span class="res-score-detail">${score.toLocaleString()}pt | 誤差:${escapeHtml(distText)} | ${time.toFixed(1)}s</span>
+                    </div>
+                    <button class="btn-view" onclick="jumpToStation(${safeNum(h.lat)}, ${safeNum(h.lng)})">確認</button>
+                </li>`;
+            }).join("");
+
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！\n#サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            const shareTextAttr = escapeHtml(shareText.replace(/\\/g, "\\\\").replace(/'/g, "\\'"));
+
+            // まず最低限のリザルトを必ず表示する。ランキングや広告で失敗しても答え一覧を消さない。
+            finalUi.innerHTML = `
+                <div class="final-score">${totalScore.toLocaleString()} 点</div>
+                <div class="final-rank">ランク: ${escapeHtml(rank)}</div>
+                <div id="score-record-mount"></div>
+                <div id="ranking-mount"></div>
+                <div class="sns-share-area">
+                    <button class="btn-sns btn-x" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}')">𝕏で投稿</button>
+                    <button class="btn-sns btn-line" onclick="window.open('https://line.me/R/msg/text/?${encodeURIComponent(shareText)}')">LINE</button>
+                    <button class="btn-sns btn-threads" onclick="window.open('https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}')">Threads</button>
+                    <button class="btn-sns btn-fb" style="background:#555" onclick="copyToClipboard('${shareTextAttr}')">文章をコピー</button>
+                    <button class="btn-sns btn-insta" onclick="copyToClipboard('${shareTextAttr}')">Insta用コピー</button>
+                    <button class="btn-sns btn-card" onclick="generateResultCard('${escapeHtml(rank)}', '${escapeHtml(modeName)}')">画像で詳細結果をシェア！</button>
+                </div>
+                <ul class="result-list">${resultItems || '<li class="result-item">結果データがありません</li>'}</ul>
+                <div class="result-footer-buttons">
+                    ${isViewMode ? '' : '<button class="btn-next" style="background:#34C759; margin:0;" onclick="location.reload()">もう一度</button>'}
+                    <button class="btn-reset" style="background:#8E8E93;" onclick="location.href='index.html'">タイトルへ</button>
+                </div>`;
+
+            // 自己記録とランキングは後から差し込む。失敗してもリザルト本体は維持。
+            try {
+                if (!isViewMode) {
+                    if (!localScoreSaved) {
+                        lastScoreRecordState = saveLocalScoreRecord(rank, modeName);
+                        localScoreSaved = true;
+                    }
+                    const mount = document.getElementById("score-record-mount");
+                    if (mount && lastScoreRecordState) mount.innerHTML = createScoreRecordHtml(lastScoreRecordState);
+                }
+            } catch (e) {
+                console.error("score record error", e);
+            }
+
+            try {
+                if (!isViewMode) {
+                    if (!localRankingSaved) {
+                        lastRankingState = { current: createCurrentRankingEntry(rank, modeName), ranking: [], docId: null, modeName, rank };
+                        localRankingSaved = true;
+                    }
+                    const mount = document.getElementById("ranking-mount");
+                    if (mount && lastRankingState) mount.innerHTML = createRankingHtml(lastRankingState);
+                }
+            } catch (e) {
+                console.error("ranking html error", e);
+                const mount = document.getElementById("ranking-mount");
+                if (mount) mount.innerHTML = '<div class="ranking-box">全国ランキングの表示準備に失敗しました。</div>';
+            }
+
+            setTimeout(() => {
+                try {
+                    const ads = finalUi.querySelectorAll('.adsbygoogle');
+                    ads.forEach(() => refreshAds());
+                } catch (e) {}
+                if (!isViewMode && lastRankingState) loadGlobalRanking();
+            }, 100);
+        }
+
+        async function generateResultCard(rank, modeName, autoShow = false) {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            canvas.width = 800; canvas.height = 1400;
+            canvas.width = 800; canvas.height = 1450;
             ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#007AFF"; ctx.fillRect(0, 0, canvas.width, 120);
+            ctx.fillStyle = "#FF9500"; ctx.fillRect(0, 0, canvas.width, 120);
             ctx.fillStyle = "#ffffff"; ctx.font = "bold 40px sans-serif"; ctx.textAlign = "center"; ctx.fillText("サテステ リザルトカード", 400, 75);
-            ctx.fillStyle = "#D33"; ctx.font = "bold 80px sans-serif"; ctx.fillText(`${totalQuestions}問中 ${score}問正解！`, 400, 260);
-            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            let y = 380;
-            playHistory.slice(0, 10).forEach((h, i) => {
-                const mark = h.isCorrect ? '●' : '×', mc = h.isCorrect ? '#D33' : '#007AFF';
-                ctx.textAlign = "left"; ctx.fillStyle = mc; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
-                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600);
-                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; ctx.fillText(`解答: ${h.userAns} (${h.pref} / ${h.line})`, 95, y + 30, 650);
-                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; 
-                const d = (h.userAns === "(未入力)" || h.userAns === "ギブアップ" || h.dist === null) ? '-' : h.dist.toFixed(2) + 'km';
-                ctx.fillText(`${d} / ${h.time.toFixed(1)}s`, 750, y + 15);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`${modeName} / ${activeFilters}`, 400, 170);
+            ctx.fillStyle = "#FF9500"; ctx.font = "bold 140px sans-serif"; ctx.fillText(rank, 400, 310);
+            ctx.fillStyle = "#333333"; ctx.font = "bold 50px sans-serif"; ctx.fillText(`${totalScore.toLocaleString()} 点`, 400, 380);
+            ctx.strokeStyle = "#eeeeee"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(50, 420); ctx.lineTo(750, 420); ctx.stroke();
+            let y = 480;
+            playHistory.forEach((h, i) => {
+                const mark = h.isCorrect ? '●' : (h.dist < (maxDistancePenalty*0.1) ? '▲' : '×'), markColor = h.isCorrect ? '#D33' : (h.dist < (maxDistancePenalty*0.1) ? '#FF9500' : '#007AFF');
+                ctx.textAlign = "left"; ctx.fillStyle = markColor; ctx.font = "bold 30px sans-serif"; ctx.fillText(mark, 50, y);
+                ctx.fillStyle = "#333333"; ctx.font = "bold 24px sans-serif"; 
+                ctx.fillText(`${i + 1}. ${h.name}`, 95, y, 600); 
+                ctx.fillStyle = "#666666"; ctx.font = "18px sans-serif"; 
+                ctx.fillText(`解答: ${h.userAns || "(未入力)"}  (${h.pref} / ${h.line})`, 95, y + 30, 650);
+                ctx.fillStyle = "#999999"; ctx.font = "16px sans-serif"; 
+                ctx.fillText(`誤差: ${(h.userAns === "(未入力)" || h.userAns === "ギブアップ") ? '-' : h.dist.toFixed(2) + 'km'}   タイム: ${h.time.toFixed(1)}s`, 95, y + 55);
+                ctx.textAlign = "right"; ctx.fillStyle = "#007AFF"; ctx.font = "bold 20px sans-serif"; ctx.fillText(`${h.score} pt`, 750, y + 15);
                 y += 92;
             });
             ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | サテステ", 400, canvas.height - 18);
-            document.getElementById('share-image-container').innerHTML = `<img src="${canvas.toDataURL("image/png")}">`;
+            ctx.fillStyle = "#999999"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText("sate-ste.com | 航空写真から駅当てクイズ「サテステ」", 400, canvas.height - 18);
+            const dataUrl = canvas.toDataURL("image/png");
+            const container = document.getElementById('share-image-container');
+            container.innerHTML = `<img src="${dataUrl}">`;
             document.getElementById('image-overlay').style.display = "flex";
-        }
-
-        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
-        function makeDraggable(el) {
-            if (window.innerWidth <= 600) return;
-            const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0;
-            h.onmousedown = (e) => {
-                e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none";
-                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; };
-                document.onmousemove = (e) => { e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto"; };
+            const shareText = `航空写真・駅当てクイズ「サテステ」で ${totalScore.toLocaleString()}点獲得しました！ #サテステ #鉄道クイズ #地理クイズ https://sate-sta.com`;
+            if (navigator.share && !autoShow) {
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], "result.png", { type: "image/png" });
+                const b = document.createElement('button'); b.className="overlay-close"; b.style.background="#007AFF"; b.style.color="white"; b.innerText="画像を直接SNSに送る";
+                b.onclick = () => navigator.share({ files: [file], title: 'サテステ', text: shareText });
+                container.appendChild(b);
             }
         }
+        function closeOverlay() { document.getElementById('image-overlay').style.display = "none"; }
+        function jumpToStation(la, ln) { map.flyTo([la, ln], 17); }
+        function resetView() { if(currentStation) map.flyTo([currentStation.lat, currentStation.lng], 17); }
+        function makeDraggable(el) { if (window.innerWidth <= 600) return; const h = document.getElementById("ui-header"); let p1=0, p2=0, p3=0, p4=0; h.onmousedown = (e) => { e.preventDefault(); p3 = e.clientX; p4 = e.clientY; el.style.transition = "none"; document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; el.style.transition = "transform 0.3s ease"; }; document.onmousemove = (e) => { e.preventDefault(); p1 = p3 - e.clientX; p2 = p4 - e.clientY; p3 = e.clientX; p4 = e.clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; el.style.bottom = "auto"; }; } }
     </script>
 </body>
 </html>
