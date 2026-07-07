@@ -456,11 +456,19 @@
             makeDraggable(document.getElementById("ui-panel"));
         }
 
+        function normalizeStationText(str) {
+            return String(str || "")
+                .normalize("NFKC")
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[ヶヵ]/g, "ケ");
+        }
+
         function updateDatalist() {
-            const val = document.getElementById('station-input').value.toLowerCase(), dl = document.getElementById('station-list');
+            const val = normalizeStationText(document.getElementById('station-input').value), dl = document.getElementById('station-list');
             if (val.length < 1) { dl.innerHTML = ""; return; }
             const frag = document.createDocumentFragment(); let count = 0;
-            for (const label of allStationLabels) { if (label.toLowerCase().startsWith(val)) { const o = document.createElement('option'); o.value = label; frag.appendChild(o); if (++count >= 100) break; } }
+            for (const label of allStationLabels) { if (normalizeStationText(label).startsWith(val)) { const o = document.createElement('option'); o.value = label; frag.appendChild(o); if (++count >= 100) break; } }
             dl.innerHTML = ""; dl.appendChild(frag);
         }
 
@@ -497,9 +505,9 @@
             const time = (Date.now() - startTime) / 1000;
             let baseScore = 0, timeBonus = 0, dist = 999, isCorrect = false;
             
-            let userStation = allUniqueStations.find(s => s.fullLabel === userRaw);
+            let userStation = allUniqueStations.find(s => normalizeStationText(s.fullLabel) === normalizeStationText(userRaw));
             if (!userStation && userRaw !== "") {
-                const sameNameStations = allUniqueStations.filter(s => s.name === userName);
+                const sameNameStations = allUniqueStations.filter(s => normalizeStationText(s.name) === normalizeStationText(userName));
                 if (sameNameStations.length > 0) {
                     userStation = sameNameStations
                         .map(s => ({ station: s, dist: getDistance(currentStation.lat, currentStation.lng, s.lat, s.lng) }))
