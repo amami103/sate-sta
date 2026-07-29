@@ -1,23 +1,22 @@
-<!DOCTYPE html>
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
   >
-
   <meta name="theme-color" content="#111111">
-
-  <title>撮り鉄構図チェック</title>
+  <title>撮り鉄3D構図チェック</title>
 
   <style>
     :root {
-      --panel-background: rgba(10, 10, 10, 0.82);
-      --accent: #00aef0;
-      --warning: #ffcc55;
-      --danger: #ff5050;
+      --panel: rgba(12, 12, 12, 0.84);
+      --accent: #18b9ff;
+      --danger: #ff5a5a;
+      --warning: #ffd166;
     }
 
     * {
@@ -25,27 +24,18 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
       overflow: hidden;
       background: #111;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
       touch-action: none;
     }
-
-    /* =========================
-       カメラ映像
-    ========================= */
 
     #cameraViewport {
       position: fixed;
@@ -58,271 +48,77 @@
       position: absolute;
       left: 50%;
       top: 50%;
-
       width: 100%;
       height: 100%;
-
       object-fit: cover;
-      object-position: center;
-
-      transform:
-        translate(-50%, -50%)
-        scale(1);
-
-      transform-origin: center center;
-
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: center;
       background: #222;
-      transition: transform 0.08s linear;
       will-change: transform;
     }
 
-    #cameraPlaceholder {
+    #placeholder {
       position: absolute;
       inset: 0;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
+      display: grid;
+      place-items: center;
       padding: 30px;
-
-      color: rgba(255, 255, 255, 0.65);
+      color: rgba(255,255,255,.7);
       text-align: center;
       line-height: 1.6;
-
-      background:
-        radial-gradient(
-          circle at center,
-          #333 0%,
-          #151515 70%
-        );
+      background: radial-gradient(circle at center, #333 0%, #151515 72%);
     }
 
-    /* =========================
-       構図ガイド
-    ========================= */
-
-    #centerVertical {
+    #overlay {
       position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-
-      width: 1px;
-
-      background: rgba(255, 255, 255, 0.28);
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    #centerHorizontal {
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: 50%;
-
-      height: 1px;
-
-      background: rgba(255, 255, 255, 0.22);
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    #thirdLineLeft,
-    #thirdLineRight {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-
-      width: 1px;
-
-      background: rgba(255, 255, 255, 0.16);
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    #thirdLineLeft {
-      left: 33.333%;
-    }
-
-    #thirdLineRight {
-      left: 66.666%;
-    }
-
-    /* =========================
-       編成表示ボックス
-    ========================= */
-
-    #trainBox {
-      position: absolute;
-      left: 50%;
-      top: 39%;
-
-      width: 70%;
-      height: 76px;
-
-      transform:
-        translate(-50%, -50%)
-        rotate(0deg);
-
-      transform-origin: center center;
-
-      border: 3px solid rgba(0, 180, 255, 0.98);
-      border-radius: 8px;
-
-      background: rgba(0, 165, 255, 0.22);
-
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.55),
-        0 0 18px rgba(0, 170, 255, 0.42);
-
+      inset: 0;
+      z-index: 5;
       touch-action: none;
-      user-select: none;
-      z-index: 10;
     }
 
-    #trainBox.overflowing {
-      border-color: var(--danger);
-
-      background: rgba(255, 50, 50, 0.22);
-
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.55),
-        0 0 20px rgba(255, 50, 50, 0.55);
-    }
-
-    .endLabel {
-      position: absolute;
-      top: 5px;
-
-      padding: 3px 7px;
-
-      border-radius: 5px;
-
-      color: white;
-      background: rgba(0, 0, 0, 0.68);
-
-      font-size: 11px;
-      font-weight: bold;
-
-      pointer-events: none;
-    }
-
-    #headLabel {
-      left: 5px;
-    }
-
-    #tailLabel {
-      right: 5px;
-    }
-
-    #trainCenterMark {
-      position: absolute;
-      left: 50%;
-      top: 0;
-      bottom: 0;
-
-      width: 2px;
-
-      background: rgba(255, 255, 255, 0.8);
-
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
-
-    #trainInfo {
-      position: absolute;
-      left: 50%;
-      bottom: 5px;
-
-      transform: translateX(-50%);
-
-      padding: 3px 7px;
-      border-radius: 5px;
-
-      color: white;
-      background: rgba(0, 0, 0, 0.62);
-
-      font-size: 11px;
-      font-weight: bold;
-
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
-    /* =========================
-       上部表示
-    ========================= */
-
-    #topStatus {
+    #topBar {
       position: fixed;
       top: calc(10px + env(safe-area-inset-top));
       left: 10px;
       right: 10px;
-
+      z-index: 20;
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 8px;
-
-      z-index: 20;
       pointer-events: none;
     }
 
-    .topBadge {
+    .badge {
       padding: 7px 10px;
-
       border-radius: 18px;
-
-      color: white;
-      background: rgba(0, 0, 0, 0.68);
-
-      backdrop-filter: blur(7px);
-      -webkit-backdrop-filter: blur(7px);
-
+      color: #fff;
+      background: rgba(0,0,0,.68);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 700;
     }
-
-    #zoomBadge {
-      font-size: 17px;
-    }
-
-    /* =========================
-       操作パネル
-    ========================= */
 
     #panel {
       position: fixed;
       left: 8px;
       right: 8px;
       bottom: calc(8px + env(safe-area-inset-bottom));
-
-      max-height: 52vh;
+      z-index: 30;
+      max-height: 54vh;
       overflow-y: auto;
       overscroll-behavior: contain;
-
       padding: 12px;
-
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 17px;
-
-      color: white;
-      background: var(--panel-background);
-
+      color: #fff;
+      background: var(--panel);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-
-      z-index: 30;
       touch-action: pan-y;
     }
 
-    #panel.collapsed {
-      max-height: none;
-      overflow: hidden;
-    }
-
-    #panel.collapsed .collapsibleContent {
+    #panel.collapsed .content {
       display: none;
     }
 
@@ -331,55 +127,47 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-
-      margin-bottom: 10px;
     }
 
-    #panelTitle {
+    #panelHeader h1 {
       margin: 0;
       font-size: 17px;
     }
 
+    button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
     #collapseButton {
-      flex: none;
-
-      width: 38px;
-      height: 32px;
-      min-height: 0;
-      padding: 0;
-
-      color: white;
-      background: rgba(255, 255, 255, 0.13);
+      width: 40px;
+      min-height: 32px;
+      color: #fff;
+      background: rgba(255,255,255,.13);
     }
 
     .section {
       margin-top: 12px;
       padding-top: 11px;
-
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .section:first-child {
-      margin-top: 0;
-      padding-top: 0;
-      border-top: none;
+      border-top: 1px solid rgba(255,255,255,.12);
     }
 
     .sectionTitle {
       margin-bottom: 8px;
-
       font-size: 13px;
-      font-weight: bold;
-      opacity: 0.95;
+      font-weight: 700;
     }
 
-    .inputGrid {
+    .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px;
     }
 
-    .inputGroup {
+    .field {
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -387,27 +175,23 @@
 
     label {
       font-size: 11px;
-      opacity: 0.82;
+      opacity: .82;
     }
 
     input[type="number"],
     select {
       width: 100%;
       height: 39px;
-
       padding: 7px 8px;
-
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255,255,255,.2);
       border-radius: 8px;
-
-      color: white;
-      background: rgba(255, 255, 255, 0.11);
-
+      color: #fff;
+      background: rgba(255,255,255,.11);
       font-size: 16px;
     }
 
     select option {
-      color: black;
+      color: #000;
     }
 
     input[type="range"] {
@@ -417,130 +201,66 @@
 
     .rangeRow {
       display: grid;
-      grid-template-columns: 72px 1fr 55px;
+      grid-template-columns: 88px 1fr 58px;
       align-items: center;
       gap: 7px;
-
       margin-top: 9px;
     }
 
-    .rangeLabel {
+    .rangeRow span {
       font-size: 12px;
     }
 
     .rangeValue {
       text-align: right;
-
-      font-size: 12px;
       font-variant-numeric: tabular-nums;
     }
 
-    /* =========================
-       ズーム
-    ========================= */
-
-    #zoomDisplay {
+    .zoomButtons,
+    .buttonRow {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      margin-bottom: 7px;
-    }
-
-    #currentZoom {
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    #currentFocal {
-      font-size: 13px;
-      opacity: 0.85;
-    }
-
-    .zoomButtons {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-
+      gap: 7px;
       margin-top: 9px;
     }
 
     .zoomButton {
-      min-height: 35px;
-      padding: 4px 2px;
-
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      flex: 1;
+      min-height: 34px;
+      color: #fff;
+      background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.2);
       border-radius: 18px;
-
-      color: white;
-      background: rgba(255, 255, 255, 0.1);
-
-      font-size: 13px;
-      font-weight: bold;
     }
 
     .zoomButton.active {
       color: #111;
-      background: white;
-    }
-
-    /* =========================
-       ボタン
-    ========================= */
-
-    .buttonRow {
-      display: flex;
-      gap: 8px;
-
-      margin-top: 10px;
-    }
-
-    button {
-      flex: 1;
-      min-height: 41px;
-
-      padding: 9px 10px;
-
-      border: none;
-      border-radius: 9px;
-
-      font-size: 14px;
-      font-weight: bold;
+      background: #fff;
     }
 
     #cameraButton {
-      color: white;
+      flex: 1;
+      color: #fff;
       background: #087fc1;
     }
 
-    #cameraButton:disabled {
-      opacity: 0.65;
-    }
-
-    #resetButton {
+    #resetButton,
+    #setTrackButton {
+      flex: 1;
       color: #222;
       background: #f0f0f0;
     }
 
-    /* =========================
-       計算結果
-    ========================= */
-
-    #resultGrid {
+    #results {
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 6px 12px;
-
       padding: 9px;
-
       border-radius: 9px;
-
-      background: rgba(255, 255, 255, 0.075);
-
+      background: rgba(255,255,255,.075);
       font-size: 12px;
     }
 
-    #resultGrid strong {
+    #results strong {
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
@@ -548,69 +268,26 @@
     #warning {
       min-height: 16px;
       margin: 8px 0 0;
-
       color: var(--warning);
-
       font-size: 11px;
       line-height: 1.45;
     }
 
-    #helpText {
+    #help {
       margin: 8px 0 0;
-
-      opacity: 0.72;
-
+      opacity: .72;
       font-size: 11px;
       line-height: 1.5;
     }
-
-    /* =========================
-       換算表
-    ========================= */
-
-    .conversionTable {
-      width: 100%;
-
-      border-collapse: collapse;
-
-      font-size: 11px;
-    }
-
-    .conversionTable th,
-    .conversionTable td {
-      padding: 6px 4px;
-
-      border-bottom:
-        1px solid rgba(255, 255, 255, 0.12);
-
-      text-align: center;
-    }
-
-    .conversionTable th {
-      opacity: 0.7;
-      font-weight: normal;
-    }
-
-    .conversionTable tr.currentRow {
-      color: #87ddff;
-      background: rgba(0, 170, 255, 0.12);
-    }
-
-    /* =========================
-       横画面
-    ========================= */
 
     @media (orientation: landscape) {
       #panel {
         left: auto;
         right: calc(8px + env(safe-area-inset-right));
-        bottom: 8px;
-
         width: min(390px, 45vw);
         max-height: calc(100vh - 16px);
       }
-
-      #topStatus {
+      #topBar {
         right: auto;
         width: min(420px, 48vw);
       }
@@ -620,413 +297,124 @@
 
 <body>
   <div id="cameraViewport">
-    <video
-      id="camera"
-      autoplay
-      playsinline
-      muted
-    ></video>
-
-    <div id="cameraPlaceholder">
-      「カメラを起動」を押すと、背面カメラの映像が表示されます。
+    <video id="camera" autoplay playsinline muted></video>
+    <div id="placeholder">
+      「カメラを起動」を押すと背面カメラが表示されます。
     </div>
   </div>
 
-  <div id="centerVertical"></div>
-  <div id="centerHorizontal"></div>
-  <div id="thirdLineLeft"></div>
-  <div id="thirdLineRight"></div>
+  <canvas id="overlay"></canvas>
 
-  <div id="trainBox">
-    <span
-      id="headLabel"
-      class="endLabel"
-    >
-      先頭
-    </span>
-
-    <span
-      id="tailLabel"
-      class="endLabel"
-    >
-      最後尾
-    </span>
-
-    <div id="trainCenterMark"></div>
-
-    <span id="trainInfo">
-      200.0m
-    </span>
-  </div>
-
-  <div id="topStatus">
-    <div
-      id="zoomBadge"
-      class="topBadge"
-    >
-      1.0×
-    </div>
-
-    <div
-      id="topComposition"
-      class="topBadge"
-    >
-      編成長 200.0m
-    </div>
+  <div id="topBar">
+    <div class="badge" id="zoomBadge">1.0× / 26mm</div>
+    <div class="badge" id="faceBadge">顔 0.0%</div>
   </div>
 
   <div id="panel">
     <div id="panelHeader">
-      <h1 id="panelTitle">
-        撮り鉄構図チェック
-      </h1>
-
-      <button
-        id="collapseButton"
-        type="button"
-        aria-label="パネルを折りたたむ"
-      >
-        ▼
-      </button>
+      <h1>撮り鉄3D構図チェック</h1>
+      <button id="collapseButton" type="button">▼</button>
     </div>
 
-    <div class="collapsibleContent">
+    <div class="content">
       <div class="section">
-        <div class="sectionTitle">
-          カメラ
-        </div>
+        <div class="sectionTitle">カメラ・疑似ズーム</div>
 
-        <div id="zoomDisplay">
-          <div>
-            <div id="currentZoom">
-              1.0×
-            </div>
-
-            <div id="currentFocal">
-              26mm相当
-            </div>
-          </div>
-
-          <div>
-            疑似デジタルズーム
-          </div>
-        </div>
-
-        <input
-          id="cameraZoom"
-          type="range"
-          min="1"
-          max="10"
-          value="1"
-          step="0.1"
-        >
+        <input id="zoomSlider" type="range" min="1" max="10" value="1" step="0.1">
 
         <div class="zoomButtons">
-          <button
-            type="button"
-            class="zoomButton active"
-            data-zoom="1"
-          >
-            1×
-          </button>
-
-          <button
-            type="button"
-            class="zoomButton"
-            data-zoom="2"
-          >
-            2×
-          </button>
-
-          <button
-            type="button"
-            class="zoomButton"
-            data-zoom="3"
-          >
-            3×
-          </button>
-
-          <button
-            type="button"
-            class="zoomButton"
-            data-zoom="5"
-          >
-            5×
-          </button>
-
-          <button
-            type="button"
-            class="zoomButton"
-            data-zoom="10"
-          >
-            10×
-          </button>
+          <button class="zoomButton active" data-zoom="1">1×</button>
+          <button class="zoomButton" data-zoom="2">2×</button>
+          <button class="zoomButton" data-zoom="3">3×</button>
+          <button class="zoomButton" data-zoom="5">5×</button>
+          <button class="zoomButton" data-zoom="10">10×</button>
         </div>
 
         <div class="buttonRow">
-          <button
-            id="cameraButton"
-            type="button"
-          >
-            カメラを起動
-          </button>
-
-          <button
-            id="resetButton"
-            type="button"
-          >
-            表示をリセット
-          </button>
+          <button id="cameraButton" type="button">カメラを起動</button>
+          <button id="resetButton" type="button">リセット</button>
         </div>
       </div>
 
       <div class="section">
-        <div class="sectionTitle">
-          編成・撮影条件
-        </div>
+        <div class="sectionTitle">車両寸法・撮影条件</div>
 
-        <div class="inputGrid">
-          <div class="inputGroup">
-            <label for="carLength">
-              1両の長さ
-            </label>
-
-            <input
-              id="carLength"
-              type="number"
-              value="20"
-              min="1"
-              max="40"
-              step="0.1"
-            >
+        <div class="grid">
+          <div class="field">
+            <label for="carLength">1両の長さ（m）</label>
+            <input id="carLength" type="number" value="20" min="1" max="40" step="0.1">
           </div>
 
-          <div class="inputGroup">
-            <label for="cars">
-              両数
-            </label>
-
-            <input
-              id="cars"
-              type="number"
-              value="10"
-              min="1"
-              max="40"
-              step="1"
-            >
+          <div class="field">
+            <label for="cars">両数</label>
+            <input id="cars" type="number" value="10" min="1" max="40" step="1">
           </div>
 
-          <div class="inputGroup">
-            <label for="distance">
-              線路までの距離（m）
-            </label>
-
-            <input
-              id="distance"
-              type="number"
-              value="200"
-              min="1"
-              max="5000"
-              step="1"
-            >
+          <div class="field">
+            <label for="trainWidth">車体幅（m）</label>
+            <input id="trainWidth" type="number" value="2.95" min="1" max="5" step="0.01">
           </div>
 
-          <div class="inputGroup">
-            <label for="baseFocalLength">
-              1×の基準焦点距離
-            </label>
+          <div class="field">
+            <label for="trainHeight">車体高（m）</label>
+            <input id="trainHeight" type="number" value="3.6" min="1" max="6" step="0.01">
+          </div>
 
-            <select id="baseFocalLength">
-              <option value="24">
-                24mm相当
-              </option>
+          <div class="field">
+            <label for="distance">線路までの距離（m）</label>
+            <input id="distance" type="number" value="100" min="1" max="5000" step="1">
+          </div>
 
-              <option
-                value="26"
-                selected
-              >
-                26mm相当
-              </option>
-
-              <option value="28">
-                28mm相当
-              </option>
+          <div class="field">
+            <label for="baseFocal">1×基準焦点距離</label>
+            <select id="baseFocal">
+              <option value="24">24mm相当</option>
+              <option value="26" selected>26mm相当</option>
+              <option value="28">28mm相当</option>
             </select>
           </div>
-
-          <div class="inputGroup">
-            <label for="shootingOrientation">
-              撮影方向
-            </label>
-
-            <select id="shootingOrientation">
-              <option value="auto">
-                端末に合わせる
-              </option>
-
-              <option value="landscape">
-                横位置
-              </option>
-
-              <option value="portrait">
-                縦位置
-              </option>
-            </select>
-          </div>
-
-          <div class="inputGroup">
-            <label for="trainHeight">
-              箱の高さ（px）
-            </label>
-
-            <input
-              id="trainHeight"
-              type="number"
-              value="76"
-              min="20"
-              max="300"
-              step="1"
-            >
-          </div>
         </div>
 
         <div class="rangeRow">
-          <span class="rangeLabel">
-            箱の角度
-          </span>
-
-          <input
-            id="trainRotation"
-            type="range"
-            min="-90"
-            max="90"
-            value="0"
-            step="1"
-          >
-
-          <span
-            id="trainRotationValue"
-            class="rangeValue"
-          >
-            0°
-          </span>
+          <span>線路の奥行き</span>
+          <input id="depthAngle" type="range" min="0" max="85" value="35" step="1">
+          <span class="rangeValue" id="depthAngleValue">35°</span>
         </div>
 
         <div class="rangeRow">
-          <span class="rangeLabel">
-            斜め補正
-          </span>
-
-          <input
-            id="angleCorrection"
-            type="range"
-            min="10"
-            max="100"
-            value="100"
-            step="1"
-          >
-
-          <span
-            id="angleCorrectionValue"
-            class="rangeValue"
-          >
-            100%
-          </span>
-        </div>
-
-        <div class="rangeRow">
-          <span class="rangeLabel">
-            表示補正
-          </span>
-
-          <input
-            id="displayCorrection"
-            type="range"
-            min="50"
-            max="150"
-            value="100"
-            step="1"
-          >
-
-          <span
-            id="displayCorrectionValue"
-            class="rangeValue"
-          >
-            100%
-          </span>
+          <span>箱の透明度</span>
+          <input id="opacity" type="range" min="10" max="90" value="35" step="1">
+          <span class="rangeValue" id="opacityValue">35%</span>
         </div>
       </div>
 
       <div class="section">
-        <div class="sectionTitle">
-          計算結果
+        <div class="sectionTitle">線路方向</div>
+
+        <div class="buttonRow">
+          <button id="setTrackButton" type="button">画面上で2点指定</button>
         </div>
 
-        <div id="resultGrid">
-          <span>編成長</span>
-          <strong id="totalLengthResult">
-            200.0m
-          </strong>
+        <p id="help">
+          「画面上で2点指定」を押し、線路に沿って先頭側→最後尾側の順に2回タップしてください。
+          2点の中点が直方体の中心、線の向きが画面上の線路方向になります。
+        </p>
+      </div>
 
-          <span>現在の疑似焦点距離</span>
-          <strong id="focalLengthResult">
-            26mm相当
-          </strong>
+      <div class="section">
+        <div class="sectionTitle">計算結果</div>
 
-          <span>水平画角</span>
-          <strong id="horizontalFovResult">
-            69.4°
-          </strong>
-
-          <span>編成の見かけ角度</span>
-          <strong id="trainAngleResult">
-            53.1°
-          </strong>
-
-          <span>画角占有率</span>
-          <strong id="coverageResult">
-            76.9%
-          </strong>
-
-          <span>箱の表示幅</span>
-          <strong id="boxWidthResult">
-            0px
-          </strong>
-
-          <span>必要な最低距離</span>
-          <strong id="minimumDistanceResult">
-            －
-          </strong>
+        <div id="results">
+          <span>編成長</span><strong id="totalLengthResult">200.0m</strong>
+          <span>疑似焦点距離</span><strong id="focalResult">26mm</strong>
+          <span>顔の画面幅比</span><strong id="faceWidthResult">0.0%</strong>
+          <span>顔の画面高比</span><strong id="faceHeightResult">0.0%</strong>
+          <span>編成の画面幅比</span><strong id="formationWidthResult">0.0%</strong>
+          <span>先頭面までの距離</span><strong id="frontDistanceResult">0.0m</strong>
+          <span>最後尾までの距離</span><strong id="rearDistanceResult">0.0m</strong>
         </div>
 
         <p id="warning"></p>
-
-        <p id="helpText">
-          青い箱を指でドラッグして線路上へ移動してください。2本指のピンチ操作でも疑似倍率を変更できます。計算は、列車の中央をほぼ真横から撮影する場合を基準にしています。
-        </p>
-      </div>
-
-      <div class="section">
-        <div class="sectionTitle">
-          iPhone疑似倍率・焦点距離換算表
-        </div>
-
-        <table class="conversionTable">
-          <thead>
-            <tr>
-              <th>疑似倍率</th>
-              <th>26mm基準</th>
-              <th>方式</th>
-            </tr>
-          </thead>
-
-          <tbody id="conversionTableBody">
-          </tbody>
-        </table>
-
-        <p id="helpText">
-          このWeb版は、1×カメラ映像の中央部分を拡大するデジタルズームです。iPhone本体の望遠・超広角レンズを物理的に切り替えるものではありません。
-        </p>
       </div>
     </div>
   </div>
@@ -1034,931 +422,447 @@
   <script>
     "use strict";
 
-    /* =========================
-       要素
-    ========================= */
+    const video = document.getElementById("camera");
+    const placeholder = document.getElementById("placeholder");
+    const canvas = document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
 
-    const video =
-      document.getElementById("camera");
+    const zoomSlider = document.getElementById("zoomSlider");
+    const zoomButtons = [...document.querySelectorAll(".zoomButton")];
+    const cameraButton = document.getElementById("cameraButton");
+    const resetButton = document.getElementById("resetButton");
+    const setTrackButton = document.getElementById("setTrackButton");
+    const collapseButton = document.getElementById("collapseButton");
+    const panel = document.getElementById("panel");
 
-    const cameraPlaceholder =
-      document.getElementById("cameraPlaceholder");
+    const carLengthInput = document.getElementById("carLength");
+    const carsInput = document.getElementById("cars");
+    const trainWidthInput = document.getElementById("trainWidth");
+    const trainHeightInput = document.getElementById("trainHeight");
+    const distanceInput = document.getElementById("distance");
+    const baseFocalInput = document.getElementById("baseFocal");
+    const depthAngleInput = document.getElementById("depthAngle");
+    const opacityInput = document.getElementById("opacity");
 
-    const cameraButton =
-      document.getElementById("cameraButton");
+    const depthAngleValue = document.getElementById("depthAngleValue");
+    const opacityValue = document.getElementById("opacityValue");
 
-    const resetButton =
-      document.getElementById("resetButton");
+    const totalLengthResult = document.getElementById("totalLengthResult");
+    const focalResult = document.getElementById("focalResult");
+    const faceWidthResult = document.getElementById("faceWidthResult");
+    const faceHeightResult = document.getElementById("faceHeightResult");
+    const formationWidthResult = document.getElementById("formationWidthResult");
+    const frontDistanceResult = document.getElementById("frontDistanceResult");
+    const rearDistanceResult = document.getElementById("rearDistanceResult");
+    const warning = document.getElementById("warning");
+    const zoomBadge = document.getElementById("zoomBadge");
+    const faceBadge = document.getElementById("faceBadge");
 
-    const collapseButton =
-      document.getElementById("collapseButton");
-
-    const panel =
-      document.getElementById("panel");
-
-    const trainBox =
-      document.getElementById("trainBox");
-
-    const trainInfo =
-      document.getElementById("trainInfo");
-
-    const cameraZoomSlider =
-      document.getElementById("cameraZoom");
-
-    const currentZoom =
-      document.getElementById("currentZoom");
-
-    const currentFocal =
-      document.getElementById("currentFocal");
-
-    const zoomBadge =
-      document.getElementById("zoomBadge");
-
-    const zoomButtons =
-      document.querySelectorAll(".zoomButton");
-
-    const carLengthInput =
-      document.getElementById("carLength");
-
-    const carsInput =
-      document.getElementById("cars");
-
-    const distanceInput =
-      document.getElementById("distance");
-
-    const baseFocalLengthInput =
-      document.getElementById("baseFocalLength");
-
-    const shootingOrientationInput =
-      document.getElementById("shootingOrientation");
-
-    const trainHeightInput =
-      document.getElementById("trainHeight");
-
-    const trainRotationSlider =
-      document.getElementById("trainRotation");
-
-    const angleCorrectionSlider =
-      document.getElementById("angleCorrection");
-
-    const displayCorrectionSlider =
-      document.getElementById("displayCorrection");
-
-    const trainRotationValue =
-      document.getElementById("trainRotationValue");
-
-    const angleCorrectionValue =
-      document.getElementById("angleCorrectionValue");
-
-    const displayCorrectionValue =
-      document.getElementById("displayCorrectionValue");
-
-    const totalLengthResult =
-      document.getElementById("totalLengthResult");
-
-    const focalLengthResult =
-      document.getElementById("focalLengthResult");
-
-    const horizontalFovResult =
-      document.getElementById("horizontalFovResult");
-
-    const trainAngleResult =
-      document.getElementById("trainAngleResult");
-
-    const coverageResult =
-      document.getElementById("coverageResult");
-
-    const boxWidthResult =
-      document.getElementById("boxWidthResult");
-
-    const minimumDistanceResult =
-      document.getElementById("minimumDistanceResult");
-
-    const warning =
-      document.getElementById("warning");
-
-    const topComposition =
-      document.getElementById("topComposition");
-
-    const conversionTableBody =
-      document.getElementById("conversionTableBody");
-
-    /* =========================
-       状態
-    ========================= */
-
-    let cameraStream = null;
-
-    let cameraZoom = 1;
-
-    let boxX =
-      window.innerWidth / 2;
-
-    let boxY =
-      window.innerHeight * 0.39;
-
-    let dragging = false;
-
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
+    let stream = null;
+    let zoom = 1;
+    let selectingTrack = false;
+    let trackPoints = [];
+    let boxCenter = { x: innerWidth / 2, y: innerHeight * 0.38 };
+    let screenAngle = 0;
 
     let pinchStartDistance = null;
     let pinchStartZoom = 1;
 
-    let panelCollapsed = false;
-
-    /* =========================
-       共通関数
-    ========================= */
-
-    function clamp(
-      value,
-      minimum,
-      maximum
-    ) {
-      return Math.min(
-        maximum,
-        Math.max(minimum, value)
-      );
+    function resizeCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.round(innerWidth * dpr);
+      canvas.height = Math.round(innerHeight * dpr);
+      canvas.style.width = `${innerWidth}px`;
+      canvas.style.height = `${innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
     }
 
-    function toDegrees(radians) {
-      return radians * 180 / Math.PI;
+    function num(el, fallback) {
+      const value = Number.parseFloat(el.value);
+      return Number.isFinite(value) && value > 0 ? value : fallback;
     }
 
-    function readPositiveNumber(
-      element,
-      fallback
-    ) {
-      const value =
-        Number.parseFloat(element.value);
-
-      if (
-        !Number.isFinite(value) ||
-        value <= 0
-      ) {
-        return fallback;
-      }
-
-      return value;
+    function clamp(v, min, max) {
+      return Math.min(max, Math.max(min, v));
     }
-
-    function getEffectiveOrientation() {
-      const selected =
-        shootingOrientationInput.value;
-
-      if (selected !== "auto") {
-        return selected;
-      }
-
-      return window.innerWidth >= window.innerHeight
-        ? "landscape"
-        : "portrait";
-    }
-
-    /* =========================
-       カメラ
-    ========================= */
 
     async function startCamera() {
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
-        alert(
-          "このブラウザではカメラを利用できません。SafariでHTTPSのページを開いてください。"
-        );
-        return;
-      }
-
       try {
-        if (cameraStream) {
-          cameraStream
-            .getTracks()
-            .forEach((track) => track.stop());
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
         }
 
-        cameraStream =
-          await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: {
-                ideal: "environment"
-              },
-              width: {
-                ideal: 1920
-              },
-              height: {
-                ideal: 1080
-              }
-            },
-            audio: false
-          });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        });
 
-        video.srcObject = cameraStream;
-
+        video.srcObject = stream;
         await video.play();
-
-        cameraPlaceholder.style.display =
-          "none";
-
-        cameraButton.textContent =
-          "カメラ起動済み";
-
+        placeholder.style.display = "none";
+        cameraButton.textContent = "カメラ起動済み";
         cameraButton.disabled = true;
       } catch (error) {
         console.error(error);
-
-        alert(
-          "カメラを起動できませんでした。Safariのカメラ許可、HTTPS接続、ほかのアプリがカメラを使用していないか確認してください。"
-        );
+        alert("カメラを起動できませんでした。Safariのカメラ許可とHTTPS接続を確認してください。");
       }
     }
 
-    /* =========================
-       疑似ズーム
-    ========================= */
+    function setZoom(value) {
+      zoom = clamp(Number(value) || 1, 1, 10);
+      zoomSlider.value = zoom.toFixed(1);
+      video.style.transform = `translate(-50%, -50%) scale(${zoom})`;
 
-    function setCameraZoom(
-      newZoom,
-      recalculate = true
-    ) {
-      cameraZoom = clamp(
-        Number(newZoom) || 1,
-        1,
-        10
-      );
-
-      cameraZoomSlider.value =
-        cameraZoom.toFixed(1);
-
-      video.style.transform =
-        `translate(-50%, -50%) scale(${cameraZoom})`;
-
-      const baseFocalLength =
-        readPositiveNumber(
-          baseFocalLengthInput,
-          26
-        );
-
-      const focalLength =
-        baseFocalLength * cameraZoom;
-
-      currentZoom.textContent =
-        `${cameraZoom.toFixed(1)}×`;
-
-      zoomBadge.textContent =
-        `${cameraZoom.toFixed(1)}×`;
-
-      currentFocal.textContent =
-        `${focalLength.toFixed(0)}mm相当`;
-
-      updateZoomButtons();
-      updateConversionTable();
-
-      if (recalculate) {
-        calculateComposition();
-      }
-    }
-
-    function updateZoomButtons() {
-      zoomButtons.forEach((button) => {
-        const buttonZoom =
-          Number(button.dataset.zoom);
-
-        const active =
-          Math.abs(
-            buttonZoom - cameraZoom
-          ) < 0.05;
-
+      zoomButtons.forEach(button => {
         button.classList.toggle(
           "active",
-          active
+          Math.abs(Number(button.dataset.zoom) - zoom) < 0.05
         );
       });
+
+      draw();
     }
 
-    /* =========================
-       構図計算
-    ========================= */
+    function project3D(point, focalPx) {
+      const minZ = 0.05;
+      const z = Math.max(point.z, minZ);
 
-    function calculateComposition() {
-      const carLength =
-        readPositiveNumber(
-          carLengthInput,
-          20
+      return {
+        x: focalPx * point.x / z,
+        y: -focalPx * point.y / z
+      };
+    }
+
+    function rotate2D(point, angle) {
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+
+      return {
+        x: point.x * c - point.y * s,
+        y: point.x * s + point.y * c
+      };
+    }
+
+    function drawLine(a, b, color, width = 2, dash = []) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash(dash);
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function fillFace(points, color) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawTrackSelection() {
+      if (trackPoints.length === 0) return;
+
+      ctx.save();
+      ctx.fillStyle = "#ffdf5d";
+      ctx.strokeStyle = "#111";
+      ctx.lineWidth = 2;
+
+      for (const p of trackPoints) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      if (trackPoints.length === 2) {
+        drawLine(trackPoints[0], trackPoints[1], "#ffdf5d", 3, [8, 6]);
+      }
+
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+      const carLength = num(carLengthInput, 20);
+      const cars = Math.max(1, Math.round(num(carsInput, 10)));
+      const totalLength = carLength * cars;
+      const bodyWidth = num(trainWidthInput, 2.95);
+      const bodyHeight = num(trainHeightInput, 3.6);
+      const distance = num(distanceInput, 100);
+      const baseFocal = num(baseFocalInput, 26);
+      const focalMm = baseFocal * zoom;
+      const depthDeg = clamp(Number(depthAngleInput.value) || 0, 0, 85);
+      const depthRad = depthDeg * Math.PI / 180;
+      const alpha = clamp(Number(opacityInput.value) || 35, 10, 90) / 100;
+
+      depthAngleValue.textContent = `${depthDeg}°`;
+      opacityValue.textContent = `${Math.round(alpha * 100)}%`;
+
+      const frameWidthMm = innerWidth >= innerHeight ? 36 : 24;
+      const focalPx = innerWidth * focalMm / frameWidthMm;
+
+      const u = {
+        x: Math.cos(depthRad),
+        y: 0,
+        z: Math.sin(depthRad)
+      };
+
+      const v = {
+        x: -Math.sin(depthRad),
+        y: 0,
+        z: Math.cos(depthRad)
+      };
+
+      const halfL = totalLength / 2;
+      const halfW = bodyWidth / 2;
+      const halfH = bodyHeight / 2;
+
+      const frontCenter = {
+        x: -u.x * halfL,
+        y: 0,
+        z: distance - u.z * halfL
+      };
+
+      const rearCenter = {
+        x: u.x * halfL,
+        y: 0,
+        z: distance + u.z * halfL
+      };
+
+      const makeVertex = (center, widthSign, heightSign) => ({
+        x: center.x + v.x * halfW * widthSign,
+        y: halfH * heightSign,
+        z: center.z + v.z * halfW * widthSign
+      });
+
+      const vertices3D = [
+        makeVertex(frontCenter, -1, -1),
+        makeVertex(frontCenter,  1, -1),
+        makeVertex(frontCenter,  1,  1),
+        makeVertex(frontCenter, -1,  1),
+        makeVertex(rearCenter,  -1, -1),
+        makeVertex(rearCenter,   1, -1),
+        makeVertex(rearCenter,   1,  1),
+        makeVertex(rearCenter,  -1,  1)
+      ];
+
+      const projected = vertices3D.map(vertex => {
+        const p = project3D(vertex, focalPx);
+        const r = rotate2D(p, screenAngle);
+        return {
+          x: boxCenter.x + r.x,
+          y: boxCenter.y + r.y
+        };
+      });
+
+      const frontFace = [projected[0], projected[1], projected[2], projected[3]];
+      const rearFace = [projected[4], projected[5], projected[6], projected[7]];
+      const topFace = [projected[3], projected[2], projected[6], projected[7]];
+      const sideFace = [projected[1], projected[5], projected[6], projected[2]];
+
+      fillFace(sideFace, `rgba(24,185,255,${alpha * 0.55})`);
+      fillFace(topFace, `rgba(130,220,255,${alpha * 0.42})`);
+      fillFace(frontFace, `rgba(255,115,70,${alpha * 0.78})`);
+
+      const edgeColor = "rgba(75,205,255,0.98)";
+      const frontColor = "rgba(255,125,70,1)";
+
+      const edges = [
+        [0,1],[1,2],[2,3],[3,0],
+        [4,5],[5,6],[6,7],[7,4],
+        [0,4],[1,5],[2,6],[3,7]
+      ];
+
+      edges.forEach(([a,b]) => {
+        drawLine(
+          projected[a],
+          projected[b],
+          a < 4 && b < 4 ? frontColor : edgeColor,
+          a < 4 && b < 4 ? 3 : 2
         );
+      });
 
-      const cars =
-        Math.max(
-          1,
-          Math.round(
-            readPositiveNumber(
-              carsInput,
-              10
-            )
-          )
-        );
+      ctx.save();
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 12px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
-      const distance =
-        readPositiveNumber(
-          distanceInput,
-          200
-        );
+      const frontCenter2D = {
+        x: (frontFace[0].x + frontFace[1].x + frontFace[2].x + frontFace[3].x) / 4,
+        y: (frontFace[0].y + frontFace[1].y + frontFace[2].y + frontFace[3].y) / 4
+      };
 
-      const baseFocalLength =
-        readPositiveNumber(
-          baseFocalLengthInput,
-          26
-        );
+      ctx.fillText("先頭面", frontCenter2D.x, frontCenter2D.y);
+      ctx.restore();
 
-      const focalLength =
-        baseFocalLength * cameraZoom;
+      drawTrackSelection();
 
-      const totalLength =
-        carLength * cars;
+      const xs = projected.map(p => p.x);
+      const faceXs = frontFace.map(p => p.x);
+      const faceYs = frontFace.map(p => p.y);
 
-      const angleCorrection =
-        Number(angleCorrectionSlider.value)
-        / 100;
+      const formationWidthPx = Math.max(...xs) - Math.min(...xs);
+      const faceWidthPx = Math.max(...faceXs) - Math.min(...faceXs);
+      const faceHeightPx = Math.max(...faceYs) - Math.min(...faceYs);
 
-      const displayCorrection =
-        Number(displayCorrectionSlider.value)
-        / 100;
+      const formationWidthRatio = formationWidthPx / innerWidth;
+      const faceWidthRatio = faceWidthPx / innerWidth;
+      const faceHeightRatio = faceHeightPx / innerHeight;
 
-      const correctedTrainLength =
-        totalLength * angleCorrection;
+      const frontDistance = Math.max(0, frontCenter.z);
+      const rearDistance = Math.max(0, rearCenter.z);
 
-      const orientation =
-        getEffectiveOrientation();
+      totalLengthResult.textContent = `${totalLength.toFixed(1)}m`;
+      focalResult.textContent = `${focalMm.toFixed(0)}mm`;
+      faceWidthResult.textContent = `${(faceWidthRatio * 100).toFixed(1)}%`;
+      faceHeightResult.textContent = `${(faceHeightRatio * 100).toFixed(1)}%`;
+      formationWidthResult.textContent = `${(formationWidthRatio * 100).toFixed(1)}%`;
+      frontDistanceResult.textContent = `${frontDistance.toFixed(1)}m`;
+      rearDistanceResult.textContent = `${rearDistance.toFixed(1)}m`;
 
-      /*
-        35mm判換算焦点距離を使用する。
+      zoomBadge.textContent = `${zoom.toFixed(1)}× / ${focalMm.toFixed(0)}mm`;
+      faceBadge.textContent = `顔 ${(faceWidthRatio * 100).toFixed(1)}%`;
 
-        横位置：
-        画面の横方向を36mmとして扱う。
-
-        縦位置：
-        画面の横方向を24mmとして扱う。
-      */
-      const frameWidthMm =
-        orientation === "portrait"
-          ? 24
-          : 36;
-
-      const horizontalFovRad =
-        2 * Math.atan(
-          frameWidthMm /
-          (2 * focalLength)
-        );
-
-      /*
-        編成を中央に向けて、
-        ほぼ真横から見る想定。
-      */
-      const trainAngleRad =
-        2 * Math.atan(
-          correctedTrainLength /
-          (2 * distance)
-        );
-
-      /*
-        ピンホールカメラモデルによる
-        画面横幅の占有率。
-      */
-      const projectedRatio =
-        Math.tan(trainAngleRad / 2) /
-        Math.tan(horizontalFovRad / 2);
-
-      const correctedRatio =
-        projectedRatio *
-        displayCorrection;
-
-      const boxWidthPx =
-        window.innerWidth *
-        correctedRatio;
-
-      const trainHeight =
-        readPositiveNumber(
-          trainHeightInput,
-          76
-        );
-
-      const rotation =
-        Number(trainRotationSlider.value);
-
-      trainBox.style.width =
-        `${Math.max(boxWidthPx, 6)}px`;
-
-      trainBox.style.height =
-        `${trainHeight}px`;
-
-      trainBox.style.left =
-        `${boxX}px`;
-
-      trainBox.style.top =
-        `${boxY}px`;
-
-      trainBox.style.transform =
-        `translate(-50%, -50%) rotate(${rotation}deg)`;
-
-      trainBox.classList.toggle(
-        "overflowing",
-        correctedRatio > 1
-      );
-
-      const minimumDistance =
-        correctedTrainLength *
-        focalLength /
-        frameWidthMm;
-
-      trainInfo.textContent =
-        `${totalLength.toFixed(1)}m`;
-
-      topComposition.textContent =
-        `編成長 ${totalLength.toFixed(1)}m`;
-
-      totalLengthResult.textContent =
-        `${totalLength.toFixed(1)}m`;
-
-      focalLengthResult.textContent =
-        `${focalLength.toFixed(0)}mm相当`;
-
-      horizontalFovResult.textContent =
-        `${toDegrees(
-          horizontalFovRad
-        ).toFixed(1)}°`;
-
-      trainAngleResult.textContent =
-        `${toDegrees(
-          trainAngleRad
-        ).toFixed(1)}°`;
-
-      coverageResult.textContent =
-        `${(
-          correctedRatio * 100
-        ).toFixed(1)}%`;
-
-      boxWidthResult.textContent =
-        `${boxWidthPx.toFixed(0)}px`;
-
-      minimumDistanceResult.textContent =
-        `約${minimumDistance.toFixed(0)}m`;
-
-      trainRotationValue.textContent =
-        `${rotation}°`;
-
-      angleCorrectionValue.textContent =
-        `${Math.round(
-          angleCorrection * 100
-        )}%`;
-
-      displayCorrectionValue.textContent =
-        `${Math.round(
-          displayCorrection * 100
-        )}%`;
-
-      if (correctedRatio > 1.15) {
-        warning.textContent =
-          `編成が画面幅を大きく超えます。約${minimumDistance.toFixed(0)}m以上離れるか、倍率を下げてください。`;
-      } else if (correctedRatio > 1) {
-        warning.textContent =
-          `編成全体がわずかに収まりません。約${minimumDistance.toFixed(0)}m以上離れるのが目安です。`;
-      } else if (correctedRatio > 0.9) {
-        warning.textContent =
-          "編成が画面幅の90%以上を占めます。先頭や最後尾が切れる可能性があるため、少し余裕を持たせてください。";
-      } else if (correctedRatio < 0.15) {
-        warning.textContent =
-          "編成がかなり小さく写る計算です。倍率を上げるか、撮影地点を近づけると大きく写せます。";
+      if (frontCenter.z <= 0.5) {
+        warning.textContent = "先頭面がカメラ位置より手前になる計算です。距離を増やすか、奥行き角度を下げてください。";
+      } else if (formationWidthRatio > 1) {
+        warning.textContent = "編成全体が画面横幅に収まりません。倍率を下げるか、距離を増やしてください。";
+      } else if (faceWidthRatio > 0.45) {
+        warning.textContent = "先頭面が画面幅の45%以上です。かなり顔が大きい構図になります。";
+      } else if (faceWidthRatio < 0.05) {
+        warning.textContent = "先頭面がかなり小さく写る計算です。倍率を上げると顔を強調できます。";
       } else {
         warning.textContent = "";
       }
     }
 
-    /* =========================
-       換算表
-    ========================= */
-
-    function updateConversionTable() {
-      const baseFocalLength =
-        readPositiveNumber(
-          baseFocalLengthInput,
-          26
-        );
-
-      const zoomValues = [
-        1,
-        1.5,
-        2,
-        3,
-        5,
-        10
-      ];
-
-      conversionTableBody.innerHTML = "";
-
-      zoomValues.forEach((zoom) => {
-        const row =
-          document.createElement("tr");
-
-        if (
-          Math.abs(
-            zoom - cameraZoom
-          ) < 0.06
-        ) {
-          row.classList.add("currentRow");
-        }
-
-        const zoomCell =
-          document.createElement("td");
-
-        const focalCell =
-          document.createElement("td");
-
-        const typeCell =
-          document.createElement("td");
-
-        zoomCell.textContent =
-          `${zoom.toFixed(
-            Number.isInteger(zoom) ? 0 : 1
-          )}×`;
-
-        focalCell.textContent =
-          `${(
-            baseFocalLength * zoom
-          ).toFixed(0)}mm相当`;
-
-        typeCell.textContent =
-          zoom === 1
-            ? "基準映像"
-            : "デジタル切り抜き";
-
-        row.append(
-          zoomCell,
-          focalCell,
-          typeCell
-        );
-
-        conversionTableBody.appendChild(row);
-      });
+    function beginTrackSelection() {
+      selectingTrack = true;
+      trackPoints = [];
+      setTrackButton.textContent = "線路上を2回タップ";
+      draw();
     }
 
-    /* =========================
-       編成箱ドラッグ
-    ========================= */
+    canvas.addEventListener("pointerdown", event => {
+      if (!selectingTrack) return;
 
-    function getPointerPosition(event) {
-      if (
-        event.touches &&
-        event.touches.length > 0
-      ) {
-        return {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY
-        };
-      }
-
-      return {
+      const p = {
         x: event.clientX,
         y: event.clientY
       };
-    }
 
-    function startDrag(event) {
-      if (
-        event.touches &&
-        event.touches.length >= 2
-      ) {
-        return;
+      trackPoints.push(p);
+
+      if (trackPoints.length === 2) {
+        const a = trackPoints[0];
+        const b = trackPoints[1];
+
+        boxCenter = {
+          x: (a.x + b.x) / 2,
+          y: (a.y + b.y) / 2
+        };
+
+        screenAngle = Math.atan2(b.y - a.y, b.x - a.x);
+
+        selectingTrack = false;
+        setTrackButton.textContent = "画面上で2点指定";
       }
 
-      const pointer =
-        getPointerPosition(event);
-
-      dragging = true;
-
-      dragOffsetX =
-        pointer.x - boxX;
-
-      dragOffsetY =
-        pointer.y - boxY;
-
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    function moveDrag(event) {
-      if (!dragging) {
-        return;
-      }
-
-      if (
-        event.touches &&
-        event.touches.length >= 2
-      ) {
-        dragging = false;
-        return;
-      }
-
-      const pointer =
-        getPointerPosition(event);
-
-      boxX =
-        pointer.x - dragOffsetX;
-
-      boxY =
-        pointer.y - dragOffsetY;
-
-      calculateComposition();
-
-      event.preventDefault();
-    }
-
-    function stopDrag() {
-      dragging = false;
-    }
-
-    /* =========================
-       ピンチズーム
-    ========================= */
+      draw();
+    });
 
     function getTouchDistance(touches) {
-      const first =
-        touches[0];
-
-      const second =
-        touches[1];
-
-      const dx =
-        second.clientX -
-        first.clientX;
-
-      const dy =
-        second.clientY -
-        first.clientY;
-
-      return Math.sqrt(
-        dx * dx + dy * dy
-      );
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      return Math.hypot(dx, dy);
     }
 
-    function handlePinchStart(event) {
-      if (event.touches.length !== 2) {
-        return;
-      }
-
-      dragging = false;
-
-      pinchStartDistance =
-        getTouchDistance(
-          event.touches
-        );
-
-      pinchStartZoom =
-        cameraZoom;
-
+    document.addEventListener("touchstart", event => {
+      if (event.touches.length !== 2) return;
+      pinchStartDistance = getTouchDistance(event.touches);
+      pinchStartZoom = zoom;
       event.preventDefault();
-    }
+    }, { passive: false });
 
-    function handlePinchMove(event) {
-      if (
-        event.touches.length !== 2 ||
-        pinchStartDistance === null
-      ) {
-        return;
-      }
-
-      const currentDistance =
-        getTouchDistance(
-          event.touches
-        );
-
-      const scale =
-        currentDistance /
-        pinchStartDistance;
-
-      setCameraZoom(
-        pinchStartZoom * scale
-      );
-
+    document.addEventListener("touchmove", event => {
+      if (event.touches.length !== 2 || pinchStartDistance === null) return;
+      const current = getTouchDistance(event.touches);
+      setZoom(pinchStartZoom * current / pinchStartDistance);
       event.preventDefault();
-    }
+    }, { passive: false });
 
-    function handlePinchEnd(event) {
+    document.addEventListener("touchend", event => {
       if (event.touches.length < 2) {
         pinchStartDistance = null;
       }
-    }
-
-    /* =========================
-       リセット
-    ========================= */
-
-    function resetDisplay() {
-      boxX =
-        window.innerWidth / 2;
-
-      boxY =
-        window.innerHeight * 0.39;
-
-      trainRotationSlider.value = 0;
-      angleCorrectionSlider.value = 100;
-      displayCorrectionSlider.value = 100;
-
-      setCameraZoom(1, false);
-      calculateComposition();
-    }
-
-    /* =========================
-       パネル
-    ========================= */
-
-    function togglePanel() {
-      panelCollapsed =
-        !panelCollapsed;
-
-      panel.classList.toggle(
-        "collapsed",
-        panelCollapsed
-      );
-
-      collapseButton.textContent =
-        panelCollapsed
-          ? "▲"
-          : "▼";
-    }
-
-    /* =========================
-       イベント
-    ========================= */
-
-    cameraButton.addEventListener(
-      "click",
-      startCamera
-    );
-
-    resetButton.addEventListener(
-      "click",
-      resetDisplay
-    );
-
-    collapseButton.addEventListener(
-      "click",
-      togglePanel
-    );
-
-    cameraZoomSlider.addEventListener(
-      "input",
-      () => {
-        setCameraZoom(
-          cameraZoomSlider.value
-        );
-      }
-    );
-
-    zoomButtons.forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          setCameraZoom(
-            button.dataset.zoom
-          );
-        }
-      );
     });
 
-    const automaticInputs = [
+    zoomSlider.addEventListener("input", () => setZoom(zoomSlider.value));
+    zoomButtons.forEach(button => {
+      button.addEventListener("click", () => setZoom(button.dataset.zoom));
+    });
+
+    [
       carLengthInput,
       carsInput,
-      distanceInput,
-      baseFocalLengthInput,
-      shootingOrientationInput,
+      trainWidthInput,
       trainHeightInput,
-      trainRotationSlider,
-      angleCorrectionSlider,
-      displayCorrectionSlider
-    ];
-
-    automaticInputs.forEach((input) => {
-      input.addEventListener(
-        "input",
-        () => {
-          if (
-            input ===
-            baseFocalLengthInput
-          ) {
-            setCameraZoom(
-              cameraZoom,
-              false
-            );
-          }
-
-          calculateComposition();
-          updateConversionTable();
-        }
-      );
-
-      input.addEventListener(
-        "change",
-        () => {
-          calculateComposition();
-          updateConversionTable();
-        }
-      );
+      distanceInput,
+      baseFocalInput,
+      depthAngleInput,
+      opacityInput
+    ].forEach(input => {
+      input.addEventListener("input", draw);
+      input.addEventListener("change", draw);
     });
 
-    trainBox.addEventListener(
-      "mousedown",
-      startDrag
-    );
+    cameraButton.addEventListener("click", startCamera);
+    setTrackButton.addEventListener("click", beginTrackSelection);
 
-    document.addEventListener(
-      "mousemove",
-      moveDrag
-    );
+    resetButton.addEventListener("click", () => {
+      zoom = 1;
+      zoomSlider.value = 1;
+      boxCenter = { x: innerWidth / 2, y: innerHeight * 0.38 };
+      screenAngle = 0;
+      trackPoints = [];
+      selectingTrack = false;
+      depthAngleInput.value = 35;
+      opacityInput.value = 35;
+      setTrackButton.textContent = "画面上で2点指定";
+      setZoom(1);
+    });
 
-    document.addEventListener(
-      "mouseup",
-      stopDrag
-    );
+    collapseButton.addEventListener("click", () => {
+      panel.classList.toggle("collapsed");
+      collapseButton.textContent = panel.classList.contains("collapsed") ? "▲" : "▼";
+    });
 
-    trainBox.addEventListener(
-      "touchstart",
-      startDrag,
-      {
-        passive: false
-      }
-    );
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 250));
 
-    document.addEventListener(
-      "touchmove",
-      moveDrag,
-      {
-        passive: false
-      }
-    );
-
-    document.addEventListener(
-      "touchend",
-      stopDrag
-    );
-
-    document.addEventListener(
-      "touchstart",
-      handlePinchStart,
-      {
-        passive: false
-      }
-    );
-
-    document.addEventListener(
-      "touchmove",
-      handlePinchMove,
-      {
-        passive: false
-      }
-    );
-
-    document.addEventListener(
-      "touchend",
-      handlePinchEnd
-    );
-
-    window.addEventListener(
-      "resize",
-      () => {
-        boxX = clamp(
-          boxX,
-          0,
-          window.innerWidth
-        );
-
-        boxY = clamp(
-          boxY,
-          0,
-          window.innerHeight
-        );
-
-        calculateComposition();
-      }
-    );
-
-    window.addEventListener(
-      "orientationchange",
-      () => {
-        setTimeout(
-          calculateComposition,
-          250
-        );
-      }
-    );
-
-    /* =========================
-       初期化
-    ========================= */
-
-    setCameraZoom(1, false);
-    updateConversionTable();
-    calculateComposition();
+    resizeCanvas();
+    setZoom(1);
   </script>
 </body>
 </html>
+'''
+
+path = Path('/mnt/data/train_3d_composition.html')
+path.write_text(html, encoding='utf-8')
+print(path)
