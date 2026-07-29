@@ -2,10 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
+
   <title>撮り鉄構図チェック</title>
 
   <style>
@@ -19,7 +21,11 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      font-family: sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
       background: #111;
     }
 
@@ -29,20 +35,33 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: #222;
     }
 
     #trainBox {
       position: absolute;
       left: 50%;
-      top: 45%;
+      top: 43%;
+
       width: 70%;
-      height: 90px;
-      transform: translate(-50%, -50%) rotate(0deg);
+      height: 76px;
+
+      transform:
+        translate(-50%, -50%)
+        rotate(0deg);
+
       transform-origin: center;
-      border: 3px solid rgba(0, 170, 255, 0.95);
-      background: rgba(0, 170, 255, 0.25);
-      border-radius: 8px;
+
+      border: 3px solid rgba(0, 175, 255, 0.95);
+      background: rgba(0, 175, 255, 0.25);
+
+      border-radius: 7px;
       touch-action: none;
+      user-select: none;
+
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.45),
+        0 0 15px rgba(0, 175, 255, 0.35);
     }
 
     #trainBox::before {
@@ -50,11 +69,13 @@
       position: absolute;
       left: 4px;
       top: 4px;
+
       padding: 2px 6px;
-      font-size: 12px;
-      color: white;
-      background: rgba(0, 0, 0, 0.6);
       border-radius: 4px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.65);
+      font-size: 11px;
     }
 
     #trainBox::after {
@@ -62,201 +83,681 @@
       position: absolute;
       right: 4px;
       top: 4px;
+
       padding: 2px 6px;
-      font-size: 12px;
-      color: white;
-      background: rgba(0, 0, 0, 0.6);
       border-radius: 4px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.65);
+      font-size: 11px;
+    }
+
+    #centerLine {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+
+      width: 1px;
+      background: rgba(255, 255, 255, 0.32);
+      pointer-events: none;
     }
 
     #panel {
       position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: calc(12px + env(safe-area-inset-bottom));
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+
+      max-height: 49vh;
+      overflow-y: auto;
+
       padding: 12px;
+      border-radius: 15px;
+
       color: white;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 14px;
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.76);
+      backdrop-filter: blur(9px);
+      -webkit-backdrop-filter: blur(9px);
     }
 
-    .row {
+    .titleRow {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .resultBadge {
+      padding: 5px 8px;
+      border-radius: 7px;
+
+      background: rgba(0, 175, 255, 0.22);
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .inputGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .inputGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     label {
-      white-space: nowrap;
-      font-size: 14px;
+      font-size: 12px;
+      opacity: 0.9;
     }
 
-    input[type="number"] {
-      width: 72px;
-      padding: 7px;
+    input[type="number"],
+    select {
+      width: 100%;
+      min-height: 38px;
+
+      padding: 7px 8px;
+
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 7px;
+
+      color: white;
+      background: rgba(255, 255, 255, 0.13);
+
       font-size: 16px;
-      border: none;
-      border-radius: 6px;
+    }
+
+    select option {
+      color: black;
+    }
+
+    .rangeRow {
+      display: grid;
+      grid-template-columns: 75px 1fr 52px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 9px;
     }
 
     input[type="range"] {
-      flex: 1;
+      width: 100%;
+    }
+
+    .rangeValue {
+      text-align: right;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .buttonRow {
+      display: flex;
+      gap: 8px;
+      margin-top: 11px;
     }
 
     button {
-      padding: 9px 12px;
+      flex: 1;
+      min-height: 41px;
+
+      padding: 9px;
       border: none;
-      border-radius: 8px;
+      border-radius: 9px;
+
+      font-size: 14px;
       font-weight: bold;
     }
 
-    #lengthResult {
-      margin-left: auto;
-      font-weight: bold;
+    #cameraButton {
+      color: white;
+      background: #087fc1;
+    }
+
+    #resetButton {
+      color: #222;
+      background: #eee;
+    }
+
+    #status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 12px;
+
+      margin-top: 10px;
+      padding: 8px;
+
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+
+      font-size: 12px;
+    }
+
+    #warning {
+      margin: 8px 0 0;
+      color: #ffd36b;
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     #message {
-      margin: 0;
-      font-size: 12px;
-      opacity: 0.85;
+      margin: 7px 0 0;
+      opacity: 0.8;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .overflowing {
+      border-color: rgba(255, 80, 80, 1) !important;
+      background: rgba(255, 50, 50, 0.22) !important;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        0 0 18px rgba(255, 60, 60, 0.5) !important;
     }
   </style>
 </head>
 
 <body>
-  <video id="camera" autoplay playsinline muted></video>
+  <video
+    id="camera"
+    autoplay
+    playsinline
+    muted
+  ></video>
 
+  <div id="centerLine"></div>
   <div id="trainBox"></div>
 
   <div id="panel">
-    <div class="row">
-      <label for="carLength">1両</label>
-      <input
-        id="carLength"
-        type="number"
-        value="20"
-        min="1"
-        max="40"
-        step="0.1"
+    <div class="titleRow">
+      <h1>撮り鉄構図チェック</h1>
+      <div
+        id="lengthResult"
+        class="resultBadge"
       >
-      <span>m</span>
-
-      <label for="cars">両数</label>
-      <input
-        id="cars"
-        type="number"
-        value="10"
-        min="1"
-        max="30"
-      >
-
-      <span id="lengthResult">200 m</span>
+        編成長 200.0 m
+      </div>
     </div>
 
-    <div class="row">
-      <label for="boxWidth">表示幅</label>
-      <input
-        id="boxWidth"
-        type="range"
-        min="10"
-        max="150"
-        value="70"
-      >
+    <div class="inputGrid">
+      <div class="inputGroup">
+        <label for="carLength">
+          1両の長さ（m）
+        </label>
+
+        <input
+          id="carLength"
+          type="number"
+          value="20"
+          min="1"
+          max="40"
+          step="0.1"
+        >
+      </div>
+
+      <div class="inputGroup">
+        <label for="cars">
+          両数
+        </label>
+
+        <input
+          id="cars"
+          type="number"
+          value="10"
+          min="1"
+          max="40"
+          step="1"
+        >
+      </div>
+
+      <div class="inputGroup">
+        <label for="distance">
+          線路までの距離（m）
+        </label>
+
+        <input
+          id="distance"
+          type="number"
+          value="100"
+          min="1"
+          max="5000"
+          step="1"
+        >
+      </div>
+
+      <div class="inputGroup">
+        <label for="focalLength">
+          焦点距離・35mm判換算（mm）
+        </label>
+
+        <input
+          id="focalLength"
+          type="number"
+          value="26"
+          min="10"
+          max="1000"
+          step="1"
+        >
+      </div>
+
+      <div class="inputGroup">
+        <label for="orientation">
+          撮影方向
+        </label>
+
+        <select id="orientation">
+          <option value="landscape">
+            横位置
+          </option>
+
+          <option value="portrait">
+            縦位置
+          </option>
+        </select>
+      </div>
+
+      <div class="inputGroup">
+        <label for="boxHeight">
+          車両箱の高さ（px）
+        </label>
+
+        <input
+          id="boxHeight"
+          type="number"
+          value="76"
+          min="20"
+          max="300"
+          step="1"
+        >
+      </div>
     </div>
 
-    <div class="row">
-      <label for="rotation">角度</label>
+    <div class="rangeRow">
+      <label for="rotation">
+        表示角度
+      </label>
+
       <input
         id="rotation"
         type="range"
         min="-90"
         max="90"
         value="0"
+        step="1"
       >
+
+      <span
+        id="rotationValue"
+        class="rangeValue"
+      >
+        0°
+      </span>
     </div>
 
-    <div class="row">
-      <button id="cameraButton">カメラを起動</button>
-      <button id="resetButton">位置を戻す</button>
+    <div class="rangeRow">
+      <label for="scaleCorrection">
+        表示補正
+      </label>
+
+      <input
+        id="scaleCorrection"
+        type="range"
+        min="50"
+        max="150"
+        value="100"
+        step="1"
+      >
+
+      <span
+        id="scaleCorrectionValue"
+        class="rangeValue"
+      >
+        100%
+      </span>
     </div>
+
+    <div class="buttonRow">
+      <button id="cameraButton">
+        カメラを起動
+      </button>
+
+      <button id="resetButton">
+        表示位置を戻す
+      </button>
+    </div>
+
+    <div id="status">
+      <span>水平画角</span>
+      <strong id="fovResult">69.4°</strong>
+
+      <span>編成の見かけ角度</span>
+      <strong id="angleResult">90.0°</strong>
+
+      <span>箱の表示幅</span>
+      <strong id="widthResult">0 px</strong>
+
+      <span>画角占有率</span>
+      <strong id="coverageResult">0%</strong>
+    </div>
+
+    <p id="warning"></p>
 
     <p id="message">
-      青い箱を指で動かし、線路に合わせてください。
+      箱をドラッグして線路上へ移動してください。計算は、列車をほぼ真横から見る場合を想定しています。
     </p>
   </div>
 
   <script>
-    const video = document.getElementById("camera");
-    const cameraButton = document.getElementById("cameraButton");
-    const resetButton = document.getElementById("resetButton");
+    const video =
+      document.getElementById("camera");
 
-    const trainBox = document.getElementById("trainBox");
-    const carLengthInput = document.getElementById("carLength");
-    const carsInput = document.getElementById("cars");
-    const lengthResult = document.getElementById("lengthResult");
+    const cameraButton =
+      document.getElementById("cameraButton");
 
-    const widthSlider = document.getElementById("boxWidth");
-    const rotationSlider = document.getElementById("rotation");
+    const resetButton =
+      document.getElementById("resetButton");
+
+    const trainBox =
+      document.getElementById("trainBox");
+
+    const carLengthInput =
+      document.getElementById("carLength");
+
+    const carsInput =
+      document.getElementById("cars");
+
+    const distanceInput =
+      document.getElementById("distance");
+
+    const focalLengthInput =
+      document.getElementById("focalLength");
+
+    const orientationInput =
+      document.getElementById("orientation");
+
+    const boxHeightInput =
+      document.getElementById("boxHeight");
+
+    const rotationSlider =
+      document.getElementById("rotation");
+
+    const scaleCorrectionSlider =
+      document.getElementById("scaleCorrection");
+
+    const lengthResult =
+      document.getElementById("lengthResult");
+
+    const rotationValue =
+      document.getElementById("rotationValue");
+
+    const scaleCorrectionValue =
+      document.getElementById(
+        "scaleCorrectionValue"
+      );
+
+    const fovResult =
+      document.getElementById("fovResult");
+
+    const angleResult =
+      document.getElementById("angleResult");
+
+    const widthResult =
+      document.getElementById("widthResult");
+
+    const coverageResult =
+      document.getElementById("coverageResult");
+
+    const warning =
+      document.getElementById("warning");
 
     let boxX = window.innerWidth / 2;
-    let boxY = window.innerHeight * 0.45;
-    let rotation = 0;
+    let boxY = window.innerHeight * 0.42;
 
     let dragging = false;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
 
+    function toRadians(degrees) {
+      return degrees * Math.PI / 180;
+    }
+
+    function toDegrees(radians) {
+      return radians * 180 / Math.PI;
+    }
+
+    function readPositiveNumber(
+      element,
+      fallback
+    ) {
+      const value =
+        Number.parseFloat(element.value);
+
+      if (
+        !Number.isFinite(value) ||
+        value <= 0
+      ) {
+        return fallback;
+      }
+
+      return value;
+    }
+
     async function startCamera() {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        alert(
+          "このブラウザではカメラ機能を利用できません。"
+        );
+        return;
+      }
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: {
-              ideal: "environment"
-            }
-          },
-          audio: false
-        });
+        const stream =
+          await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: {
+                ideal: "environment"
+              }
+            },
+            audio: false
+          });
 
         video.srcObject = stream;
-        cameraButton.textContent = "カメラ起動済み";
+
+        cameraButton.textContent =
+          "カメラ起動済み";
+
         cameraButton.disabled = true;
       } catch (error) {
-        alert(
-          "カメラを起動できませんでした。ブラウザのカメラ許可を確認してください。"
-        );
         console.error(error);
+
+        alert(
+          "カメラを起動できませんでした。ブラウザのカメラ許可とHTTPS接続を確認してください。"
+        );
       }
     }
 
-    function updateLength() {
+    function calculateComposition() {
       const carLength =
-        Number.parseFloat(carLengthInput.value) || 0;
+        readPositiveNumber(
+          carLengthInput,
+          20
+        );
 
       const cars =
-        Number.parseInt(carsInput.value, 10) || 0;
+        Math.max(
+          1,
+          Math.round(
+            readPositiveNumber(
+              carsInput,
+              10
+            )
+          )
+        );
 
-      const totalLength = carLength * cars;
+      const distance =
+        readPositiveNumber(
+          distanceInput,
+          100
+        );
 
-      lengthResult.textContent =
-        `${totalLength.toFixed(1)} m`;
-    }
+      const focalLength =
+        readPositiveNumber(
+          focalLengthInput,
+          26
+        );
 
-    function updateBox() {
-      const width = Number(widthSlider.value);
+      const boxHeight =
+        readPositiveNumber(
+          boxHeightInput,
+          76
+        );
 
-      trainBox.style.width = `${width}%`;
+      const totalLength =
+        carLength * cars;
 
-      trainBox.style.left = `${boxX}px`;
-      trainBox.style.top = `${boxY}px`;
+      /*
+       35mm判換算焦点距離を使う場合、
+
+       横位置では画面横方向を36mm、
+       縦位置では画面横方向を24mm
+
+       として水平画角を計算します。
+      */
+      const frameWidthMm =
+        orientationInput.value === "portrait"
+          ? 24
+          : 36;
+
+      /*
+       水平画角：
+       2 × atan(
+         フィルム幅 ÷
+         2 × 焦点距離
+       )
+      */
+      const horizontalFovRad =
+        2 * Math.atan(
+          frameWidthMm /
+          (2 * focalLength)
+        );
+
+      /*
+       編成が占める見かけ角度。
+
+       編成の中央にカメラを向け、
+       編成をほぼ真横から見る想定。
+      */
+      const trainAngleRad =
+        2 * Math.atan(
+          totalLength /
+          (2 * distance)
+        );
+
+      /*
+       画角内の位置をより正確に求めるため、
+       単純な角度比ではなく、
+       ピンホールカメラモデルを使います。
+
+       画面上の占有率 =
+       tan(編成角度 ÷ 2) ÷
+       tan(水平画角 ÷ 2)
+      */
+      const projectedRatio =
+        Math.tan(trainAngleRad / 2) /
+        Math.tan(horizontalFovRad / 2);
+
+      const correction =
+        Number(scaleCorrectionSlider.value)
+        / 100;
+
+      const correctedRatio =
+        projectedRatio * correction;
+
+      const viewportWidth =
+        window.innerWidth;
+
+      const boxWidthPx =
+        viewportWidth * correctedRatio;
+
+      const rotation =
+        Number(rotationSlider.value);
+
+      trainBox.style.width =
+        `${Math.max(boxWidthPx, 4)}px`;
+
+      trainBox.style.height =
+        `${boxHeight}px`;
+
+      trainBox.style.left =
+        `${boxX}px`;
+
+      trainBox.style.top =
+        `${boxY}px`;
 
       trainBox.style.transform =
-        `translate(-50%, -50%) rotate(${rotation}deg)`;
+        `translate(-50%, -50%)
+         rotate(${rotation}deg)`;
+
+      lengthResult.textContent =
+        `編成長 ${totalLength.toFixed(1)} m`;
+
+      fovResult.textContent =
+        `${toDegrees(
+          horizontalFovRad
+        ).toFixed(1)}°`;
+
+      angleResult.textContent =
+        `${toDegrees(
+          trainAngleRad
+        ).toFixed(1)}°`;
+
+      widthResult.textContent =
+        `${boxWidthPx.toFixed(0)} px`;
+
+      coverageResult.textContent =
+        `${(
+          correctedRatio * 100
+        ).toFixed(1)}%`;
+
+      rotationValue.textContent =
+        `${rotation}°`;
+
+      scaleCorrectionValue.textContent =
+        `${Math.round(
+          correction * 100
+        )}%`;
+
+      trainBox.classList.toggle(
+        "overflowing",
+        correctedRatio > 1
+      );
+
+      if (correctedRatio > 1) {
+        warning.textContent =
+          "編成全体が横画角に収まりません。距離を離すか、焦点距離を短くしてください。";
+      } else if (correctedRatio > 0.9) {
+        warning.textContent =
+          "編成が画面幅の90%以上を占めます。少し余裕を持たせたほうが安全です。";
+      } else {
+        warning.textContent = "";
+      }
     }
 
     function getPointerPosition(event) {
-      if (event.touches && event.touches.length > 0) {
+      if (
+        event.touches &&
+        event.touches.length > 0
+      ) {
         return {
           x: event.touches[0].clientX,
           y: event.touches[0].clientY
@@ -270,11 +771,16 @@
     }
 
     function startDrag(event) {
-      const pointer = getPointerPosition(event);
+      const pointer =
+        getPointerPosition(event);
 
       dragging = true;
-      dragOffsetX = pointer.x - boxX;
-      dragOffsetY = pointer.y - boxY;
+
+      dragOffsetX =
+        pointer.x - boxX;
+
+      dragOffsetY =
+        pointer.y - boxY;
 
       event.preventDefault();
     }
@@ -284,12 +790,16 @@
         return;
       }
 
-      const pointer = getPointerPosition(event);
+      const pointer =
+        getPointerPosition(event);
 
-      boxX = pointer.x - dragOffsetX;
-      boxY = pointer.y - dragOffsetY;
+      boxX =
+        pointer.x - dragOffsetX;
 
-      updateBox();
+      boxY =
+        pointer.y - dragOffsetY;
+
+      calculateComposition();
       event.preventDefault();
     }
 
@@ -297,49 +807,108 @@
       dragging = false;
     }
 
-    cameraButton.addEventListener("click", startCamera);
+    function resetPosition() {
+      boxX =
+        window.innerWidth / 2;
 
-    resetButton.addEventListener("click", () => {
-      boxX = window.innerWidth / 2;
-      boxY = window.innerHeight * 0.45;
-      rotation = 0;
+      boxY =
+        window.innerHeight * 0.42;
 
       rotationSlider.value = 0;
-      widthSlider.value = 70;
+      scaleCorrectionSlider.value = 100;
 
-      updateBox();
+      calculateComposition();
+    }
+
+    const automaticInputs = [
+      carLengthInput,
+      carsInput,
+      distanceInput,
+      focalLengthInput,
+      orientationInput,
+      boxHeightInput,
+      rotationSlider,
+      scaleCorrectionSlider
+    ];
+
+    automaticInputs.forEach((input) => {
+      input.addEventListener(
+        "input",
+        calculateComposition
+      );
+
+      input.addEventListener(
+        "change",
+        calculateComposition
+      );
     });
 
-    carLengthInput.addEventListener("input", updateLength);
-    carsInput.addEventListener("input", updateLength);
+    cameraButton.addEventListener(
+      "click",
+      startCamera
+    );
 
-    widthSlider.addEventListener("input", updateBox);
+    resetButton.addEventListener(
+      "click",
+      resetPosition
+    );
 
-    rotationSlider.addEventListener("input", () => {
-      rotation = Number(rotationSlider.value);
-      updateBox();
-    });
+    trainBox.addEventListener(
+      "mousedown",
+      startDrag
+    );
 
-    trainBox.addEventListener("mousedown", startDrag);
-    document.addEventListener("mousemove", moveDrag);
-    document.addEventListener("mouseup", stopDrag);
+    document.addEventListener(
+      "mousemove",
+      moveDrag
+    );
+
+    document.addEventListener(
+      "mouseup",
+      stopDrag
+    );
 
     trainBox.addEventListener(
       "touchstart",
       startDrag,
-      { passive: false }
+      {
+        passive: false
+      }
     );
 
     document.addEventListener(
       "touchmove",
       moveDrag,
-      { passive: false }
+      {
+        passive: false
+      }
     );
 
-    document.addEventListener("touchend", stopDrag);
+    document.addEventListener(
+      "touchend",
+      stopDrag
+    );
 
-    updateLength();
-    updateBox();
+    window.addEventListener(
+      "resize",
+      () => {
+        boxX =
+          Math.min(
+            Math.max(boxX, 0),
+            window.innerWidth
+          );
+
+        boxY =
+          Math.min(
+            Math.max(boxY, 0),
+            window.innerHeight
+          );
+
+        calculateComposition();
+      }
+    );
+
+    calculateComposition();
   </script>
 </body>
 </html>
