@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+  <title>撮り鉄構図チェック</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      background: #111;
+    }
+
+    #camera {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #trainBox {
+      position: absolute;
+      left: 50%;
+      top: 45%;
+      width: 70%;
+      height: 90px;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transform-origin: center;
+      border: 3px solid rgba(0, 170, 255, 0.95);
+      background: rgba(0, 170, 255, 0.25);
+      border-radius: 8px;
+      touch-action: none;
+    }
+
+    #trainBox::before {
+      content: "先頭";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+    }
+
+    #trainBox::after {
+      content: "最後尾";
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+    }
+
+    #panel {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      padding: 12px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 14px;
+      backdrop-filter: blur(8px);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    label {
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    input[type="number"] {
+      width: 72px;
+      padding: 7px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+    }
+
+    button {
+      padding: 9px 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    #lengthResult {
+      margin-left: auto;
+      font-weight: bold;
+    }
+
+    #message {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="camera" autoplay playsinline muted></video>
+
+  <div id="trainBox"></div>
+
+  <div id="panel">
+    <div class="row">
+      <label for="carLength">1両</label>
+      <input
+        id="carLength"
+        type="number"
+        value="20"
+        min="1"
+        max="40"
+        step="0.1"
+      >
+      <span>m</span>
+
+      <label for="cars">両数</label>
+      <input
+        id="cars"
+        type="number"
+        value="10"
+        min="1"
+        max="30"
+      >
+
+      <span id="lengthResult">200 m</span>
+    </div>
+
+    <div class="row">
+      <label for="boxWidth">表示幅</label>
+      <input
+        id="boxWidth"
+        type="range"
+        min="10"
+        max="150"
+        value="70"
+      >
+    </div>
+
+    <div class="row">
+      <label for="rotation">角度</label>
+      <input
+        id="rotation"
+        type="range"
+        min="-90"
+        max="90"
+        value="0"
+      >
+    </div>
+
+    <div class="row">
+      <button id="cameraButton">カメラを起動</button>
+      <button id="resetButton">位置を戻す</button>
+    </div>
+
+    <p id="message">
+      青い箱を指で動かし、線路に合わせてください。
+    </p>
+  </div>
+
+  <script>
+    const video = document.getElementById("camera");
+    const cameraButton = document.getElementById("cameraButton");
+    const resetButton = document.getElementById("resetButton");
+
+    const trainBox = document.getElementById("trainBox");
+    const carLengthInput = document.getElementById("carLength");
+    const carsInput = document.getElementById("cars");
+    const lengthResult = document.getElementById("lengthResult");
+
+    const widthSlider = document.getElementById("boxWidth");
+    const rotationSlider = document.getElementById("rotation");
+
+    let boxX = window.innerWidth / 2;
+    let boxY = window.innerHeight * 0.45;
+    let rotation = 0;
+
+    let dragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: {
+              ideal: "environment"
+            }
+          },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        cameraButton.textContent = "カメラ起動済み";
+        cameraButton.disabled = true;
+      } catch (error) {
+        alert(
+          "カメラを起動できませんでした。ブラウザのカメラ許可を確認してください。"
+        );
+        console.error(error);
+      }
+    }
+
+    function updateLength() {
+      const carLength =
+        Number.parseFloat(carLengthInput.value) || 0;
+
+      const cars =
+        Number.parseInt(carsInput.value, 10) || 0;
+
+      const totalLength = carLength * cars;
+
+      lengthResult.textContent =
+        `${totalLength.toFixed(1)} m`;
+    }
+
+    function updateBox() {
+      const width = Number(widthSlider.value);
+
+      trainBox.style.width = `${width}%`;
+
+      trainBox.style.left = `${boxX}px`;
+      trainBox.style.top = `${boxY}px`;
+
+      trainBox.style.transform =
+        `translate(-50%, -50%) rotate(${rotation}deg)`;
+    }
+
+    function getPointerPosition(event) {
+      if (event.touches && event.touches.length > 0) {
+        return {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY
+        };
+      }
+
+      return {
+        x: event.clientX,
+        y: event.clientY
+      };
+    }
+
+    function startDrag(event) {
+      const pointer = getPointerPosition(event);
+
+      dragging = true;
+      dragOffsetX = pointer.x - boxX;
+      dragOffsetY = pointer.y - boxY;
+
+      event.preventDefault();
+    }
+
+    function moveDrag(event) {
+      if (!dragging) {
+        return;
+      }
+
+      const pointer = getPointerPosition(event);
+
+      boxX = pointer.x - dragOffsetX;
+      boxY = pointer.y - dragOffsetY;
+
+      updateBox();
+      event.preventDefault();
+    }
+
+    function stopDrag() {
+      dragging = false;
+    }
+
+    cameraButton.addEventListener("click", startCamera);
+
+    resetButton.addEventListener("click", () => {
+      boxX = window.innerWidth / 2;
+      boxY = window.innerHeight * 0.45;
+      rotation = 0;
+
+      rotationSlider.value = 0;
+      widthSlider.value = 70;
+
+      updateBox();
+    });
+
+    carLengthInput.addEventListener("input", updateLength);
+    carsInput.addEventListener("input", updateLength);
+
+    widthSlider.addEventListener("input", updateBox);
+
+    rotationSlider.addEventListener("input", () => {
+      rotation = Number(rotationSlider.value);
+      updateBox();
+    });
+
+    trainBox.addEventListener("mousedown", startDrag);
+    document.addEventListener("mousemove", moveDrag);
+    document.addEventListener("mouseup", stopDrag);
+
+    trainBox.addEventListener(
+      "touchstart",
+      startDrag,
+      { passive: false }
+    );
+
+    document.addEventListener(
+      "touchmove",
+      moveDrag,
+      { passive: false }
+    );
+
+    document.addEventListener("touchend", stopDrag);
+
+    updateLength();
+    updateBox();
+  </script>
+</body>
+</html>
