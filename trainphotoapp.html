@@ -5,14 +5,24 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
   >
+
+  <meta name="theme-color" content="#111111">
 
   <title>撮り鉄構図チェック</title>
 
   <style>
+    :root {
+      --panel-background: rgba(10, 10, 10, 0.82);
+      --accent: #00aef0;
+      --warning: #ffcc55;
+      --danger: #ff5050;
+    }
+
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html,
@@ -21,27 +31,132 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
+      background: #111;
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
+    }
+
+    body {
+      touch-action: none;
+    }
+
+    /* =========================
+       カメラ映像
+    ========================= */
+
+    #cameraViewport {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
       background: #111;
     }
 
     #camera {
-      position: fixed;
-      inset: 0;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+
       width: 100%;
       height: 100%;
+
       object-fit: cover;
+      object-position: center;
+
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+
+      transform-origin: center center;
+
       background: #222;
+      transition: transform 0.08s linear;
+      will-change: transform;
     }
+
+    #cameraPlaceholder {
+      position: absolute;
+      inset: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 30px;
+
+      color: rgba(255, 255, 255, 0.65);
+      text-align: center;
+      line-height: 1.6;
+
+      background:
+        radial-gradient(
+          circle at center,
+          #333 0%,
+          #151515 70%
+        );
+    }
+
+    /* =========================
+       構図ガイド
+    ========================= */
+
+    #centerVertical {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+
+      width: 1px;
+
+      background: rgba(255, 255, 255, 0.28);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    #centerHorizontal {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 50%;
+
+      height: 1px;
+
+      background: rgba(255, 255, 255, 0.22);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    #thirdLineLeft,
+    #thirdLineRight {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+
+      width: 1px;
+
+      background: rgba(255, 255, 255, 0.16);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    #thirdLineLeft {
+      left: 33.333%;
+    }
+
+    #thirdLineRight {
+      left: 66.666%;
+    }
+
+    /* =========================
+       編成表示ボックス
+    ========================= */
 
     #trainBox {
       position: absolute;
       left: 50%;
-      top: 43%;
+      top: 39%;
 
       width: 70%;
       height: 76px;
@@ -50,103 +165,218 @@
         translate(-50%, -50%)
         rotate(0deg);
 
-      transform-origin: center;
+      transform-origin: center center;
 
-      border: 3px solid rgba(0, 175, 255, 0.95);
-      background: rgba(0, 175, 255, 0.25);
+      border: 3px solid rgba(0, 180, 255, 0.98);
+      border-radius: 8px;
 
-      border-radius: 7px;
-      touch-action: none;
-      user-select: none;
+      background: rgba(0, 165, 255, 0.22);
 
       box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.45),
-        0 0 15px rgba(0, 175, 255, 0.35);
+        0 0 0 1px rgba(255, 255, 255, 0.55),
+        0 0 18px rgba(0, 170, 255, 0.42);
+
+      touch-action: none;
+      user-select: none;
+      z-index: 10;
     }
 
-    #trainBox::before {
-      content: "先頭";
-      position: absolute;
-      left: 4px;
-      top: 4px;
+    #trainBox.overflowing {
+      border-color: var(--danger);
 
-      padding: 2px 6px;
-      border-radius: 4px;
+      background: rgba(255, 50, 50, 0.22);
+
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.55),
+        0 0 20px rgba(255, 50, 50, 0.55);
+    }
+
+    .endLabel {
+      position: absolute;
+      top: 5px;
+
+      padding: 3px 7px;
+
+      border-radius: 5px;
 
       color: white;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(0, 0, 0, 0.68);
+
       font-size: 11px;
-    }
+      font-weight: bold;
 
-    #trainBox::after {
-      content: "最後尾";
-      position: absolute;
-      right: 4px;
-      top: 4px;
-
-      padding: 2px 6px;
-      border-radius: 4px;
-
-      color: white;
-      background: rgba(0, 0, 0, 0.65);
-      font-size: 11px;
-    }
-
-    #centerLine {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-
-      width: 1px;
-      background: rgba(255, 255, 255, 0.32);
       pointer-events: none;
     }
 
-    #panel {
-      position: fixed;
-      left: 10px;
-      right: 10px;
-      bottom: calc(10px + env(safe-area-inset-bottom));
-
-      max-height: 49vh;
-      overflow-y: auto;
-
-      padding: 12px;
-      border-radius: 15px;
-
-      color: white;
-      background: rgba(0, 0, 0, 0.76);
-      backdrop-filter: blur(9px);
-      -webkit-backdrop-filter: blur(9px);
+    #headLabel {
+      left: 5px;
     }
 
-    .titleRow {
+    #tailLabel {
+      right: 5px;
+    }
+
+    #trainCenterMark {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+
+      width: 2px;
+
+      background: rgba(255, 255, 255, 0.8);
+
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    #trainInfo {
+      position: absolute;
+      left: 50%;
+      bottom: 5px;
+
+      transform: translateX(-50%);
+
+      padding: 3px 7px;
+      border-radius: 5px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.62);
+
+      font-size: 11px;
+      font-weight: bold;
+
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* =========================
+       上部表示
+    ========================= */
+
+    #topStatus {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      left: 10px;
+      right: 10px;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .topBadge {
+      padding: 7px 10px;
+
+      border-radius: 18px;
+
+      color: white;
+      background: rgba(0, 0, 0, 0.68);
+
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    #zoomBadge {
+      font-size: 17px;
+    }
+
+    /* =========================
+       操作パネル
+    ========================= */
+
+    #panel {
+      position: fixed;
+      left: 8px;
+      right: 8px;
+      bottom: calc(8px + env(safe-area-inset-bottom));
+
+      max-height: 52vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+
+      padding: 12px;
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 17px;
+
+      color: white;
+      background: var(--panel-background);
+
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      z-index: 30;
+      touch-action: pan-y;
+    }
+
+    #panel.collapsed {
+      max-height: none;
+      overflow: hidden;
+    }
+
+    #panel.collapsed .collapsibleContent {
+      display: none;
+    }
+
+    #panelHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+
       margin-bottom: 10px;
     }
 
-    h1 {
+    #panelTitle {
       margin: 0;
       font-size: 17px;
     }
 
-    .resultBadge {
-      padding: 5px 8px;
-      border-radius: 7px;
+    #collapseButton {
+      flex: none;
 
-      background: rgba(0, 175, 255, 0.22);
+      width: 38px;
+      height: 32px;
+      min-height: 0;
+      padding: 0;
+
+      color: white;
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .section {
+      margin-top: 12px;
+      padding-top: 11px;
+
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .section:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .sectionTitle {
+      margin-bottom: 8px;
+
       font-size: 13px;
       font-weight: bold;
+      opacity: 0.95;
     }
 
     .inputGrid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 9px;
     }
 
     .inputGroup {
@@ -156,22 +386,22 @@
     }
 
     label {
-      font-size: 12px;
-      opacity: 0.9;
+      font-size: 11px;
+      opacity: 0.82;
     }
 
     input[type="number"],
     select {
       width: 100%;
-      min-height: 38px;
+      height: 39px;
 
       padding: 7px 8px;
 
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
 
       color: white;
-      background: rgba(255, 255, 255, 0.13);
+      background: rgba(255, 255, 255, 0.11);
 
       font-size: 16px;
     }
@@ -180,35 +410,97 @@
       color: black;
     }
 
+    input[type="range"] {
+      width: 100%;
+      touch-action: pan-x;
+    }
+
     .rangeRow {
       display: grid;
-      grid-template-columns: 75px 1fr 52px;
+      grid-template-columns: 72px 1fr 55px;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+
       margin-top: 9px;
     }
 
-    input[type="range"] {
-      width: 100%;
+    .rangeLabel {
+      font-size: 12px;
     }
 
     .rangeValue {
       text-align: right;
+
       font-size: 12px;
       font-variant-numeric: tabular-nums;
     }
 
+    /* =========================
+       ズーム
+    ========================= */
+
+    #zoomDisplay {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      margin-bottom: 7px;
+    }
+
+    #currentZoom {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #currentFocal {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .zoomButtons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+
+      margin-top: 9px;
+    }
+
+    .zoomButton {
+      min-height: 35px;
+      padding: 4px 2px;
+
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 18px;
+
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .zoomButton.active {
+      color: #111;
+      background: white;
+    }
+
+    /* =========================
+       ボタン
+    ========================= */
+
     .buttonRow {
       display: flex;
       gap: 8px;
-      margin-top: 11px;
+
+      margin-top: 10px;
     }
 
     button {
       flex: 1;
       min-height: 41px;
 
-      padding: 9px;
+      padding: 9px 10px;
+
       border: none;
       border-radius: 9px;
 
@@ -221,242 +513,536 @@
       background: #087fc1;
     }
 
-    #resetButton {
-      color: #222;
-      background: #eee;
+    #cameraButton:disabled {
+      opacity: 0.65;
     }
 
-    #status {
+    #resetButton {
+      color: #222;
+      background: #f0f0f0;
+    }
+
+    /* =========================
+       計算結果
+    ========================= */
+
+    #resultGrid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px 12px;
+      grid-template-columns: 1fr auto;
+      gap: 6px 12px;
 
-      margin-top: 10px;
-      padding: 8px;
+      padding: 9px;
 
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9px;
+
+      background: rgba(255, 255, 255, 0.075);
 
       font-size: 12px;
     }
 
+    #resultGrid strong {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
     #warning {
+      min-height: 16px;
       margin: 8px 0 0;
-      color: #ffd36b;
+
+      color: var(--warning);
+
       font-size: 11px;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    #message {
-      margin: 7px 0 0;
-      opacity: 0.8;
+    #helpText {
+      margin: 8px 0 0;
+
+      opacity: 0.72;
+
       font-size: 11px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
-    .overflowing {
-      border-color: rgba(255, 80, 80, 1) !important;
-      background: rgba(255, 50, 50, 0.22) !important;
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.5),
-        0 0 18px rgba(255, 60, 60, 0.5) !important;
+    /* =========================
+       換算表
+    ========================= */
+
+    .conversionTable {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      font-size: 11px;
+    }
+
+    .conversionTable th,
+    .conversionTable td {
+      padding: 6px 4px;
+
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.12);
+
+      text-align: center;
+    }
+
+    .conversionTable th {
+      opacity: 0.7;
+      font-weight: normal;
+    }
+
+    .conversionTable tr.currentRow {
+      color: #87ddff;
+      background: rgba(0, 170, 255, 0.12);
+    }
+
+    /* =========================
+       横画面
+    ========================= */
+
+    @media (orientation: landscape) {
+      #panel {
+        left: auto;
+        right: calc(8px + env(safe-area-inset-right));
+        bottom: 8px;
+
+        width: min(390px, 45vw);
+        max-height: calc(100vh - 16px);
+      }
+
+      #topStatus {
+        right: auto;
+        width: min(420px, 48vw);
+      }
     }
   </style>
 </head>
 
 <body>
-  <video
-    id="camera"
-    autoplay
-    playsinline
-    muted
-  ></video>
+  <div id="cameraViewport">
+    <video
+      id="camera"
+      autoplay
+      playsinline
+      muted
+    ></video>
 
-  <div id="centerLine"></div>
-  <div id="trainBox"></div>
+    <div id="cameraPlaceholder">
+      「カメラを起動」を押すと、背面カメラの映像が表示されます。
+    </div>
+  </div>
+
+  <div id="centerVertical"></div>
+  <div id="centerHorizontal"></div>
+  <div id="thirdLineLeft"></div>
+  <div id="thirdLineRight"></div>
+
+  <div id="trainBox">
+    <span
+      id="headLabel"
+      class="endLabel"
+    >
+      先頭
+    </span>
+
+    <span
+      id="tailLabel"
+      class="endLabel"
+    >
+      最後尾
+    </span>
+
+    <div id="trainCenterMark"></div>
+
+    <span id="trainInfo">
+      200.0m
+    </span>
+  </div>
+
+  <div id="topStatus">
+    <div
+      id="zoomBadge"
+      class="topBadge"
+    >
+      1.0×
+    </div>
+
+    <div
+      id="topComposition"
+      class="topBadge"
+    >
+      編成長 200.0m
+    </div>
+  </div>
 
   <div id="panel">
-    <div class="titleRow">
-      <h1>撮り鉄構図チェック</h1>
-      <div
-        id="lengthResult"
-        class="resultBadge"
+    <div id="panelHeader">
+      <h1 id="panelTitle">
+        撮り鉄構図チェック
+      </h1>
+
+      <button
+        id="collapseButton"
+        type="button"
+        aria-label="パネルを折りたたむ"
       >
-        編成長 200.0 m
-      </div>
+        ▼
+      </button>
     </div>
 
-    <div class="inputGrid">
-      <div class="inputGroup">
-        <label for="carLength">
-          1両の長さ（m）
-        </label>
+    <div class="collapsibleContent">
+      <div class="section">
+        <div class="sectionTitle">
+          カメラ
+        </div>
+
+        <div id="zoomDisplay">
+          <div>
+            <div id="currentZoom">
+              1.0×
+            </div>
+
+            <div id="currentFocal">
+              26mm相当
+            </div>
+          </div>
+
+          <div>
+            疑似デジタルズーム
+          </div>
+        </div>
 
         <input
-          id="carLength"
-          type="number"
-          value="20"
+          id="cameraZoom"
+          type="range"
           min="1"
-          max="40"
+          max="10"
+          value="1"
           step="0.1"
         >
+
+        <div class="zoomButtons">
+          <button
+            type="button"
+            class="zoomButton active"
+            data-zoom="1"
+          >
+            1×
+          </button>
+
+          <button
+            type="button"
+            class="zoomButton"
+            data-zoom="2"
+          >
+            2×
+          </button>
+
+          <button
+            type="button"
+            class="zoomButton"
+            data-zoom="3"
+          >
+            3×
+          </button>
+
+          <button
+            type="button"
+            class="zoomButton"
+            data-zoom="5"
+          >
+            5×
+          </button>
+
+          <button
+            type="button"
+            class="zoomButton"
+            data-zoom="10"
+          >
+            10×
+          </button>
+        </div>
+
+        <div class="buttonRow">
+          <button
+            id="cameraButton"
+            type="button"
+          >
+            カメラを起動
+          </button>
+
+          <button
+            id="resetButton"
+            type="button"
+          >
+            表示をリセット
+          </button>
+        </div>
       </div>
 
-      <div class="inputGroup">
-        <label for="cars">
-          両数
-        </label>
+      <div class="section">
+        <div class="sectionTitle">
+          編成・撮影条件
+        </div>
 
-        <input
-          id="cars"
-          type="number"
-          value="10"
-          min="1"
-          max="40"
-          step="1"
-        >
+        <div class="inputGrid">
+          <div class="inputGroup">
+            <label for="carLength">
+              1両の長さ
+            </label>
+
+            <input
+              id="carLength"
+              type="number"
+              value="20"
+              min="1"
+              max="40"
+              step="0.1"
+            >
+          </div>
+
+          <div class="inputGroup">
+            <label for="cars">
+              両数
+            </label>
+
+            <input
+              id="cars"
+              type="number"
+              value="10"
+              min="1"
+              max="40"
+              step="1"
+            >
+          </div>
+
+          <div class="inputGroup">
+            <label for="distance">
+              線路までの距離（m）
+            </label>
+
+            <input
+              id="distance"
+              type="number"
+              value="200"
+              min="1"
+              max="5000"
+              step="1"
+            >
+          </div>
+
+          <div class="inputGroup">
+            <label for="baseFocalLength">
+              1×の基準焦点距離
+            </label>
+
+            <select id="baseFocalLength">
+              <option value="24">
+                24mm相当
+              </option>
+
+              <option
+                value="26"
+                selected
+              >
+                26mm相当
+              </option>
+
+              <option value="28">
+                28mm相当
+              </option>
+            </select>
+          </div>
+
+          <div class="inputGroup">
+            <label for="shootingOrientation">
+              撮影方向
+            </label>
+
+            <select id="shootingOrientation">
+              <option value="auto">
+                端末に合わせる
+              </option>
+
+              <option value="landscape">
+                横位置
+              </option>
+
+              <option value="portrait">
+                縦位置
+              </option>
+            </select>
+          </div>
+
+          <div class="inputGroup">
+            <label for="trainHeight">
+              箱の高さ（px）
+            </label>
+
+            <input
+              id="trainHeight"
+              type="number"
+              value="76"
+              min="20"
+              max="300"
+              step="1"
+            >
+          </div>
+        </div>
+
+        <div class="rangeRow">
+          <span class="rangeLabel">
+            箱の角度
+          </span>
+
+          <input
+            id="trainRotation"
+            type="range"
+            min="-90"
+            max="90"
+            value="0"
+            step="1"
+          >
+
+          <span
+            id="trainRotationValue"
+            class="rangeValue"
+          >
+            0°
+          </span>
+        </div>
+
+        <div class="rangeRow">
+          <span class="rangeLabel">
+            斜め補正
+          </span>
+
+          <input
+            id="angleCorrection"
+            type="range"
+            min="10"
+            max="100"
+            value="100"
+            step="1"
+          >
+
+          <span
+            id="angleCorrectionValue"
+            class="rangeValue"
+          >
+            100%
+          </span>
+        </div>
+
+        <div class="rangeRow">
+          <span class="rangeLabel">
+            表示補正
+          </span>
+
+          <input
+            id="displayCorrection"
+            type="range"
+            min="50"
+            max="150"
+            value="100"
+            step="1"
+          >
+
+          <span
+            id="displayCorrectionValue"
+            class="rangeValue"
+          >
+            100%
+          </span>
+        </div>
       </div>
 
-      <div class="inputGroup">
-        <label for="distance">
-          線路までの距離（m）
-        </label>
+      <div class="section">
+        <div class="sectionTitle">
+          計算結果
+        </div>
 
-        <input
-          id="distance"
-          type="number"
-          value="100"
-          min="1"
-          max="5000"
-          step="1"
-        >
+        <div id="resultGrid">
+          <span>編成長</span>
+          <strong id="totalLengthResult">
+            200.0m
+          </strong>
+
+          <span>現在の疑似焦点距離</span>
+          <strong id="focalLengthResult">
+            26mm相当
+          </strong>
+
+          <span>水平画角</span>
+          <strong id="horizontalFovResult">
+            69.4°
+          </strong>
+
+          <span>編成の見かけ角度</span>
+          <strong id="trainAngleResult">
+            53.1°
+          </strong>
+
+          <span>画角占有率</span>
+          <strong id="coverageResult">
+            76.9%
+          </strong>
+
+          <span>箱の表示幅</span>
+          <strong id="boxWidthResult">
+            0px
+          </strong>
+
+          <span>必要な最低距離</span>
+          <strong id="minimumDistanceResult">
+            －
+          </strong>
+        </div>
+
+        <p id="warning"></p>
+
+        <p id="helpText">
+          青い箱を指でドラッグして線路上へ移動してください。2本指のピンチ操作でも疑似倍率を変更できます。計算は、列車の中央をほぼ真横から撮影する場合を基準にしています。
+        </p>
       </div>
 
-      <div class="inputGroup">
-        <label for="focalLength">
-          焦点距離・35mm判換算（mm）
-        </label>
+      <div class="section">
+        <div class="sectionTitle">
+          iPhone疑似倍率・焦点距離換算表
+        </div>
 
-        <input
-          id="focalLength"
-          type="number"
-          value="26"
-          min="10"
-          max="1000"
-          step="1"
-        >
-      </div>
+        <table class="conversionTable">
+          <thead>
+            <tr>
+              <th>疑似倍率</th>
+              <th>26mm基準</th>
+              <th>方式</th>
+            </tr>
+          </thead>
 
-      <div class="inputGroup">
-        <label for="orientation">
-          撮影方向
-        </label>
+          <tbody id="conversionTableBody">
+          </tbody>
+        </table>
 
-        <select id="orientation">
-          <option value="landscape">
-            横位置
-          </option>
-
-          <option value="portrait">
-            縦位置
-          </option>
-        </select>
-      </div>
-
-      <div class="inputGroup">
-        <label for="boxHeight">
-          車両箱の高さ（px）
-        </label>
-
-        <input
-          id="boxHeight"
-          type="number"
-          value="76"
-          min="20"
-          max="300"
-          step="1"
-        >
+        <p id="helpText">
+          このWeb版は、1×カメラ映像の中央部分を拡大するデジタルズームです。iPhone本体の望遠・超広角レンズを物理的に切り替えるものではありません。
+        </p>
       </div>
     </div>
-
-    <div class="rangeRow">
-      <label for="rotation">
-        表示角度
-      </label>
-
-      <input
-        id="rotation"
-        type="range"
-        min="-90"
-        max="90"
-        value="0"
-        step="1"
-      >
-
-      <span
-        id="rotationValue"
-        class="rangeValue"
-      >
-        0°
-      </span>
-    </div>
-
-    <div class="rangeRow">
-      <label for="scaleCorrection">
-        表示補正
-      </label>
-
-      <input
-        id="scaleCorrection"
-        type="range"
-        min="50"
-        max="150"
-        value="100"
-        step="1"
-      >
-
-      <span
-        id="scaleCorrectionValue"
-        class="rangeValue"
-      >
-        100%
-      </span>
-    </div>
-
-    <div class="buttonRow">
-      <button id="cameraButton">
-        カメラを起動
-      </button>
-
-      <button id="resetButton">
-        表示位置を戻す
-      </button>
-    </div>
-
-    <div id="status">
-      <span>水平画角</span>
-      <strong id="fovResult">69.4°</strong>
-
-      <span>編成の見かけ角度</span>
-      <strong id="angleResult">90.0°</strong>
-
-      <span>箱の表示幅</span>
-      <strong id="widthResult">0 px</strong>
-
-      <span>画角占有率</span>
-      <strong id="coverageResult">0%</strong>
-    </div>
-
-    <p id="warning"></p>
-
-    <p id="message">
-      箱をドラッグして線路上へ移動してください。計算は、列車をほぼ真横から見る場合を想定しています。
-    </p>
   </div>
 
   <script>
+    "use strict";
+
+    /* =========================
+       要素
+    ========================= */
+
     const video =
       document.getElementById("camera");
+
+    const cameraPlaceholder =
+      document.getElementById("cameraPlaceholder");
 
     const cameraButton =
       document.getElementById("cameraButton");
@@ -464,8 +1050,32 @@
     const resetButton =
       document.getElementById("resetButton");
 
+    const collapseButton =
+      document.getElementById("collapseButton");
+
+    const panel =
+      document.getElementById("panel");
+
     const trainBox =
       document.getElementById("trainBox");
+
+    const trainInfo =
+      document.getElementById("trainInfo");
+
+    const cameraZoomSlider =
+      document.getElementById("cameraZoom");
+
+    const currentZoom =
+      document.getElementById("currentZoom");
+
+    const currentFocal =
+      document.getElementById("currentFocal");
+
+    const zoomBadge =
+      document.getElementById("zoomBadge");
+
+    const zoomButtons =
+      document.querySelectorAll(".zoomButton");
 
     const carLengthInput =
       document.getElementById("carLength");
@@ -476,56 +1086,100 @@
     const distanceInput =
       document.getElementById("distance");
 
-    const focalLengthInput =
-      document.getElementById("focalLength");
+    const baseFocalLengthInput =
+      document.getElementById("baseFocalLength");
 
-    const orientationInput =
-      document.getElementById("orientation");
+    const shootingOrientationInput =
+      document.getElementById("shootingOrientation");
 
-    const boxHeightInput =
-      document.getElementById("boxHeight");
+    const trainHeightInput =
+      document.getElementById("trainHeight");
 
-    const rotationSlider =
-      document.getElementById("rotation");
+    const trainRotationSlider =
+      document.getElementById("trainRotation");
 
-    const scaleCorrectionSlider =
-      document.getElementById("scaleCorrection");
+    const angleCorrectionSlider =
+      document.getElementById("angleCorrection");
 
-    const lengthResult =
-      document.getElementById("lengthResult");
+    const displayCorrectionSlider =
+      document.getElementById("displayCorrection");
 
-    const rotationValue =
-      document.getElementById("rotationValue");
+    const trainRotationValue =
+      document.getElementById("trainRotationValue");
 
-    const scaleCorrectionValue =
-      document.getElementById(
-        "scaleCorrectionValue"
-      );
+    const angleCorrectionValue =
+      document.getElementById("angleCorrectionValue");
 
-    const fovResult =
-      document.getElementById("fovResult");
+    const displayCorrectionValue =
+      document.getElementById("displayCorrectionValue");
 
-    const angleResult =
-      document.getElementById("angleResult");
+    const totalLengthResult =
+      document.getElementById("totalLengthResult");
 
-    const widthResult =
-      document.getElementById("widthResult");
+    const focalLengthResult =
+      document.getElementById("focalLengthResult");
+
+    const horizontalFovResult =
+      document.getElementById("horizontalFovResult");
+
+    const trainAngleResult =
+      document.getElementById("trainAngleResult");
 
     const coverageResult =
       document.getElementById("coverageResult");
 
+    const boxWidthResult =
+      document.getElementById("boxWidthResult");
+
+    const minimumDistanceResult =
+      document.getElementById("minimumDistanceResult");
+
     const warning =
       document.getElementById("warning");
 
-    let boxX = window.innerWidth / 2;
-    let boxY = window.innerHeight * 0.42;
+    const topComposition =
+      document.getElementById("topComposition");
+
+    const conversionTableBody =
+      document.getElementById("conversionTableBody");
+
+    /* =========================
+       状態
+    ========================= */
+
+    let cameraStream = null;
+
+    let cameraZoom = 1;
+
+    let boxX =
+      window.innerWidth / 2;
+
+    let boxY =
+      window.innerHeight * 0.39;
 
     let dragging = false;
+
     let dragOffsetX = 0;
     let dragOffsetY = 0;
 
-    function toRadians(degrees) {
-      return degrees * Math.PI / 180;
+    let pinchStartDistance = null;
+    let pinchStartZoom = 1;
+
+    let panelCollapsed = false;
+
+    /* =========================
+       共通関数
+    ========================= */
+
+    function clamp(
+      value,
+      minimum,
+      maximum
+    ) {
+      return Math.min(
+        maximum,
+        Math.max(minimum, value)
+      );
     }
 
     function toDegrees(radians) {
@@ -549,29 +1203,63 @@
       return value;
     }
 
+    function getEffectiveOrientation() {
+      const selected =
+        shootingOrientationInput.value;
+
+      if (selected !== "auto") {
+        return selected;
+      }
+
+      return window.innerWidth >= window.innerHeight
+        ? "landscape"
+        : "portrait";
+    }
+
+    /* =========================
+       カメラ
+    ========================= */
+
     async function startCamera() {
       if (
         !navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia
       ) {
         alert(
-          "このブラウザではカメラ機能を利用できません。"
+          "このブラウザではカメラを利用できません。SafariでHTTPSのページを開いてください。"
         );
         return;
       }
 
       try {
-        const stream =
+        if (cameraStream) {
+          cameraStream
+            .getTracks()
+            .forEach((track) => track.stop());
+        }
+
+        cameraStream =
           await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: {
                 ideal: "environment"
+              },
+              width: {
+                ideal: 1920
+              },
+              height: {
+                ideal: 1080
               }
             },
             audio: false
           });
 
-        video.srcObject = stream;
+        video.srcObject = cameraStream;
+
+        await video.play();
+
+        cameraPlaceholder.style.display =
+          "none";
 
         cameraButton.textContent =
           "カメラ起動済み";
@@ -581,10 +1269,77 @@
         console.error(error);
 
         alert(
-          "カメラを起動できませんでした。ブラウザのカメラ許可とHTTPS接続を確認してください。"
+          "カメラを起動できませんでした。Safariのカメラ許可、HTTPS接続、ほかのアプリがカメラを使用していないか確認してください。"
         );
       }
     }
+
+    /* =========================
+       疑似ズーム
+    ========================= */
+
+    function setCameraZoom(
+      newZoom,
+      recalculate = true
+    ) {
+      cameraZoom = clamp(
+        Number(newZoom) || 1,
+        1,
+        10
+      );
+
+      cameraZoomSlider.value =
+        cameraZoom.toFixed(1);
+
+      video.style.transform =
+        `translate(-50%, -50%) scale(${cameraZoom})`;
+
+      const baseFocalLength =
+        readPositiveNumber(
+          baseFocalLengthInput,
+          26
+        );
+
+      const focalLength =
+        baseFocalLength * cameraZoom;
+
+      currentZoom.textContent =
+        `${cameraZoom.toFixed(1)}×`;
+
+      zoomBadge.textContent =
+        `${cameraZoom.toFixed(1)}×`;
+
+      currentFocal.textContent =
+        `${focalLength.toFixed(0)}mm相当`;
+
+      updateZoomButtons();
+      updateConversionTable();
+
+      if (recalculate) {
+        calculateComposition();
+      }
+    }
+
+    function updateZoomButtons() {
+      zoomButtons.forEach((button) => {
+        const buttonZoom =
+          Number(button.dataset.zoom);
+
+        const active =
+          Math.abs(
+            buttonZoom - cameraZoom
+          ) < 0.05;
+
+        button.classList.toggle(
+          "active",
+          active
+        );
+      });
+    }
+
+    /* =========================
+       構図計算
+    ========================= */
 
     function calculateComposition() {
       const carLength =
@@ -607,44 +1362,49 @@
       const distance =
         readPositiveNumber(
           distanceInput,
-          100
+          200
         );
 
-      const focalLength =
+      const baseFocalLength =
         readPositiveNumber(
-          focalLengthInput,
+          baseFocalLengthInput,
           26
         );
 
-      const boxHeight =
-        readPositiveNumber(
-          boxHeightInput,
-          76
-        );
+      const focalLength =
+        baseFocalLength * cameraZoom;
 
       const totalLength =
         carLength * cars;
 
+      const angleCorrection =
+        Number(angleCorrectionSlider.value)
+        / 100;
+
+      const displayCorrection =
+        Number(displayCorrectionSlider.value)
+        / 100;
+
+      const correctedTrainLength =
+        totalLength * angleCorrection;
+
+      const orientation =
+        getEffectiveOrientation();
+
       /*
-       35mm判換算焦点距離を使う場合、
+        35mm判換算焦点距離を使用する。
 
-       横位置では画面横方向を36mm、
-       縦位置では画面横方向を24mm
+        横位置：
+        画面の横方向を36mmとして扱う。
 
-       として水平画角を計算します。
+        縦位置：
+        画面の横方向を24mmとして扱う。
       */
       const frameWidthMm =
-        orientationInput.value === "portrait"
+        orientation === "portrait"
           ? 24
           : 36;
 
-      /*
-       水平画角：
-       2 × atan(
-         フィルム幅 ÷
-         2 × 焦点距離
-       )
-      */
       const horizontalFovRad =
         2 * Math.atan(
           frameWidthMm /
@@ -652,51 +1412,45 @@
         );
 
       /*
-       編成が占める見かけ角度。
-
-       編成の中央にカメラを向け、
-       編成をほぼ真横から見る想定。
+        編成を中央に向けて、
+        ほぼ真横から見る想定。
       */
       const trainAngleRad =
         2 * Math.atan(
-          totalLength /
+          correctedTrainLength /
           (2 * distance)
         );
 
       /*
-       画角内の位置をより正確に求めるため、
-       単純な角度比ではなく、
-       ピンホールカメラモデルを使います。
-
-       画面上の占有率 =
-       tan(編成角度 ÷ 2) ÷
-       tan(水平画角 ÷ 2)
+        ピンホールカメラモデルによる
+        画面横幅の占有率。
       */
       const projectedRatio =
         Math.tan(trainAngleRad / 2) /
         Math.tan(horizontalFovRad / 2);
 
-      const correction =
-        Number(scaleCorrectionSlider.value)
-        / 100;
-
       const correctedRatio =
-        projectedRatio * correction;
-
-      const viewportWidth =
-        window.innerWidth;
+        projectedRatio *
+        displayCorrection;
 
       const boxWidthPx =
-        viewportWidth * correctedRatio;
+        window.innerWidth *
+        correctedRatio;
+
+      const trainHeight =
+        readPositiveNumber(
+          trainHeightInput,
+          76
+        );
 
       const rotation =
-        Number(rotationSlider.value);
+        Number(trainRotationSlider.value);
 
       trainBox.style.width =
-        `${Math.max(boxWidthPx, 4)}px`;
+        `${Math.max(boxWidthPx, 6)}px`;
 
       trainBox.style.height =
-        `${boxHeight}px`;
+        `${trainHeight}px`;
 
       trainBox.style.left =
         `${boxX}px`;
@@ -705,53 +1459,152 @@
         `${boxY}px`;
 
       trainBox.style.transform =
-        `translate(-50%, -50%)
-         rotate(${rotation}deg)`;
-
-      lengthResult.textContent =
-        `編成長 ${totalLength.toFixed(1)} m`;
-
-      fovResult.textContent =
-        `${toDegrees(
-          horizontalFovRad
-        ).toFixed(1)}°`;
-
-      angleResult.textContent =
-        `${toDegrees(
-          trainAngleRad
-        ).toFixed(1)}°`;
-
-      widthResult.textContent =
-        `${boxWidthPx.toFixed(0)} px`;
-
-      coverageResult.textContent =
-        `${(
-          correctedRatio * 100
-        ).toFixed(1)}%`;
-
-      rotationValue.textContent =
-        `${rotation}°`;
-
-      scaleCorrectionValue.textContent =
-        `${Math.round(
-          correction * 100
-        )}%`;
+        `translate(-50%, -50%) rotate(${rotation}deg)`;
 
       trainBox.classList.toggle(
         "overflowing",
         correctedRatio > 1
       );
 
-      if (correctedRatio > 1) {
+      const minimumDistance =
+        correctedTrainLength *
+        focalLength /
+        frameWidthMm;
+
+      trainInfo.textContent =
+        `${totalLength.toFixed(1)}m`;
+
+      topComposition.textContent =
+        `編成長 ${totalLength.toFixed(1)}m`;
+
+      totalLengthResult.textContent =
+        `${totalLength.toFixed(1)}m`;
+
+      focalLengthResult.textContent =
+        `${focalLength.toFixed(0)}mm相当`;
+
+      horizontalFovResult.textContent =
+        `${toDegrees(
+          horizontalFovRad
+        ).toFixed(1)}°`;
+
+      trainAngleResult.textContent =
+        `${toDegrees(
+          trainAngleRad
+        ).toFixed(1)}°`;
+
+      coverageResult.textContent =
+        `${(
+          correctedRatio * 100
+        ).toFixed(1)}%`;
+
+      boxWidthResult.textContent =
+        `${boxWidthPx.toFixed(0)}px`;
+
+      minimumDistanceResult.textContent =
+        `約${minimumDistance.toFixed(0)}m`;
+
+      trainRotationValue.textContent =
+        `${rotation}°`;
+
+      angleCorrectionValue.textContent =
+        `${Math.round(
+          angleCorrection * 100
+        )}%`;
+
+      displayCorrectionValue.textContent =
+        `${Math.round(
+          displayCorrection * 100
+        )}%`;
+
+      if (correctedRatio > 1.15) {
         warning.textContent =
-          "編成全体が横画角に収まりません。距離を離すか、焦点距離を短くしてください。";
+          `編成が画面幅を大きく超えます。約${minimumDistance.toFixed(0)}m以上離れるか、倍率を下げてください。`;
+      } else if (correctedRatio > 1) {
+        warning.textContent =
+          `編成全体がわずかに収まりません。約${minimumDistance.toFixed(0)}m以上離れるのが目安です。`;
       } else if (correctedRatio > 0.9) {
         warning.textContent =
-          "編成が画面幅の90%以上を占めます。少し余裕を持たせたほうが安全です。";
+          "編成が画面幅の90%以上を占めます。先頭や最後尾が切れる可能性があるため、少し余裕を持たせてください。";
+      } else if (correctedRatio < 0.15) {
+        warning.textContent =
+          "編成がかなり小さく写る計算です。倍率を上げるか、撮影地点を近づけると大きく写せます。";
       } else {
         warning.textContent = "";
       }
     }
+
+    /* =========================
+       換算表
+    ========================= */
+
+    function updateConversionTable() {
+      const baseFocalLength =
+        readPositiveNumber(
+          baseFocalLengthInput,
+          26
+        );
+
+      const zoomValues = [
+        1,
+        1.5,
+        2,
+        3,
+        5,
+        10
+      ];
+
+      conversionTableBody.innerHTML = "";
+
+      zoomValues.forEach((zoom) => {
+        const row =
+          document.createElement("tr");
+
+        if (
+          Math.abs(
+            zoom - cameraZoom
+          ) < 0.06
+        ) {
+          row.classList.add("currentRow");
+        }
+
+        const zoomCell =
+          document.createElement("td");
+
+        const focalCell =
+          document.createElement("td");
+
+        const typeCell =
+          document.createElement("td");
+
+        zoomCell.textContent =
+          `${zoom.toFixed(
+            Number.isInteger(zoom) ? 0 : 1
+          )}×`;
+
+        focalCell.textContent =
+          `${(
+            baseFocalLength * zoom
+          ).toFixed(0)}mm相当`;
+
+        typeCell.textContent =
+          zoom === 1
+            ? "基準映像"
+            : "デジタル切り抜き";
+
+        row.append(
+          zoomCell,
+          focalCell,
+          typeCell
+        );
+
+        conversionTableBody.appendChild(row);
+      });
+    }
+
+    /* =========================
+       編成箱ドラッグ
+    ========================= */
 
     function getPointerPosition(event) {
       if (
@@ -771,6 +1624,13 @@
     }
 
     function startDrag(event) {
+      if (
+        event.touches &&
+        event.touches.length >= 2
+      ) {
+        return;
+      }
+
       const pointer =
         getPointerPosition(event);
 
@@ -783,10 +1643,19 @@
         pointer.y - boxY;
 
       event.preventDefault();
+      event.stopPropagation();
     }
 
     function moveDrag(event) {
       if (!dragging) {
+        return;
+      }
+
+      if (
+        event.touches &&
+        event.touches.length >= 2
+      ) {
+        dragging = false;
         return;
       }
 
@@ -800,6 +1669,7 @@
         pointer.y - dragOffsetY;
 
       calculateComposition();
+
       event.preventDefault();
     }
 
@@ -807,41 +1677,119 @@
       dragging = false;
     }
 
-    function resetPosition() {
+    /* =========================
+       ピンチズーム
+    ========================= */
+
+    function getTouchDistance(touches) {
+      const first =
+        touches[0];
+
+      const second =
+        touches[1];
+
+      const dx =
+        second.clientX -
+        first.clientX;
+
+      const dy =
+        second.clientY -
+        first.clientY;
+
+      return Math.sqrt(
+        dx * dx + dy * dy
+      );
+    }
+
+    function handlePinchStart(event) {
+      if (event.touches.length !== 2) {
+        return;
+      }
+
+      dragging = false;
+
+      pinchStartDistance =
+        getTouchDistance(
+          event.touches
+        );
+
+      pinchStartZoom =
+        cameraZoom;
+
+      event.preventDefault();
+    }
+
+    function handlePinchMove(event) {
+      if (
+        event.touches.length !== 2 ||
+        pinchStartDistance === null
+      ) {
+        return;
+      }
+
+      const currentDistance =
+        getTouchDistance(
+          event.touches
+        );
+
+      const scale =
+        currentDistance /
+        pinchStartDistance;
+
+      setCameraZoom(
+        pinchStartZoom * scale
+      );
+
+      event.preventDefault();
+    }
+
+    function handlePinchEnd(event) {
+      if (event.touches.length < 2) {
+        pinchStartDistance = null;
+      }
+    }
+
+    /* =========================
+       リセット
+    ========================= */
+
+    function resetDisplay() {
       boxX =
         window.innerWidth / 2;
 
       boxY =
-        window.innerHeight * 0.42;
+        window.innerHeight * 0.39;
 
-      rotationSlider.value = 0;
-      scaleCorrectionSlider.value = 100;
+      trainRotationSlider.value = 0;
+      angleCorrectionSlider.value = 100;
+      displayCorrectionSlider.value = 100;
 
+      setCameraZoom(1, false);
       calculateComposition();
     }
 
-    const automaticInputs = [
-      carLengthInput,
-      carsInput,
-      distanceInput,
-      focalLengthInput,
-      orientationInput,
-      boxHeightInput,
-      rotationSlider,
-      scaleCorrectionSlider
-    ];
+    /* =========================
+       パネル
+    ========================= */
 
-    automaticInputs.forEach((input) => {
-      input.addEventListener(
-        "input",
-        calculateComposition
+    function togglePanel() {
+      panelCollapsed =
+        !panelCollapsed;
+
+      panel.classList.toggle(
+        "collapsed",
+        panelCollapsed
       );
 
-      input.addEventListener(
-        "change",
-        calculateComposition
-      );
-    });
+      collapseButton.textContent =
+        panelCollapsed
+          ? "▲"
+          : "▼";
+    }
+
+    /* =========================
+       イベント
+    ========================= */
 
     cameraButton.addEventListener(
       "click",
@@ -850,8 +1798,73 @@
 
     resetButton.addEventListener(
       "click",
-      resetPosition
+      resetDisplay
     );
+
+    collapseButton.addEventListener(
+      "click",
+      togglePanel
+    );
+
+    cameraZoomSlider.addEventListener(
+      "input",
+      () => {
+        setCameraZoom(
+          cameraZoomSlider.value
+        );
+      }
+    );
+
+    zoomButtons.forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          setCameraZoom(
+            button.dataset.zoom
+          );
+        }
+      );
+    });
+
+    const automaticInputs = [
+      carLengthInput,
+      carsInput,
+      distanceInput,
+      baseFocalLengthInput,
+      shootingOrientationInput,
+      trainHeightInput,
+      trainRotationSlider,
+      angleCorrectionSlider,
+      displayCorrectionSlider
+    ];
+
+    automaticInputs.forEach((input) => {
+      input.addEventListener(
+        "input",
+        () => {
+          if (
+            input ===
+            baseFocalLengthInput
+          ) {
+            setCameraZoom(
+              cameraZoom,
+              false
+            );
+          }
+
+          calculateComposition();
+          updateConversionTable();
+        }
+      );
+
+      input.addEventListener(
+        "change",
+        () => {
+          calculateComposition();
+          updateConversionTable();
+        }
+      );
+    });
 
     trainBox.addEventListener(
       "mousedown",
@@ -889,25 +1902,62 @@
       stopDrag
     );
 
+    document.addEventListener(
+      "touchstart",
+      handlePinchStart,
+      {
+        passive: false
+      }
+    );
+
+    document.addEventListener(
+      "touchmove",
+      handlePinchMove,
+      {
+        passive: false
+      }
+    );
+
+    document.addEventListener(
+      "touchend",
+      handlePinchEnd
+    );
+
     window.addEventListener(
       "resize",
       () => {
-        boxX =
-          Math.min(
-            Math.max(boxX, 0),
-            window.innerWidth
-          );
+        boxX = clamp(
+          boxX,
+          0,
+          window.innerWidth
+        );
 
-        boxY =
-          Math.min(
-            Math.max(boxY, 0),
-            window.innerHeight
-          );
+        boxY = clamp(
+          boxY,
+          0,
+          window.innerHeight
+        );
 
         calculateComposition();
       }
     );
 
+    window.addEventListener(
+      "orientationchange",
+      () => {
+        setTimeout(
+          calculateComposition,
+          250
+        );
+      }
+    );
+
+    /* =========================
+       初期化
+    ========================= */
+
+    setCameraZoom(1, false);
+    updateConversionTable();
     calculateComposition();
   </script>
 </body>
